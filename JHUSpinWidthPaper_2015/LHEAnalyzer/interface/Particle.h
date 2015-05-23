@@ -11,8 +11,8 @@ public:
   Particle();
   Particle(int id_, TLorentzVector p4_);
   Particle(const Particle& particle_);
-  Particle& operator= (const Particle& particle_);
-  ~Particle(){ daughters.clear(); mothers.clear(); };
+  Particle& operator=(const Particle& particle_);
+  ~Particle(){};
 
   // Data
 
@@ -27,27 +27,28 @@ public:
   void addMother(Particle* myParticle){ mothers.push_back(myParticle); };
   void addDaughter(Particle* myParticle){ daughters.push_back(myParticle); };
 
-  int getNMothers(){ return mothers.size() };
-  int getNDaughters(){ return daughters.size() };
+  int getNMothers() const{ return mothers.size(); };
+  int getNDaughters() const{ return daughters.size(); };
 
-  Particle* getMother(int index);
-  Particle* getDaughter(int index);
+  Particle* getMother(int index) const;
+  Particle* getDaughter(int index) const;
 
-  double charge();
-  double m(){ return p4.M(); }
-  double x(){ return p4.X(); }
-  double y(){ return p4.Y(); }
-  double z(){ return p4.Z(); }
-  double t(){ return p4.T(); }
-  double pt(){ return p4.Pt(); }
-  double eta(){ return p4.Eta(); }
-  double phi(){ return p4.Phi(); }
-  double rapidity(){ return p4.Rapidity(); }
-  double deltaR(const TLorentzVector& v){ return p4.DeltaR(v); }
+  double charge()const;
+  double m()const{ return p4.M(); }
+  double x()const{ return p4.X(); }
+  double y()const{ return p4.Y(); }
+  double z()const{ return p4.Z(); }
+  double t()const{ return p4.T(); }
+  double pt()const{ return p4.Pt(); }
+  double eta()const{ return p4.Eta(); }
+  double phi()const{ return p4.Phi(); }
+  double rapidity()const{ return p4.Rapidity(); }
+  double deltaR(const TLorentzVector& v)const{ return p4.DeltaR(v); }
 
 
 protected:
   std::vector<Particle*> mothers;
   std::vector<Particle*> daughters;
-}
+};
+
 

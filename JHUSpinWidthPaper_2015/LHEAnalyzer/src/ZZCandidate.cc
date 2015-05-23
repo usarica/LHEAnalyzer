@@ -119,3 +119,11 @@ void ZZCandidate::createSortedVs(){
   Z2->addDaughter(sortedDaughters.at(3));
   addSortedV(Z2);
 }
+void ZZCandidate::addAssociatedLeptons(Particle* myParticle){
+  associatedLeptons.push_back(myParticle);
+}
+void ZZCandidate::addAssociatedJets(Particle* myParticle){
+  associatedJets.push_back(myParticle);
+}
+
+

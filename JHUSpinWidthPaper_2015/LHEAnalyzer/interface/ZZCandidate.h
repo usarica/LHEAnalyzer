@@ -16,6 +16,13 @@ public:
 
   Particle* getSortedDaughter(int index);
   Particle* getSortedV(int index);
+
+  int getNAssociatedLeptons(){ return associatedLeptons.size() };
+  int getNAssociatedJets(){ return associatedJets.size() };
+  int getNSortedVs(){ return sortedVs.size() };
+
+  void addAssociatedLeptons(Particle* myParticle);
+  void addAssociatedJets(Particle* myParticle);
   void addSortedV(Particle* myParticle){ sortedVs.push_back(myParticle); };
 
 

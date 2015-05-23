@@ -1,4 +1,4 @@
-#include "Particle.h"
+#include "../interface/Particle.h"
 
 Particle::Particle():
 id(0),
@@ -13,7 +13,7 @@ passSelection(false)
 {
   p4.SetXYZT(p4_.X(), p4_.Y(), p4_.Z(), p4_.T());
 }
-Particle::Particle(const Particle& particle_)
+Particle::Particle(const Particle& particle_) : 
 id(particle_.id),
 passSelection(particle_.passSelection)
 {
@@ -21,25 +21,27 @@ passSelection(particle_.passSelection)
   for (int index=0; index<particle_.getNMothers(); index++) addMother(particle_.getMother(index));
   for (int index=0; index<particle_.getNDaughters(); index++) addDaughter(particle_.getDaughter(index));
 }
-Particle::Particle& operator= (const Particle& particle_){
+Particle& Particle::operator=(const Particle& particle_){
   id=particle_.id;
   passSelection=particle_.passSelection;
   for (int index=0; index<particle_.getNMothers(); index++) addMother(particle_.getMother(index));
   for (int index=0; index<particle_.getNDaughters(); index++) addDaughter(particle_.getDaughter(index));
+
+  return *this;
 }
 
 
 
-Particle* Particle::getMother(int index){
+Particle* Particle::getMother(int index)const{
   if ((int)mothers.size()>index) return mothers.at(index);
   else return 0;
 }
-Particle* Particle::getDaughter(int index){
+Particle* Particle::getDaughter(int index)const{
   if ((int)daughters.size()>index) return daughters.at(index);
   else return 0;
 }
 
-double Particle::charge(){
+double Particle::charge()const{
   double cpos=0;
   if (abs(id)==24 || abs(id)==37 || abs(id)==2212 || abs(id)==211 || abs(id)==321 || abs(id)==411 || abs(id)==521) cpos = 1.;
   else if (abs(id)==11 || abs(id)==13 || abs(id)==15) cpos = -1.;
@@ -49,3 +51,6 @@ double Particle::charge(){
 
   return cpos;
 }
+
+
+
