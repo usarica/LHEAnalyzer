@@ -1,4 +1,4 @@
-#include "ZZCandidate.h"
+#include "../interface/ZZCandidate.h"
 
 void ZZCandidate::sortDaughters(){
   sortDaughtersInitial();
@@ -6,19 +6,19 @@ void ZZCandidate::sortDaughters(){
   createSortedVs();
 }
 
-Particle* ZZCandidate::getSortedDaughter(int index){
+Particle* ZZCandidate::getSortedDaughter(int index) const{
   if ((int)sortedDaughters.size()>index) return sortedDaughters.at(index);
   else return 0;
 }
-Particle* ZZCandidate::getSortedV(int index){
+Particle* ZZCandidate::getSortedV(int index) const{
   if ((int)sortedVs.size()>index) return sortedVs.at(index);
   else return 0;
 }
-Particle* ZZCandidate::getAssociatedLepton(int index){
+Particle* ZZCandidate::getAssociatedLepton(int index)const{
   if ((int)associatedLeptons.size()>index) return associatedLeptons.at(index);
   else return 0;
 }
-Particle* ZZCandidate::getAssociatedJet(int index){
+Particle* ZZCandidate::getAssociatedJet(int index)const{
   if ((int)associatedJets.size()>index) return associatedJets.at(index);
   else return 0;
 }
@@ -57,10 +57,10 @@ void ZZCandidate::sortDaughtersInitial(){
 void ZZCandidate::sortDaughtersByBestZ1(){
   Particle* orderedDs[2][2]={ { 0 } };
 
-  TLorentzVector pZ1 = sortedDaughters.at(0)->p4()+sortedDaughters.at(1)->p4();
-  TLorentzVector pZ2 = sortedDaughters.at(2)->p4()+sortedDaughters.at(3)->p4();
-  TLorentzVector pZ1p = sortedDaughters.at(0)->p4()+sortedDaughters.at(3)->p4();
-  TLorentzVector pZ2p = sortedDaughters.at(2)->p4()+sortedDaughters.at(1)->p4();
+  TLorentzVector pZ1 = sortedDaughters.at(0)->p4+sortedDaughters.at(1)->p4;
+  TLorentzVector pZ2 = sortedDaughters.at(2)->p4+sortedDaughters.at(3)->p4;
+  TLorentzVector pZ1p = sortedDaughters.at(0)->p4+sortedDaughters.at(3)->p4;
+  TLorentzVector pZ2p = sortedDaughters.at(2)->p4+sortedDaughters.at(1)->p4;
   if (std::abs(pZ1.M() - 91.1876)<std::abs(pZ2.M() - 91.1876)){
     orderedDs[0][0]=sortedDaughters.at(0);
     orderedDs[0][1]=sortedDaughters.at(1);
@@ -78,8 +78,8 @@ void ZZCandidate::sortDaughtersByBestZ1(){
   }
   if (orderedDs[0][1]->id == orderedDs[1][1]->id){
     Particle* orderedDps[2][2]={ { 0 } };
-    TLorentzVector pZ1p = orderedDs[0][0]->p4()+orderedDs[1][1]->p4();
-    TLorentzVector pZ2p = orderedDs[1][0]->p4()+orderedDs[0][1]->p4();
+    TLorentzVector pZ1p = orderedDs[0][0]->p4+orderedDs[1][1]->p4;
+    TLorentzVector pZ2p = orderedDs[1][0]->p4+orderedDs[0][1]->p4;
     if (std::abs(pZ1p.M() - 91.1876)<std::abs(pZ2p.M() - 91.1876)){
       orderedDps[0][0]=orderedDs[0][0];
       orderedDps[0][1]=orderedDs[1][1];
@@ -107,13 +107,13 @@ void ZZCandidate::sortDaughtersByBestZ1(){
   }
 }
 void ZZCandidate::createSortedVs(){
-  TLorentzVector pZ1 = sortedDaughters.at(0)->p4()+sortedDaughters.at(1)->p4();
+  TLorentzVector pZ1 = sortedDaughters.at(0)->p4+sortedDaughters.at(1)->p4;
   Particle* Z1 = new Particle(23, pZ1);
   Z1->addDaughter(sortedDaughters.at(0));
   Z1->addDaughter(sortedDaughters.at(1));
   addSortedV(Z1);
 
-  TLorentzVector pZ2 = sortedDaughters.at(2)->p4()+sortedDaughters.at(3)->p4();
+  TLorentzVector pZ2 = sortedDaughters.at(2)->p4+sortedDaughters.at(3)->p4;
   Particle* Z2 = new Particle(23, pZ2);
   Z2->addDaughter(sortedDaughters.at(2));
   Z2->addDaughter(sortedDaughters.at(3));

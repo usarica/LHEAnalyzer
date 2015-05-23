@@ -14,12 +14,14 @@ public:
 
   // Member functions
 
-  Particle* getSortedDaughter(int index);
-  Particle* getSortedV(int index);
+  Particle* getSortedDaughter(int index)const;
+  Particle* getSortedV(int index)const;
+  Particle* getAssociatedLepton(int index)const;
+  Particle* getAssociatedJet(int index)const;
 
-  int getNAssociatedLeptons(){ return associatedLeptons.size() };
-  int getNAssociatedJets(){ return associatedJets.size() };
-  int getNSortedVs(){ return sortedVs.size() };
+  int getNAssociatedLeptons()const{ return associatedLeptons.size(); };
+  int getNAssociatedJets()const{ return associatedJets.size(); };
+  int getNSortedVs()const{ return sortedVs.size(); };
 
   void addAssociatedLeptons(Particle* myParticle);
   void addAssociatedJets(Particle* myParticle);
@@ -31,4 +33,4 @@ private:
   void sortDaughtersInitial();
   void sortDaughtersByBestZ1();
   void createSortedVs();
-}
+};
