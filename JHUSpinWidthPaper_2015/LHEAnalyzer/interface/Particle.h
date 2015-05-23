@@ -33,6 +33,7 @@ public:
   Particle* getMother(int index);
   Particle* getDaughter(int index);
 
+  double charge();
   double m(){ return p4.M(); }
   double x(){ return p4.X(); }
   double y(){ return p4.Y(); }
@@ -45,7 +46,8 @@ public:
   double deltaR(const TLorentzVector& v){ return p4.DeltaR(v); }
 
 
-private:
+protected:
   std::vector<Particle*> mothers;
   std::vector<Particle*> daughters;
 }
+
