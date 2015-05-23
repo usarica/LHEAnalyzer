@@ -33,4 +33,5 @@ private:
   void sortDaughtersInitial();
   void sortDaughtersByBestZ1();
   void createSortedVs();
+  void addByHighestPt(Particle* myParticle, std::vector<Particle*>& particleArray);
 };

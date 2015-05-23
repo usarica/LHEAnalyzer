@@ -120,10 +120,21 @@ void ZZCandidate::createSortedVs(){
   addSortedV(Z2);
 }
 void ZZCandidate::addAssociatedLeptons(Particle* myParticle){
-  associatedLeptons.push_back(myParticle);
+  addByHighestPt(myParticle, associatedLeptons);
 }
 void ZZCandidate::addAssociatedJets(Particle* myParticle){
-  associatedJets.push_back(myParticle);
+  addByHighestPt(myParticle, associatedJets);
+}
+void ZZCandidate::addByHighestPt(Particle* myParticle, std::vector<Particle*>& particleArray){
+  if (particleArray.size()==0) particleArray.push_back(myParticle);
+  else{
+    for (std::vector<Particle*>::iterator it = particleArray.begin(); it<particleArray.begin(); it++){
+      if ((*it)->pt()<myParticle->pt()){
+        particleArray.insert(it, myParticle);
+        break;
+      }
+    }
+  }
 }
 
 
