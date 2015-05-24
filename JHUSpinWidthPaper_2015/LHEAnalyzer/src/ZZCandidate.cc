@@ -27,7 +27,7 @@ void ZZCandidate::sortDaughtersInitial(){
   Particle* df[2] = { getDaughter(0), 0 };
   for (int j=1; j<getNDaughters(); j++){
     Particle* dtmp = getDaughter(j);
-    if (dtmp->charge()==-df[0]->charge()/* && (df[0]->getMother(0)==dtmp->getMother(0) || df[0]->getMother(0)==dtmp->getMother(1))*/){
+    if (dtmp->charge()==-df[0]->charge()){
       df[1] = dtmp;
       tmpDindex[1] = j;
       break;
@@ -61,7 +61,7 @@ void ZZCandidate::sortDaughtersByBestZ1(){
   TLorentzVector pZ2 = sortedDaughters.at(2)->p4+sortedDaughters.at(3)->p4;
   TLorentzVector pZ1p = sortedDaughters.at(0)->p4+sortedDaughters.at(3)->p4;
   TLorentzVector pZ2p = sortedDaughters.at(2)->p4+sortedDaughters.at(1)->p4;
-  if (std::abs(pZ1.M() - 91.1876)<std::abs(pZ2.M() - 91.1876)){
+  if (std::abs(pZ1.M() - PDGHelpers::HVVmass)<std::abs(pZ2.M() - PDGHelpers::HVVmass)){
     orderedDs[0][0]=sortedDaughters.at(0);
     orderedDs[0][1]=sortedDaughters.at(1);
     orderedDs[1][0]=sortedDaughters.at(2);
@@ -80,7 +80,7 @@ void ZZCandidate::sortDaughtersByBestZ1(){
     Particle* orderedDps[2][2]={ { 0 } };
     TLorentzVector pZ1p = orderedDs[0][0]->p4+orderedDs[1][1]->p4;
     TLorentzVector pZ2p = orderedDs[1][0]->p4+orderedDs[0][1]->p4;
-    if (std::abs(pZ1p.M() - 91.1876)<std::abs(pZ2p.M() - 91.1876)){
+    if (std::abs(pZ1p.M() - PDGHelpers::HVVmass)<std::abs(pZ2p.M() - PDGHelpers::HVVmass)){
       orderedDps[0][0]=orderedDs[0][0];
       orderedDps[0][1]=orderedDs[1][1];
       orderedDps[1][0]=orderedDs[1][0];
@@ -95,7 +95,7 @@ void ZZCandidate::sortDaughtersByBestZ1(){
       pZ1p = pZ2p;
       pZ2p = ptmp;
     }
-    if (std::abs(pZ1p.M() - 91.1876)<std::abs(pZ1.M() - 91.1876) || (std::abs(pZ1p.M() - 91.1876)==std::abs(pZ1.M() - 91.1876) && pZ2p.Pt()>pZ2.Pt()) ){
+    if (std::abs(pZ1p.M() - PDGHelpers::HVVmass)<std::abs(pZ1.M() - PDGHelpers::HVVmass) || (std::abs(pZ1p.M() - PDGHelpers::HVVmass)==std::abs(pZ1.M() - PDGHelpers::HVVmass) && pZ2p.Pt()>pZ2.Pt()) ){
       for (int i=0; i<2; i++){
         for (int j=0; j<2; j++) orderedDs[i][j] = orderedDps[i][j];
       }
@@ -126,16 +126,59 @@ void ZZCandidate::addAssociatedJets(Particle* myParticle){
   addByHighestPt(myParticle, associatedJets);
 }
 void ZZCandidate::addByHighestPt(Particle* myParticle, std::vector<Particle*>& particleArray){
-  if (particleArray.size()==0) particleArray.push_back(myParticle);
-  else{
-    for (std::vector<Particle*>::iterator it = particleArray.begin(); it<particleArray.end(); it++){
-      if ((*it)->pt()<myParticle->pt()){
-        particleArray.insert(it, myParticle);
-        break;
+  bool inserted=false;
+  for (std::vector<Particle*>::iterator it = particleArray.begin(); it<particleArray.end(); it++){
+    if ((*it)->pt()<myParticle->pt()){
+      particleArray.insert(it, myParticle);
+      inserted-true;
+      break;
+    }
+  }
+  if (!inserted) particleArray.push_back(myParticle);
+}
+void ZZCandidate::addAssociatedVs(){
+  createAssociatedVs(associatedLeptons);
+  createAssociatedVs(associatedJets);
+}
+void ZZCandidate::createAssociatedVs(std::vector<Particle*>& particleArray){
+  for (int i = 0; i<particleArray.size(); i++){
+    double Qi = particleArray.at(i)->charge();
+    int id_i = particleArray.at(i)->id;
+
+    for (int j = 1; j<particleArray.size(); j++){
+      if (j<=i) continue;
+      double Qj = particleArray.at(j)->charge();
+      int id_j = particleArray.at(j)->id;
+
+      bool combinable=false;
+      if (
+          (
+            (Qi+Qj)==0 && (id_i+id_j)==0 // Z boson, llbar or qqbar, or unknown jet pairing at reco.
+          )
+          ||
+          (
+            (Qi+Qj)==1 // W boson
+            &&
+            (
+              ((PDGHelpers::isALepton(id_i) || PDGHelpers::isALepton(id_j)) && std::abs(id_i+id_j)==1) // Require SF lnu particle-antiparticle pairs
+            ||
+              (PDGHelpers::isUpTypeQuark(id_i) && PDGHelpers::isDownTypeQuark(id_j)) // Require ud- or du-type pairs, qqbar requirement is satisfied with charge.
+            ||
+              (PDGHelpers::isDownTypeQuark(id_i) && PDGHelpers::isUpTypeQuark(id_j))
+            )
+          )
+        ) combinable = true;
+      if (combinable){
+        TLorentzVector pV = particleArray.at(i)->p4+particleArray.at(j)->p4;
+        Particle* boson = new Particle(0, pV);
+        boson->addDaughter(particleArray.at(i));
+        boson->addDaughter(particleArray.at(j));
+        addSortedV(boson);
       }
     }
   }
 }
+
 void ZZCandidate::testPreSelectedLeptons(){
   for (int i = 0; i<getNDaughters(); i++){
     if (!(daughters.at(i)->passSelection)){

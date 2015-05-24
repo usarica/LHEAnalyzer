@@ -29,6 +29,7 @@ public:
   void addAssociatedLeptons(Particle* myParticle);
   void addAssociatedJets(Particle* myParticle);
   void addSortedV(Particle* myParticle){ sortedVs.push_back(myParticle); };
+  void addAssociatedVs();
   void testPreSelectedLeptons();
 
 private:
@@ -36,6 +37,7 @@ private:
   void sortDaughtersInitial();
   void sortDaughtersByBestZ1();
   void createSortedVs();
+  void createAssociatedVs(std::vector<Particle*>& particleArray);
   void addByHighestPt(Particle* myParticle, std::vector<Particle*>& particleArray);
 };
 

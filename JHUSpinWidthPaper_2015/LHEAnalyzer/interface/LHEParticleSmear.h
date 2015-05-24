@@ -10,6 +10,7 @@ namespace LHEParticleSmear{
 
   Particle* smearParticle(Particle* myParticle);
   TLorentzVector smearLepton(TLorentzVector l_gen);
+  TLorentzVector smearJet(TLorentzVector l_gen);
 
 }
 
