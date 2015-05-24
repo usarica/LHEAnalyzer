@@ -29,11 +29,20 @@ INCLUDEDIR       = ./src/
 
 OUTLIB           = ./lib/
 
-$(OUTLIB)Particle.o: $(INCLUDEDIR)/Particle.cc
+$(OUTLIB)PDGHelpers.o: $(INCLUDEDIR)/PDGHelpers.cc
+	@mkdir -p lib
+	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)PDGHelpers.o $(GLIBS) $<
+
+$(OUTLIB)Particle.o: $(INCLUDEDIR)/Particle.cc $(OUTLIB)PDGHelpers.o 
 	@mkdir -p lib
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)Particle.o $(GLIBS) $<
 
-$(OUTLIB)ZZCandidate.o: $(INCLUDEDIR)/ZZCandidate.cc $(OUTLIB)Particle.o
+$(OUTLIB)LHEParticleSmear.o: $(INCLUDEDIR)/LHEParticleSmear.cc
+	@mkdir -p lib
+	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)LHEParticleSmear.o $(GLIBS) $<
+
+
+$(OUTLIB)ZZCandidate.o: $(INCLUDEDIR)/ZZCandidate.cc $(OUTLIB)Particle.o $(OUTLIB)LHEParticleSmear.o
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)ZZCandidate.o $<
 
 readOutAngles: $(OUTLIB)Particle.o

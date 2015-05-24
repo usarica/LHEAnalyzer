@@ -128,11 +128,19 @@ void ZZCandidate::addAssociatedJets(Particle* myParticle){
 void ZZCandidate::addByHighestPt(Particle* myParticle, std::vector<Particle*>& particleArray){
   if (particleArray.size()==0) particleArray.push_back(myParticle);
   else{
-    for (std::vector<Particle*>::iterator it = particleArray.begin(); it<particleArray.begin(); it++){
+    for (std::vector<Particle*>::iterator it = particleArray.begin(); it<particleArray.end(); it++){
       if ((*it)->pt()<myParticle->pt()){
         particleArray.insert(it, myParticle);
         break;
       }
+    }
+  }
+}
+void ZZCandidate::testPreSelectedLeptons(){
+  for (int i = 0; i<getNDaughters(); i++){
+    if (!(daughters.at(i)->passSelection)){
+      passSelection=false;
+      break;
     }
   }
 }

@@ -1,3 +1,6 @@
+#ifndef ZZCANDIDATE_H
+#define ZZCANDIDATE_h
+
 #include "Particle.h"
 
 class ZZCandidate : public Particle{
@@ -26,7 +29,7 @@ public:
   void addAssociatedLeptons(Particle* myParticle);
   void addAssociatedJets(Particle* myParticle);
   void addSortedV(Particle* myParticle){ sortedVs.push_back(myParticle); };
-
+  void testPreSelectedLeptons();
 
 private:
   void sortDaughters();
@@ -35,3 +38,7 @@ private:
   void createSortedVs();
   void addByHighestPt(Particle* myParticle, std::vector<Particle*>& particleArray);
 };
+
+
+
+#endif

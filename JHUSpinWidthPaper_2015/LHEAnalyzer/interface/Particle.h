@@ -1,5 +1,10 @@
+#ifndef PARTICLE_H
+#define PARTICLE_h
+
 #include <vector>
 #include "TLorentzVector.h"
+#include "PDGHelpers.h"
+
 //#include <string>
 //#include "TString.h"
 
@@ -52,3 +57,4 @@ protected:
 };
 
 
+#endif
