@@ -1349,8 +1349,8 @@ void plotCumulative_Unblinded(int isEnriched=0){
     ll->AddEntry(tgdata, "Observed", "ep");
     cout << "New cut \t | ZX norm: " << hvars[22][v]->Integral() << "\tggZZ norm: " << hvars[21][v]->Integral() << "\tqqZZ norm: " << hvars[20][v]->Integral() << endl;
 
-    hvars[21][v]->Add(hvars[22][v]);
-    hvars[20][v]->Add(hvars[21][v]);
+    hvars[20][v]->Add(hvars[22][v]);
+    hvars[21][v]->Add(hvars[20][v]);
 
     TH1F* hBSM = 0;
     TH1F* hVBFH = 0;
@@ -1381,7 +1381,7 @@ void plotCumulative_Unblinded(int isEnriched=0){
       hSM->SetFillColor(0);
       hSM->SetFillStyle(1001);
       cout << "Higgs norm: " << hSM->Integral() << endl;
-      hSM->Add(hvars[20][v]);
+      hSM->Add(hvars[21][v]);
       ll->AddEntry(hSM, processTitle[0], "f");
     }
     if (hBSM!=0 && plotBSM==1){
@@ -1391,7 +1391,7 @@ void plotCumulative_Unblinded(int isEnriched=0){
       hBSM->SetFillColor(0);
       hBSM->SetFillStyle(1001);
       cout << "Higgs (BSM) norm: " << hBSM->Integral() << endl;
-      hBSM->Add(hvars[20][v]);
+      hBSM->Add(hvars[21][v]);
       ll->AddEntry(hBSM, processTitle[useBSM], "f");
     }
     if (hVBFH!=0 && plotBSM==3){
@@ -1400,7 +1400,7 @@ void plotCumulative_Unblinded(int isEnriched=0){
       hVBFH->SetLineColor(kViolet);
       hVBFH->SetFillColor(0);
       hVBFH->SetFillStyle(1001);
-      hVBFH->Add(hvars[20][v]);
+      hVBFH->Add(hvars[21][v]);
       ll->AddEntry(hVBFH, "VBF signal", "f");
     }
     if (hTTH!=0 && (plotBSM==2 || plotBSM==3)){
@@ -1409,7 +1409,7 @@ void plotCumulative_Unblinded(int isEnriched=0){
       hTTH->SetLineColor(kGreen+3);
       hTTH->SetFillColor(0);
       hTTH->SetFillStyle(1001);
-      hTTH->Add(hvars[20][v]);
+      hTTH->Add(hvars[21][v]);
       ll->AddEntry(hTTH, "t#bar{t}H signal", "f");
     }
     hvars[20][v]->SetLineWidth(2);
@@ -1424,7 +1424,10 @@ void plotCumulative_Unblinded(int isEnriched=0){
     hvars[20][v]->SetFillStyle(1001);
     hvars[21][v]->SetFillStyle(1001);
     hvars[22][v]->SetFillStyle(1001);
-    for (int pp=20; pp<=22; pp++) ll->AddEntry(hvars[pp][v], processTitle[pp-16], "f");
+    ll->AddEntry(hvars[21][v], processTitle[5], "f");
+    ll->AddEntry(hvars[20][v], processTitle[4], "f");
+    ll->AddEntry(hvars[22][v], processTitle[6], "f");
+    //for (int pp=20; pp<=22; pp++) ll->AddEntry(hvars[pp][v], processTitle[pp-16], "f");
 
     hSM->GetXaxis()->SetNdivisions(505);
     hSM->GetYaxis()->SetNdivisions(505);
@@ -1451,8 +1454,8 @@ void plotCumulative_Unblinded(int isEnriched=0){
     if (hBSM!=0 && plotBSM==1) hBSM->Draw("histsame");
     if (hVBFH!=0 && plotBSM==3) hVBFH->Draw("histsame");
     if (hTTH!=0 && (plotBSM==2||plotBSM==3)) hTTH->Draw("histsame");
-    hvars[20][v]->Draw("histsame");
     hvars[21][v]->Draw("histsame");
+    hvars[20][v]->Draw("histsame");
     hvars[22][v]->Draw("histsame");
     tgdata->Draw("e1psame");
     ll->Draw("same");
