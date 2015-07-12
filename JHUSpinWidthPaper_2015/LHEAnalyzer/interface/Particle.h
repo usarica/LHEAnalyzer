@@ -1,7 +1,8 @@
 #ifndef PARTICLE_H
-#define PARTICLE_h
+#define PARTICLE_H
 
 #include <vector>
+#include "TVector3.h"
 #include "TLorentzVector.h"
 #include "PDGHelpers.h"
 

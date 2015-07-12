@@ -25,28 +25,37 @@ NGLIBS        += -L $(ROOFITSYS)/lib/ -lMinuit -lRooFitCore -lRooFit #-lboost_re
 NGLIBS  += -L $(CMSSW_BASE)/lib/$(SCRAM_ARCH)/
 GLIBS          = $(filter-out -lNew, $(NGLIBS))
 
-INCLUDEDIR       = ./src/
+INCLUDEDIR       = $(PWD)/src/
 
-OUTLIB           = ./lib/
+OUTLIB           = $(PWD)/lib/
 
-$(OUTLIB)PDGHelpers.o: $(INCLUDEDIR)/PDGHelpers.cc
+$(OUTLIB)PDGHelpers.o: $(INCLUDEDIR)PDGHelpers.cc
 	@mkdir -p lib
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)PDGHelpers.o $(GLIBS) $<
 
-$(OUTLIB)Particle.o: $(INCLUDEDIR)/Particle.cc $(OUTLIB)PDGHelpers.o 
+$(OUTLIB)Particle.o: $(INCLUDEDIR)Particle.cc $(OUTLIB)PDGHelpers.o 
 	@mkdir -p lib
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)Particle.o $(GLIBS) $<
 
-$(OUTLIB)LHEParticleSmear.o: $(INCLUDEDIR)/LHEParticleSmear.cc
+$(OUTLIB)LHEParticleSmear.o: $(INCLUDEDIR)LHEParticleSmear.cc
 	@mkdir -p lib
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)LHEParticleSmear.o $(GLIBS) $<
 
 
-$(OUTLIB)ZZCandidate.o: $(INCLUDEDIR)/ZZCandidate.cc $(OUTLIB)Particle.o $(OUTLIB)LHEParticleSmear.o
-	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)ZZCandidate.o $<
+$(OUTLIB)ZZCandidate.o: $(INCLUDEDIR)ZZCandidate.cc $(OUTLIB)Particle.o $(OUTLIB)LHEParticleSmear.o
+	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)ZZCandidate.o $(GLIBS) $<
 
-readOutAngles: $(OUTLIB)Particle.o
-	$(CXX) $(CXXFLAGS) -o readOutAngles $(OUTLIB)/*.o $(GLIBS) $<
+
+$(OUTLIB)Event.o: $(INCLUDEDIR)Event.cc $(OUTLIB)ZZCandidate.o
+	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)Event.o $(GLIBS) $<
+
+
+$(OUTLIB)readOutAngles.o: $(INCLUDEDIR)readOutAngles.C $(OUTLIB)Event.o
+	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)readOutAngles.o $(GLIBS) $<
+
+
+readOutAngles: $(OUTLIB)readOutAngles.o
+	$(CXX) $(CXXFLAGS) -o readOutAngles $(OUTLIB)*.o $(GLIBS)
 
 clean:
 	rm -f $(OUTLIB)*.o $(OUTLIBCOMMON)*.o

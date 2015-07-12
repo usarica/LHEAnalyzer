@@ -18,6 +18,10 @@ Particle* ZZCandidate::getAssociatedLepton(int index)const{
   if ((int)associatedLeptons.size()>index) return associatedLeptons.at(index);
   else return 0;
 }
+Particle* ZZCandidate::getAssociatedNeutrino(int index)const{
+  if ((int)associatedNeutrinos.size()>index) return associatedNeutrinos.at(index);
+  else return 0;
+}
 Particle* ZZCandidate::getAssociatedJet(int index)const{
   if ((int)associatedJets.size()>index) return associatedJets.at(index);
   else return 0;
@@ -109,18 +113,24 @@ void ZZCandidate::sortDaughtersByBestZ1(){
 void ZZCandidate::createSortedVs(){
   TLorentzVector pZ1 = sortedDaughters.at(0)->p4+sortedDaughters.at(1)->p4;
   Particle* Z1 = new Particle(23, pZ1);
+  Z1->addMother(this);
   Z1->addDaughter(sortedDaughters.at(0));
   Z1->addDaughter(sortedDaughters.at(1));
   addSortedV(Z1);
 
   TLorentzVector pZ2 = sortedDaughters.at(2)->p4+sortedDaughters.at(3)->p4;
   Particle* Z2 = new Particle(23, pZ2);
+  Z2->addMother(this);
   Z2->addDaughter(sortedDaughters.at(2));
   Z2->addDaughter(sortedDaughters.at(3));
   addSortedV(Z2);
 }
 void ZZCandidate::addAssociatedLeptons(Particle* myParticle){
   addByHighestPt(myParticle, associatedLeptons);
+}
+void ZZCandidate::addAssociatedNeutrinos(Particle* myParticle){
+  addByHighestPt(myParticle, associatedLeptons); // Neutrinos are leptons at the ZZ candidate level
+  addByHighestPt(myParticle, associatedNeutrinos);
 }
 void ZZCandidate::addAssociatedJets(Particle* myParticle){
   addByHighestPt(myParticle, associatedJets);
@@ -150,27 +160,23 @@ void ZZCandidate::createAssociatedVs(std::vector<Particle*>& particleArray){
       double Qj = particleArray.at(j)->charge();
       int id_j = particleArray.at(j)->id;
 
-      bool combinable=false;
-      if (
+      int bosonId=-1;
+      if ((Qi+Qj)==0 && (id_i+id_j)==0) bosonId = (id_i==0 ? 0 : 23);
+      else if (
+          abs(Qi+Qj)==1 // W boson
+          &&
           (
-            (Qi+Qj)==0 && (id_i+id_j)==0 // Z boson, llbar or qqbar, or unknown jet pairing at reco.
-          )
+            ((PDGHelpers::isALepton(id_i) || PDGHelpers::isALepton(id_j)) && std::abs(id_i+id_j)==1) // Require SF lnu particle-antiparticle pairs
           ||
-          (
-            (Qi+Qj)==1 // W boson
-            &&
-            (
-              ((PDGHelpers::isALepton(id_i) || PDGHelpers::isALepton(id_j)) && std::abs(id_i+id_j)==1) // Require SF lnu particle-antiparticle pairs
-            ||
-              (PDGHelpers::isUpTypeQuark(id_i) && PDGHelpers::isDownTypeQuark(id_j)) // Require ud- or du-type pairs, qqbar requirement is satisfied with charge.
-            ||
-              (PDGHelpers::isDownTypeQuark(id_i) && PDGHelpers::isUpTypeQuark(id_j))
-            )
+            (PDGHelpers::isUpTypeQuark(id_i) && PDGHelpers::isDownTypeQuark(id_j)) // Require ud- or du-type pairs, qqbar requirement is satisfied with charge.
+          ||
+            (PDGHelpers::isDownTypeQuark(id_i) && PDGHelpers::isUpTypeQuark(id_j))
           )
-        ) combinable = true;
-      if (combinable){
+        ) bosonId=24*(Qi+Qj);
+
+      if (bosonId!=-1){
         TLorentzVector pV = particleArray.at(i)->p4+particleArray.at(j)->p4;
-        Particle* boson = new Particle(0, pV);
+        Particle* boson = new Particle(bosonId, pV);
         boson->addDaughter(particleArray.at(i));
         boson->addDaughter(particleArray.at(j));
         addSortedV(boson);
