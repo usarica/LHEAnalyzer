@@ -58,6 +58,6 @@ readOutAngles: $(OUTLIB)readOutAngles.o
 	$(CXX) $(CXXFLAGS) -o readOutAngles $(OUTLIB)*.o $(GLIBS)
 
 clean:
-	rm -f $(OUTLIB)*.o $(OUTLIBCOMMON)*.o
-	rm -f $(OUTLIB)*.so
-	rmdir $(OUTLIB)
+	rm -rf $(OUTLIB)
+	rm -f $(PWD)*.o
+	rm -f readOutAngles
