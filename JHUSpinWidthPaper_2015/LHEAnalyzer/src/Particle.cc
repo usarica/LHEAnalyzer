@@ -5,20 +5,26 @@ using namespace PDGHelpers;
 
 Particle::Particle():
 id(0),
-passSelection(true)
+passSelection(true),
+genStatus(-2),
+lifetime(0)
 {
   p4.SetXYZT(0, 0, 0, 0);
 }
 
 Particle::Particle(int id_, TLorentzVector p4_) :
 id(id_),
-passSelection(true)
+passSelection(true),
+genStatus(-2),
+lifetime(0)
 {
   p4.SetXYZT(p4_.X(), p4_.Y(), p4_.Z(), p4_.T());
 }
 Particle::Particle(const Particle& particle_) : 
 id(particle_.id),
-passSelection(particle_.passSelection)
+passSelection(particle_.passSelection),
+genStatus(particle_.genStatus),
+lifetime(particle_.lifetime)
 {
   p4.SetXYZT(particle_.p4.X(), particle_.p4.Y(), particle_.p4.Z(), particle_.p4.T());
   for (int index=0; index<particle_.getNMothers(); index++) addMother(particle_.getMother(index));
@@ -27,6 +33,8 @@ passSelection(particle_.passSelection)
 Particle& Particle::operator=(const Particle& particle_){
   id=particle_.id;
   passSelection=particle_.passSelection;
+  genStatus=particle_.genStatus;
+  lifetime=particle_.lifetime;
   for (int index=0; index<particle_.getNMothers(); index++) addMother(particle_.getMother(index));
   for (int index=0; index<particle_.getNDaughters(); index++) addDaughter(particle_.getDaughter(index));
   return *this;

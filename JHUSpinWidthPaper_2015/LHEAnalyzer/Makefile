@@ -50,14 +50,14 @@ $(OUTLIB)Event.o: $(INCLUDEDIR)Event.cc $(OUTLIB)ZZCandidate.o
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)Event.o $(GLIBS) $<
 
 
-$(OUTLIB)readOutAngles.o: $(INCLUDEDIR)readOutAngles.C $(OUTLIB)Event.o
-	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)readOutAngles.o $(GLIBS) $<
+$(OUTLIB)convertLHE.o: $(INCLUDEDIR)convertLHE.cc $(OUTLIB)Event.o
+	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)convertLHE.o $(GLIBS) $<
 
 
-readOutAngles: $(OUTLIB)readOutAngles.o
-	$(CXX) $(CXXFLAGS) -o readOutAngles $(OUTLIB)*.o $(GLIBS)
+convertLHE: $(OUTLIB)convertLHE.o
+	$(CXX) $(CXXFLAGS) -o convertLHE $(OUTLIB)*.o $(GLIBS)
 
 clean:
 	rm -rf $(OUTLIB)
 	rm -f $(PWD)*.o
-	rm -f readOutAngles
+	rm -f convert*

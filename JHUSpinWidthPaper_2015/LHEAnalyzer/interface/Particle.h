@@ -25,10 +25,14 @@ public:
   int id;
   TLorentzVector p4;
   bool passSelection;
+  int genStatus;
+  double lifetime;
 
 
   // Member functions
   void setSelected(bool isSelected=true){ passSelection = isSelected; }
+  void setGenStatus(int status_){ genStatus=status_; }
+  void setLifetime(int life_){ lifetime=life_; }
 
   void addMother(Particle* myParticle){ mothers.push_back(myParticle); };
   void addDaughter(Particle* myParticle){ daughters.push_back(myParticle); };
