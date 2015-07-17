@@ -31,7 +31,7 @@ void ZZCandidate::sortDaughtersInitial(){
   Particle* df[2] = { getDaughter(0), 0 };
   for (int j=1; j<getNDaughters(); j++){
     Particle* dtmp = getDaughter(j);
-    if (dtmp->charge()==-df[0]->charge()){
+    if ((dtmp->charge()+df[0]->charge()==0 && PDGHelpers::HVVmass==PDGHelpers::Zmass) || (std::abs(dtmp->charge()+df[0]->charge())==1 && PDGHelpers::HVVmass==PDGHelpers::Wmass)){
       df[1] = dtmp;
       tmpDindex[1] = j;
       break;
@@ -45,12 +45,12 @@ void ZZCandidate::sortDaughtersInitial(){
     ds[sindex] = dtmp;
     sindex++;
   }
-  if (df[0]->charge()<df[1]->charge()){
+  if (df[0]->id<df[1]->id){
     Particle* dtmp = df[0];
     df[0] = df[1];
     df[1] = dtmp;
   }
-  if (ds[0]->charge()<ds[1]->charge()){
+  if (ds[0]->id<ds[1]->id){
     Particle* dtmp = ds[0];
     ds[0] = ds[1];
     ds[1] = dtmp;
@@ -63,8 +63,6 @@ void ZZCandidate::sortDaughtersByBestZ1(){
 
   TLorentzVector pZ1 = sortedDaughters.at(0)->p4+sortedDaughters.at(1)->p4;
   TLorentzVector pZ2 = sortedDaughters.at(2)->p4+sortedDaughters.at(3)->p4;
-  TLorentzVector pZ1p = sortedDaughters.at(0)->p4+sortedDaughters.at(3)->p4;
-  TLorentzVector pZ2p = sortedDaughters.at(2)->p4+sortedDaughters.at(1)->p4;
   if (std::abs(pZ1.M() - PDGHelpers::HVVmass)<std::abs(pZ2.M() - PDGHelpers::HVVmass)){
     orderedDs[0][0]=sortedDaughters.at(0);
     orderedDs[0][1]=sortedDaughters.at(1);
@@ -125,30 +123,54 @@ void ZZCandidate::createSortedVs(){
   Z2->addDaughter(sortedDaughters.at(3));
   addSortedV(Z2);
 }
+TLorentzVector ZZCandidate::getAlternativeVMomentum(int index)const{
+  TLorentzVector pZ1 = sortedDaughters.at(0)->p4+sortedDaughters.at(3)->p4;
+  TLorentzVector pZ2 = sortedDaughters.at(2)->p4+sortedDaughters.at(1)->p4;
+  if (std::abs(pZ1.M() - PDGHelpers::HVVmass)>std::abs(pZ2.M() - PDGHelpers::HVVmass)){
+    pZ1 = sortedDaughters.at(2)->p4+sortedDaughters.at(1)->p4;
+    pZ2 = sortedDaughters.at(0)->p4+sortedDaughters.at(3)->p4;
+  }
+  return (index==0 ? pZ1 : pZ2);
+}
+
 void ZZCandidate::addAssociatedLeptons(Particle* myParticle){
-  addByHighestPt(myParticle, associatedLeptons);
+  bool isADaughter=false;
+  for (int dd=0; dd<getNDaughters(); dd++){
+    if (myParticle==getDaughter(dd)){ isADaughter=true; break; }
+  }
+  if (!isADaughter) addByHighestPt(myParticle, associatedLeptons);
 }
 void ZZCandidate::addAssociatedNeutrinos(Particle* myParticle){
-  addByHighestPt(myParticle, associatedLeptons); // Neutrinos are leptons at the ZZ candidate level
-  addByHighestPt(myParticle, associatedNeutrinos);
+  bool isADaughter=false;
+  for (int dd=0; dd<getNDaughters(); dd++){
+    if (myParticle==getDaughter(dd)){ isADaughter=true; break; }
+  }
+  if (!isADaughter){
+    addByHighestPt(myParticle, associatedLeptons); // Neutrinos are leptons at the ZZ candidate level
+    addByHighestPt(myParticle, associatedNeutrinos);
+  }
 }
 void ZZCandidate::addAssociatedJets(Particle* myParticle){
-  addByHighestPt(myParticle, associatedJets);
+  bool isADaughter=false;
+  for (int dd=0; dd<getNDaughters(); dd++){
+    if (myParticle==getDaughter(dd)){ isADaughter=true; break; }
+  }
+  if (!isADaughter) addByHighestPt(myParticle, associatedJets);
 }
 void ZZCandidate::addByHighestPt(Particle* myParticle, std::vector<Particle*>& particleArray){
   bool inserted=false;
   for (std::vector<Particle*>::iterator it = particleArray.begin(); it<particleArray.end(); it++){
     if ((*it)->pt()<myParticle->pt()){
+      inserted=true;
       particleArray.insert(it, myParticle);
-      inserted-true;
       break;
     }
   }
   if (!inserted) particleArray.push_back(myParticle);
 }
 void ZZCandidate::addAssociatedVs(){
-  createAssociatedVs(associatedLeptons);
   createAssociatedVs(associatedJets);
+  createAssociatedVs(associatedLeptons);
 }
 void ZZCandidate::createAssociatedVs(std::vector<Particle*>& particleArray){
   for (int i = 0; i<particleArray.size(); i++){

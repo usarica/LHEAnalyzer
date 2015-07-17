@@ -18,7 +18,7 @@ void Event::applyLeptonSelection(){
     else if (std::abs((*it)->id)==15) passAcceptance = false;
     for (std::vector<Particle*>::iterator it2 = leptons.begin(); it2<leptons.end(); it2++){
       if ((*it2)==(*it)) continue; // Every particle is their own ghost.
-      else if ((*it)->deltaR((*it2)->p4)>0.02) passAcceptance = false; // Ghost removal
+      else if ((*it)->deltaR((*it2)->p4)<=0.02) passAcceptance = false; // Ghost removal
     }
     (*it)->setSelected(passAcceptance);
   }
@@ -290,13 +290,13 @@ TLorentzVector Event::missingP() const{
 void Event::addVVCandidateAppendages(){
   for (std::vector<ZZCandidate*>::iterator it = ZZcandidates.begin(); it<ZZcandidates.end(); it++){
     if (((*it)->getNAssociatedLeptons()-(*it)->getNAssociatedNeutrinos())==0){
-      for (std::vector<Particle*>::iterator iL = leptons.begin(); iL<leptons.end(); iL++) (*it)->addAssociatedLeptons(*iL);
+      for (std::vector<Particle*>::iterator iL = leptons.begin(); iL<leptons.end(); iL++){ if ((*iL)->passSelection) (*it)->addAssociatedLeptons(*iL); }
     }
     if ((*it)->getNAssociatedNeutrinos()==0){
-      for (std::vector<Particle*>::iterator iL = neutrinos.begin(); iL<neutrinos.end(); iL++) (*it)->addAssociatedNeutrinos(*iL);
+      for (std::vector<Particle*>::iterator iL = neutrinos.begin(); iL<neutrinos.end(); iL++){ if ((*iL)->passSelection) (*it)->addAssociatedNeutrinos(*iL); }
     }
     if ((*it)->getNAssociatedJets()==0){
-      for (std::vector<Particle*>::iterator iJ = jets.begin(); iJ<jets.end(); iJ++) (*it)->addAssociatedJets(*iJ);
+      for (std::vector<Particle*>::iterator iJ = jets.begin(); iJ<jets.end(); iJ++){ if ((*iJ)->passSelection) (*it)->addAssociatedJets(*iJ); }
     }
     (*it)->addAssociatedVs();
   }

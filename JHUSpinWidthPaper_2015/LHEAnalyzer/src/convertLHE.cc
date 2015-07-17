@@ -5,6 +5,8 @@
 #include <vector>
 #include <iomanip>
 #include <cstdlib>
+#include "TSystem.h"
+#include "TInterpreter.h"
 #include "TFile.h"
 #include "TList.h"
 #include "TNtuple.h"
@@ -15,6 +17,7 @@
 
 using namespace PDGHelpers;
 using namespace LHEParticleSmear;
+
 
 int main(int argc, char ** argv){
   const int minArgsExpected=6;
@@ -56,15 +59,35 @@ int main(int argc, char ** argv){
 
   Float_t GenhelcosthetaZ1, GenhelcosthetaZ2, Genhelphi, Gencosthetastar, GenphistarZ1;
   Float_t GenHMass, GenZ1Mass, GenZ2Mass, GenZaMass, GenZbMass;
-  Float_t GenHPt, GenHPz, GenZ1Pt, GenZ2Pt, GenZaPt, GenZbPt;
+  Float_t GenHPt, GenZ1Pt, GenZ2Pt, GenZaPt, GenZbPt;
   Float_t GenHPhi, GenZ1Phi, GenZ2Phi, GenZaPhi, GenZbPhi;
-  Float_t GenHEta, GenZ1Eta, GenZ2Eta, GenZaEta, GenZbEta;
+  Float_t GenHPz, GenZ1Eta, GenZ2Eta, GenZaEta, GenZbEta;
 
   Float_t GenLep1Mass, GenLep2Mass, GenLep3Mass, GenLep4Mass;
   Float_t GenLep1Pt, GenLep2Pt, GenLep3Pt, GenLep4Pt;
   Float_t GenLep1Eta, GenLep2Eta, GenLep3Eta, GenLep4Eta;
   Float_t GenLep1Phi, GenLep2Phi, GenLep3Phi, GenLep4Phi;
   Int_t GenLep1Id, GenLep2Id, GenLep3Id, GenLep4Id;
+
+  vector<double> GenMotherMass;
+  vector<double> GenMotherPt;
+  vector<double> GenMotherPz;
+  vector<double> GenMotherPhi;
+  vector<int> GenMotherId;
+
+  int NGenAssociatedVs=0;
+  vector<double> GenAssociatedParticleMass;
+  vector<double> GenAssociatedParticlePt;
+  vector<double> GenAssociatedParticleEta;
+  vector<double> GenAssociatedParticlePhi;
+  vector<int> GenAssociatedParticleId;
+  vector<double> GenAssociatedVMass;
+  vector<double> GenAssociatedVPt;
+  vector<double> GenAssociatedVEta;
+  vector<double> GenAssociatedVPhi;
+  vector<int> GenAssociatedVId;
+  vector<int> GenAssociatedV_Particle1Index;
+  vector<int> GenAssociatedV_Particle2Index;
 
   Float_t helcosthetaZ1, helcosthetaZ2, helphi, costhetastar, phistarZ1;
   Float_t ZZMass, Z1Mass, Z2Mass, ZaMass, ZbMass;
@@ -78,15 +101,30 @@ int main(int argc, char ** argv){
   Float_t Lep1Phi, Lep2Phi, Lep3Phi, Lep4Phi;
   Int_t Lep1Id, Lep2Id, Lep3Id, Lep4Id;
 
-  Float_t MC_weight;
-  double weight;
-  int interf=-1;
-  int genFinalState=-1;
+  int NAssociatedVs=0;
+  vector<double> AssociatedParticleMass;
+  vector<double> AssociatedParticlePt;
+  vector<double> AssociatedParticleEta;
+  vector<double> AssociatedParticlePhi;
+  vector<int> AssociatedParticleId;
+  vector<double> AssociatedVMass;
+  vector<double> AssociatedVPt;
+  vector<double> AssociatedVEta;
+  vector<double> AssociatedVPhi;
+  vector<int> AssociatedVId;
+  vector<int> AssociatedV_Particle1Index;
+  vector<int> AssociatedV_Particle2Index;
 
-  tree->Branch("GenZZMass", &GenHMass);
-  tree->Branch("GenZZPt", &GenHPt);
-  tree->Branch("GenZZPz", &GenHPz);
-  tree->Branch("GenZZPhi", &GenHPhi);
+
+  double weight;
+  Float_t MC_weight;
+  Int_t genFinalState=-1;
+  Int_t isSelected=0;
+
+  tree->Branch("GenHMass", &GenHMass);
+  tree->Branch("GenHPt", &GenHPt);
+  tree->Branch("GenHPz", &GenHPz);
+  tree->Branch("GenHPhi", &GenHPhi);
 
   tree->Branch("GenZ1Mass", &GenZ1Mass);
   tree->Branch("GenZ1Pt", &GenZ1Pt);
@@ -107,6 +145,26 @@ int main(int argc, char ** argv){
   tree->Branch("GenZbPt", &GenZbPt);
   tree->Branch("GenZbPhi", &GenZbPhi);
   tree->Branch("GenZbEta", &GenZbEta);
+
+  tree->Branch("GenMotherMass", &GenMotherMass);
+  tree->Branch("GenMotherPt", &GenMotherPt);
+  tree->Branch("GenMotherPz", &GenMotherPz);
+  tree->Branch("GenMotherPhi", &GenMotherPhi);
+  tree->Branch("GenMotherId", &GenMotherId);
+
+  tree->Branch("NGenAssociatedVs", &NGenAssociatedVs);
+  tree->Branch("GenAssociatedParticleMass", &GenAssociatedParticleMass);
+  tree->Branch("GenAssociatedParticlePt", &GenAssociatedParticlePt);
+  tree->Branch("GenAssociatedParticleEta", &GenAssociatedParticleEta);
+  tree->Branch("GenAssociatedParticlePhi", &GenAssociatedParticlePhi);
+  tree->Branch("GenAssociatedParticleId", &GenAssociatedParticleId);
+  tree->Branch("GenAssociatedVMass", &GenAssociatedVMass);
+  tree->Branch("GenAssociatedVPt", &GenAssociatedVPt);
+  tree->Branch("GenAssociatedVEta", &GenAssociatedVEta);
+  tree->Branch("GenAssociatedVPhi", &GenAssociatedVPhi);
+  tree->Branch("GenAssociatedVId", &GenAssociatedVId);
+  tree->Branch("GenAssociatedV_Particle1Index", &GenAssociatedV_Particle1Index);
+  tree->Branch("GenAssociatedV_Particle2Index", &GenAssociatedV_Particle2Index);
 
   tree->Branch("GenhelcosthetaZ1", &GenhelcosthetaZ1);
   tree->Branch("GenhelcosthetaZ2", &GenhelcosthetaZ2);
@@ -136,7 +194,10 @@ int main(int argc, char ** argv){
   tree->Branch("GenLep4Id", &GenLep4Id);
 
   tree->Branch("genFinalState", &genFinalState);
-  tree->Branch("MC_weight", &MC_weight, "MC_weight/F");
+  tree->Branch("MC_weight", &MC_weight);
+
+
+  tree->Branch("isSelected", &isSelected);
 
   tree->Branch("ZZMass", &ZZMass);
   tree->Branch("ZZPt", &ZZPt);
@@ -162,6 +223,20 @@ int main(int argc, char ** argv){
   tree->Branch("ZbPt", &ZbPt);
   tree->Branch("ZbPhi", &ZbPhi);
   tree->Branch("ZbEta", &ZbEta);
+
+  tree->Branch("NAssociatedVs", &NAssociatedVs);
+  tree->Branch("AssociatedParticleMass", &AssociatedParticleMass);
+  tree->Branch("AssociatedParticlePt", &AssociatedParticlePt);
+  tree->Branch("AssociatedParticleEta", &AssociatedParticleEta);
+  tree->Branch("AssociatedParticlePhi", &AssociatedParticlePhi);
+  tree->Branch("AssociatedParticleId", &AssociatedParticleId);
+  tree->Branch("AssociatedVMass", &AssociatedVMass);
+  tree->Branch("AssociatedVPt", &AssociatedVPt);
+  tree->Branch("AssociatedVEta", &AssociatedVEta);
+  tree->Branch("AssociatedVPhi", &AssociatedVPhi);
+  tree->Branch("AssociatedVId", &AssociatedVId);
+  tree->Branch("AssociatedV_Particle1Index", &AssociatedV_Particle1Index);
+  tree->Branch("AssociatedV_Particle2Index", &AssociatedV_Particle2Index);
 
   tree->Branch("helcosthetaZ1", &helcosthetaZ1);
   tree->Branch("helcosthetaZ2", &helcosthetaZ2);
@@ -197,6 +272,38 @@ int main(int argc, char ** argv){
     fin.open(cinput.c_str());
     if (fin.good()){
       while (!fin.eof()){
+        GenMotherMass.clear();
+        GenMotherPt.clear();
+        GenMotherPz.clear();
+        GenMotherPhi.clear();
+        GenMotherId.clear();
+
+        GenAssociatedParticleMass.clear();
+        GenAssociatedParticlePt.clear();
+        GenAssociatedParticleEta.clear();
+        GenAssociatedParticlePhi.clear();
+        GenAssociatedParticleId.clear();
+        GenAssociatedVMass.clear();
+        GenAssociatedVPt.clear();
+        GenAssociatedVEta.clear();
+        GenAssociatedVPhi.clear();
+        GenAssociatedVId.clear();
+        GenAssociatedV_Particle1Index.clear();
+        GenAssociatedV_Particle2Index.clear();
+
+        AssociatedParticleMass.clear();
+        AssociatedParticlePt.clear();
+        AssociatedParticleEta.clear();
+        AssociatedParticlePhi.clear();
+        AssociatedParticleId.clear();
+        AssociatedVMass.clear();
+        AssociatedVPt.clear();
+        AssociatedVEta.clear();
+        AssociatedVPhi.clear();
+        AssociatedVId.clear();
+        AssociatedV_Particle1Index.clear();
+        AssociatedV_Particle2Index.clear();
+
         vector<Particle*> particleList = readLHEEvent(fin, weight);
         vector<Particle*> smearedParticleList; // Bookkeeping
         vector<ZZCandidate*> candList; // Bookkeeping
@@ -206,17 +313,18 @@ int main(int argc, char ** argv){
         if (weight!=0){
           Event genEvent;
           genEvent.setWeight(weight);
+          bool hasGenHiggs=false;
           Event smearedEvent;
           smearedEvent.setWeight(weight);
           for (int p=0; p<particleList.size(); p++){
             Particle* genPart = particleList.at(p); // Has mother info from LHE reading
-            // No ZZCandidate at this moment
-            if (isALepton(genPart->id)) genEvent.addLepton(genPart);
-            else if (isANeutrino(genPart->id)) genEvent.addNeutrino(genPart);
-            else if (isAGluon(genPart->id) || isAQuark(genPart->id)) genEvent.addJet(genPart);
-            else genEvent.addParticle(genPart);
+            if (isAHiggs(genPart->id)) hasGenHiggs=true;
 
             if (genPart->genStatus==1){
+              if (isALepton(genPart->id)) genEvent.addLepton(genPart);
+              else if (isANeutrino(genPart->id)) genEvent.addNeutrino(genPart);
+              else if (isAGluon(genPart->id) || isAQuark(genPart->id)) genEvent.addJet(genPart);
+
               Particle* smearedPart = smearParticle(genPart); // Has no mother info
               smearedParticleList.push_back(smearedPart);
               if (isALepton(smearedPart->id)) smearedEvent.addLepton(smearedPart);
@@ -224,37 +332,385 @@ int main(int argc, char ** argv){
               else if (isAGluon(smearedPart->id) || isAQuark(smearedPart->id)) smearedEvent.addJet(smearedPart);
               else smearedEvent.addParticle(smearedPart);
             }
+            else if (genPart->genStatus==-1){
+              GenMotherMass.push_back(genPart->m());
+              GenMotherPt.push_back(genPart->pt());
+              GenMotherPz.push_back(genPart->z());
+              GenMotherPhi.push_back(genPart->phi());
+              GenMotherId.push_back(genPart->id);
+            }
           }
 
           //for (int p=0; p<genEvent.getNLeptons(); p++) cout << "Lepton " << p << " (x, y, z, t): " << genEvent.getLepton(p)->x() << '\t' << genEvent.getLepton(p)->y() << '\t' << genEvent.getLepton(p)->z() << '\t' << genEvent.getLepton(p)->t() << endl;
 
           genEvent.constructVVCandidates();
+          genEvent.addVVCandidateAppendages();
           ZZCandidate* genCand=0;
           for (int t=0; t<genEvent.getNZZCandidates(); t++){
             ZZCandidate* tmpCand = genEvent.getZZCandidate(t);
+            if (hasGenHiggs){
+              if (!(isAHiggs(tmpCand->getSortedV(0)->getDaughter(0)->getMother(0)->id) || isAHiggs(tmpCand->getSortedV(0)->getDaughter(0)->getMother(0)->getMother(0)->id))) continue;
+            }
             if (genCand==0) genCand=tmpCand;
             else if (fabs(genCand->getSortedV(0)->m()-PDGHelpers::HVVmass)>fabs(tmpCand->getSortedV(0)->m()-PDGHelpers::HVVmass)) genCand=tmpCand;
           }
-          Particle* gZ1=genCand->getSortedV(0);
-          Particle* gZ2=genCand->getSortedV(1);
+          if (genCand!=0){
+            Particle* gZ1=genCand->getSortedV(0);
+            Particle* gZ2=genCand->getSortedV(1);
 
-          GenHMass=genCand->m();
-          GenZ1Mass=gZ1->m();
-          GenZ2Mass=gZ2->m();
+            GenHMass=genCand->m();
+            GenHPt=genCand->pt();
+            GenHPz=genCand->z();
+            GenHPhi=genCand->phi();
+
+            GenZ1Mass=gZ1->m();
+            GenZ1Pt=gZ1->pt();
+            GenZ1Eta=gZ1->eta();
+            GenZ1Phi=gZ1->phi();
+
+            GenZ2Mass=gZ2->m();
+            GenZ2Pt=gZ2->pt();
+            GenZ2Eta=gZ2->eta();
+            GenZ2Phi=gZ2->phi();
+
+            TLorentzVector pZ1alt = genCand->getAlternativeVMomentum(0);
+            TLorentzVector pZ2alt = genCand->getAlternativeVMomentum(1);
+
+            GenZaMass=pZ1alt.M();
+            GenZaPt=pZ1alt.Pt();
+            GenZaEta=pZ1alt.Eta();
+            GenZaPhi=pZ1alt.Phi();
+
+            GenZbMass=pZ2alt.M();
+            GenZbPt=pZ2alt.Pt();
+            GenZbEta=pZ2alt.Eta();
+            GenZbPhi=pZ2alt.Phi();
+
+            calculateAngles(
+              genCand->p4,
+              gZ1->getDaughter(0)->p4, gZ1->getDaughter(1)->p4,
+              gZ2->getDaughter(0)->p4, gZ2->getDaughter(1)->p4,
+              GenhelcosthetaZ1, GenhelcosthetaZ2, Genhelphi, Gencosthetastar, GenphistarZ1
+              );
+
+            GenLep1Id = gZ1->getDaughter(0)->id;
+            GenLep1Mass = gZ1->getDaughter(0)->m();
+            GenLep1Pt = gZ1->getDaughter(0)->pt();
+            GenLep1Eta = gZ1->getDaughter(0)->eta();
+            GenLep1Phi = gZ1->getDaughter(0)->phi();
+
+            GenLep2Id = gZ1->getDaughter(1)->id;
+            GenLep2Mass = gZ1->getDaughter(1)->m();
+            GenLep2Pt = gZ1->getDaughter(1)->pt();
+            GenLep2Eta = gZ1->getDaughter(1)->eta();
+            GenLep2Phi = gZ1->getDaughter(1)->phi();
+
+            GenLep3Id = gZ2->getDaughter(0)->id;
+            GenLep3Mass = gZ2->getDaughter(0)->m();
+            GenLep3Pt = gZ2->getDaughter(0)->pt();
+            GenLep3Eta = gZ2->getDaughter(0)->eta();
+            GenLep3Phi = gZ2->getDaughter(0)->phi();
+
+            GenLep4Id = gZ2->getDaughter(1)->id;
+            GenLep4Mass = gZ2->getDaughter(1)->m();
+            GenLep4Pt = gZ2->getDaughter(1)->pt();
+            GenLep4Eta = gZ2->getDaughter(1)->eta();
+            GenLep4Phi = gZ2->getDaughter(1)->phi();
+
+            for (int aa=0; aa<genCand->getNAssociatedJets(); aa++){
+              Particle* apart = genCand->getAssociatedJet(aa);
+              GenAssociatedParticleMass.push_back(apart->m());
+              GenAssociatedParticlePt.push_back(apart->pt());
+              GenAssociatedParticleEta.push_back(apart->eta());
+              GenAssociatedParticlePhi.push_back(apart->phi());
+              GenAssociatedParticleId.push_back(apart->id);
+            }
+            for (int aa=0; aa<genCand->getNAssociatedLeptons(); aa++){
+              Particle* apart = genCand->getAssociatedLepton(aa);
+              GenAssociatedParticleMass.push_back(apart->m());
+              GenAssociatedParticlePt.push_back(apart->pt());
+              GenAssociatedParticleEta.push_back(apart->eta());
+              GenAssociatedParticlePhi.push_back(apart->phi());
+              GenAssociatedParticleId.push_back(apart->id);
+            }
+            for (int aa=0; aa<genCand->getNAssociatedNeutrinos(); aa++){
+              Particle* apart = genCand->getAssociatedNeutrino(aa);
+              GenAssociatedParticleMass.push_back(apart->m());
+              GenAssociatedParticlePt.push_back(apart->pt());
+              GenAssociatedParticleEta.push_back(apart->eta());
+              GenAssociatedParticlePhi.push_back(apart->phi());
+              GenAssociatedParticleId.push_back(apart->id);
+            }
+            NGenAssociatedVs = genCand->getNSortedVs()-2;
+            for (int av=2; av<genCand->getNSortedVs(); av++){
+              Particle* associatedV = genCand->getSortedV(av);
+              GenAssociatedVMass.push_back(associatedV->m());
+              GenAssociatedVPt.push_back(associatedV->pt());
+              GenAssociatedVEta.push_back(associatedV->eta());
+              GenAssociatedVPhi.push_back(associatedV->phi());
+              GenAssociatedVId.push_back(associatedV->id);
+
+              Particle* avd1 = associatedV->getDaughter(0);
+              Particle* avd2 = associatedV->getDaughter(1);
+              for (int aa=0; aa<genCand->getNAssociatedJets(); aa++){
+                if (avd1==genCand->getAssociatedJet(aa)) GenAssociatedV_Particle1Index.push_back(aa);
+                else if (avd2==genCand->getAssociatedJet(aa)) GenAssociatedV_Particle2Index.push_back(aa);
+              }
+              for (int aa=0; aa<genCand->getNAssociatedLeptons(); aa++){
+                if (avd1==genCand->getAssociatedLepton(aa)) GenAssociatedV_Particle1Index.push_back(aa+genCand->getNAssociatedJets());
+                else if (avd2==genCand->getAssociatedLepton(aa)) GenAssociatedV_Particle2Index.push_back(aa+genCand->getNAssociatedJets());
+              }
+              for (int aa=0; aa<genCand->getNAssociatedNeutrinos(); aa++){
+                if (avd1==genCand->getAssociatedNeutrino(aa)) GenAssociatedV_Particle1Index.push_back(aa+genCand->getNAssociatedJets()+genCand->getNAssociatedLeptons());
+                else if (avd2==genCand->getAssociatedNeutrino(aa)) GenAssociatedV_Particle2Index.push_back(aa+genCand->getNAssociatedJets()+genCand->getNAssociatedLeptons());
+              }
+            }
+          }
+          else{
+            cout << "No gen. level Higgs candidate was found!" << endl;
+
+            GenHMass=0;
+            GenHPt=0;
+            GenHPz=0;
+            GenHPhi=0;
+
+            GenZ1Mass=0;
+            GenZ1Pt=0;
+            GenZ1Eta=0;
+            GenZ1Phi=0;
+
+            GenZ2Mass=0;
+            GenZ2Pt=0;
+            GenZ2Eta=0;
+            GenZ2Phi=0;
+
+            GenZaMass=0;
+            GenZaPt=0;
+            GenZaEta=0;
+            GenZaPhi=0;
+
+            GenZbMass=0;
+            GenZbPt=0;
+            GenZbEta=0;
+            GenZbPhi=0;
+
+            GenhelcosthetaZ1=0;
+            GenhelcosthetaZ2=0;
+            Genhelphi=0;
+            Gencosthetastar=0;
+            GenphistarZ1=0;
+
+            GenLep1Id = 0;
+            GenLep1Mass = 0;
+            GenLep1Pt = 0;
+            GenLep1Eta = 0;
+            GenLep1Phi = 0;
+
+            GenLep2Id = 0;
+            GenLep2Mass = 0;
+            GenLep2Pt = 0;
+            GenLep2Eta = 0;
+            GenLep2Phi = 0;
+
+            GenLep3Id = 0;
+            GenLep3Mass = 0;
+            GenLep3Pt = 0;
+            GenLep3Eta = 0;
+            GenLep3Phi = 0;
+
+            GenLep4Id = 0;
+            GenLep4Mass = 0;
+            GenLep4Pt = 0;
+            GenLep4Eta = 0;
+            GenLep4Phi = 0;
+
+            NGenAssociatedVs = 0;
+          }
 
           smearedEvent.constructVVCandidates();
+          smearedEvent.applyParticleSelection();
+          smearedEvent.addVVCandidateAppendages();
           ZZCandidate* rCand=0;
           for (int t=0; t<smearedEvent.getNZZCandidates(); t++){
             ZZCandidate* tmpCand = smearedEvent.getZZCandidate(t);
+            if (!tmpCand->passSelection) continue;
             if (rCand==0) rCand=tmpCand;
             else if (fabs(rCand->getSortedV(0)->m()-PDGHelpers::HVVmass)>fabs(tmpCand->getSortedV(0)->m()-PDGHelpers::HVVmass)) rCand=tmpCand;
           }
-          Particle* rZ1=rCand->getSortedV(0);
-          Particle* rZ2=rCand->getSortedV(1);
+          if (rCand!=0){
+            isSelected=1;
 
-          ZZMass=rCand->m();
-          Z1Mass=rZ1->m();
-          Z2Mass=rZ2->m();
+            Particle* rZ1=rCand->getSortedV(0);
+            Particle* rZ2=rCand->getSortedV(1);
+
+            ZZMass=rCand->m();
+            ZZPt=rCand->pt();
+            ZZPz=rCand->z();
+            ZZEta=rCand->eta();
+
+            Z1Mass=rZ1->m();
+            Z1Pt=rZ1->pt();
+            Z1Eta=rZ1->eta();
+            Z1Phi=rZ1->phi();
+
+            Z2Mass=rZ2->m();
+            Z2Pt=rZ2->pt();
+            Z2Eta=rZ2->eta();
+            Z2Phi=rZ2->phi();
+
+            TLorentzVector pZ1alt = rCand->getAlternativeVMomentum(0);
+            TLorentzVector pZ2alt = rCand->getAlternativeVMomentum(1);
+
+            ZaMass=pZ1alt.M();
+            ZaPt=pZ1alt.Pt();
+            ZaEta=pZ1alt.Eta();
+            ZaPhi=pZ1alt.Phi();
+
+            ZbMass=pZ2alt.M();
+            ZbPt=pZ2alt.Pt();
+            ZbEta=pZ2alt.Eta();
+            ZbPhi=pZ2alt.Phi();
+
+            calculateAngles(
+              rCand->p4,
+              rZ1->getDaughter(0)->p4, rZ1->getDaughter(1)->p4,
+              rZ2->getDaughter(0)->p4, rZ2->getDaughter(1)->p4,
+              helcosthetaZ1, helcosthetaZ2, helphi, costhetastar, phistarZ1
+              );
+
+            Lep1Id = rZ1->getDaughter(0)->id;
+            Lep1Mass = rZ1->getDaughter(0)->m();
+            Lep1Pt = rZ1->getDaughter(0)->pt();
+            Lep1Eta = rZ1->getDaughter(0)->eta();
+            Lep1Phi = rZ1->getDaughter(0)->phi();
+
+            Lep2Id = rZ1->getDaughter(1)->id;
+            Lep2Mass = rZ1->getDaughter(1)->m();
+            Lep2Pt = rZ1->getDaughter(1)->pt();
+            Lep2Eta = rZ1->getDaughter(1)->eta();
+            Lep2Phi = rZ1->getDaughter(1)->phi();
+
+            Lep3Id = rZ2->getDaughter(0)->id;
+            Lep3Mass = rZ2->getDaughter(0)->m();
+            Lep3Pt = rZ2->getDaughter(0)->pt();
+            Lep3Eta = rZ2->getDaughter(0)->eta();
+            Lep3Phi = rZ2->getDaughter(0)->phi();
+
+            Lep4Id = rZ2->getDaughter(1)->id;
+            Lep4Mass = rZ2->getDaughter(1)->m();
+            Lep4Pt = rZ2->getDaughter(1)->pt();
+            Lep4Eta = rZ2->getDaughter(1)->eta();
+            Lep4Phi = rZ2->getDaughter(1)->phi();
+
+            for (int aa=0; aa<rCand->getNAssociatedJets(); aa++){
+              Particle* apart = rCand->getAssociatedJet(aa);
+              AssociatedParticleMass.push_back(apart->m());
+              AssociatedParticlePt.push_back(apart->pt());
+              AssociatedParticleEta.push_back(apart->eta());
+              AssociatedParticlePhi.push_back(apart->phi());
+              AssociatedParticleId.push_back(apart->id);
+            }
+            for (int aa=0; aa<rCand->getNAssociatedLeptons(); aa++){
+              Particle* apart = rCand->getAssociatedLepton(aa);
+              AssociatedParticleMass.push_back(apart->m());
+              AssociatedParticlePt.push_back(apart->pt());
+              AssociatedParticleEta.push_back(apart->eta());
+              AssociatedParticlePhi.push_back(apart->phi());
+              AssociatedParticleId.push_back(apart->id);
+            }
+            for (int aa=0; aa<rCand->getNAssociatedNeutrinos(); aa++){
+              Particle* apart = rCand->getAssociatedNeutrino(aa);
+              AssociatedParticleMass.push_back(apart->m());
+              AssociatedParticlePt.push_back(apart->pt());
+              AssociatedParticleEta.push_back(apart->eta());
+              AssociatedParticlePhi.push_back(apart->phi());
+              AssociatedParticleId.push_back(apart->id);
+            }
+            NAssociatedVs = rCand->getNSortedVs()-2;
+            for (int av=2; av<rCand->getNSortedVs(); av++){
+              Particle* associatedV = rCand->getSortedV(av);
+              AssociatedVMass.push_back(associatedV->m());
+              AssociatedVPt.push_back(associatedV->pt());
+              AssociatedVEta.push_back(associatedV->eta());
+              AssociatedVPhi.push_back(associatedV->phi());
+              AssociatedVId.push_back(associatedV->id);
+
+              Particle* avd1 = associatedV->getDaughter(0);
+              Particle* avd2 = associatedV->getDaughter(1);
+              for (int aa=0; aa<rCand->getNAssociatedJets(); aa++){
+                if (avd1==rCand->getAssociatedJet(aa)) AssociatedV_Particle1Index.push_back(aa);
+                else if (avd2==rCand->getAssociatedJet(aa)) AssociatedV_Particle2Index.push_back(aa);
+              }
+              for (int aa=0; aa<rCand->getNAssociatedLeptons(); aa++){
+                if (avd1==rCand->getAssociatedLepton(aa)) AssociatedV_Particle1Index.push_back(aa+rCand->getNAssociatedJets());
+                else if (avd2==rCand->getAssociatedLepton(aa)) AssociatedV_Particle2Index.push_back(aa+rCand->getNAssociatedJets());
+              }
+              for (int aa=0; aa<rCand->getNAssociatedNeutrinos(); aa++){
+                if (avd1==rCand->getAssociatedNeutrino(aa)) AssociatedV_Particle1Index.push_back(aa+rCand->getNAssociatedJets()+rCand->getNAssociatedLeptons());
+                else if (avd2==rCand->getAssociatedNeutrino(aa)) AssociatedV_Particle2Index.push_back(aa+rCand->getNAssociatedJets()+rCand->getNAssociatedLeptons());
+              }
+            }
+          }
+          else{
+            isSelected=0;
+
+            ZZMass=0;
+            ZZPt=0;
+            ZZPz=0;
+            ZZPhi=0;
+
+            Z1Mass=0;
+            Z1Pt=0;
+            Z1Eta=0;
+            Z1Phi=0;
+
+            Z2Mass=0;
+            Z2Pt=0;
+            Z2Eta=0;
+            Z2Phi=0;
+
+            ZaMass=0;
+            ZaPt=0;
+            ZaEta=0;
+            ZaPhi=0;
+
+            ZbMass=0;
+            ZbPt=0;
+            ZbEta=0;
+            ZbPhi=0;
+
+            helcosthetaZ1=0;
+            helcosthetaZ2=0;
+            helphi=0;
+            costhetastar=0;
+            phistarZ1=0;
+
+            Lep1Id = 0;
+            Lep1Mass = 0;
+            Lep1Pt = 0;
+            Lep1Eta = 0;
+            Lep1Phi = 0;
+
+            Lep2Id = 0;
+            Lep2Mass = 0;
+            Lep2Pt = 0;
+            Lep2Eta = 0;
+            Lep2Phi = 0;
+
+            Lep3Id = 0;
+            Lep3Mass = 0;
+            Lep3Pt = 0;
+            Lep3Eta = 0;
+            Lep3Phi = 0;
+
+            Lep4Id = 0;
+            Lep4Mass = 0;
+            Lep4Pt = 0;
+            Lep4Eta = 0;
+            Lep4Phi = 0;
+
+            NAssociatedVs = 0;
+          }
 
           MC_weight = (float)weight;
           tree->Fill();
@@ -266,7 +722,6 @@ int main(int argc, char ** argv){
         }
         for (int p=0; p<smearedParticleList.size(); p++){ // Bookkeeping
           Particle* tmpPart = (Particle*)smearedParticleList.at(p);
-//          cout << "smeared "  << tmpPart->genStatus << '\t'  << tmpPart->id << '\t' << tmpPart->m() << endl;
           if (tmpPart!=0) delete tmpPart;
         }
 
@@ -276,7 +731,6 @@ int main(int argc, char ** argv){
         }
         for (int p=0; p<particleList.size(); p++){ // Bookkeeping
           Particle* tmpPart = (Particle*)particleList.at(p);
-//          cout << "gen "  << tmpPart->genStatus << '\t'  << tmpPart->id << '\t' << tmpPart->m() << endl;
           if (tmpPart!=0) delete tmpPart;
         }
 
@@ -347,6 +801,7 @@ vector<Particle*> readLHEEvent(ifstream& input_lhe, double& weight){
 
 // Test whether the end of event is reached indeed
   for(int t=0;t<2;t++) getline(input_lhe, str_in); // Read twice to get rid of the end-of-line
+  while (str_in.find("#")!=string::npos) getline(input_lhe, str_in);
   if (str_in.find(event_end)==string::npos){
     cerr << "End of event not reached! string is " << str_in << endl;
     weight=0;
@@ -371,8 +826,11 @@ vector<Particle*> readLHEEvent(ifstream& input_lhe, double& weight){
 }
 
 
-void calculateAngles(TLorentzVector thep4H, TLorentzVector thep4Z1, TLorentzVector thep4M11, TLorentzVector thep4M12, TLorentzVector thep4Z2, TLorentzVector thep4M21, TLorentzVector thep4M22, double& costheta1, double& costheta2, double& phi, double& costhetastar, double& phistar1, double& phistar2, double& phistar12, double& phi1, double& phi2){
+void calculateAngles(TLorentzVector thep4H, TLorentzVector thep4M11, TLorentzVector thep4M12, TLorentzVector thep4M21, TLorentzVector thep4M22, float& costheta1, float& costheta2, float& phi, float& costhetastar, float& phistar1){
 	
+  TLorentzVector thep4Z1 = thep4M11+thep4M12;
+  TLorentzVector thep4Z2 = thep4M21+thep4M22;
+
   float norm;
   
   TVector3 boostX = -(thep4H.BoostVector());
@@ -382,30 +840,14 @@ void calculateAngles(TLorentzVector thep4H, TLorentzVector thep4Z1, TLorentzVect
   thep4Z2inXFrame.Boost( boostX );
   TVector3 theZ1X_p3 = TVector3( thep4Z1inXFrame.X(), thep4Z1inXFrame.Y(), thep4Z1inXFrame.Z() );
   TVector3 theZ2X_p3 = TVector3( thep4Z2inXFrame.X(), thep4Z2inXFrame.Y(), thep4Z2inXFrame.Z() );
-  
-  // calculate phi1, phi2, costhetastar
-  phi1 = theZ1X_p3.Phi();
-  phi2 = theZ2X_p3.Phi();
+
   
   ///////////////////////////////////////////////
   // check for z1/z2 convention, redefine all 4 vectors with convention
   ///////////////////////////////////////////////	
   TLorentzVector p4H, p4Z1, p4M11, p4M12, p4Z2, p4M21, p4M22;
   p4H = thep4H;
-  
-  /* ORDER OF Z1 AND Z2 ALREADY CHOSEN IN MAIN FUNCTION!!!!!! - - - - - - 
-     if ((phi1 < 0)&&(phi1 >= -TMath::Pi())){   // old convention based on phi
-     p4Z1 = thep4Z2; p4M11 = thep4M21; p4M12 = thep4M22;
-     p4Z2 = thep4Z1; p4M21 = thep4M11; p4M22 = thep4M12;		
-     costhetastar = theZ2X_p3.CosTheta();
-     }
-     else{
-     p4Z1 = thep4Z1; p4M11 = thep4M11; p4M12 = thep4M12;
-     p4Z2 = thep4Z2; p4M21 = thep4M21; p4M22 = thep4M22;
-     costhetastar = theZ1X_p3.CosTheta();
-     }
-     - - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - - -*/
-  
+   
   p4Z1 = thep4Z1; p4M11 = thep4M11; p4M12 = thep4M12;
   p4Z2 = thep4Z2; p4M21 = thep4M21; p4M22 = thep4M22;
   costhetastar = theZ1X_p3.CosTheta();
@@ -498,24 +940,6 @@ void calculateAngles(TLorentzVector thep4H, TLorentzVector thep4Z1, TLorentzVect
   TVector3 n_p4PartoninXFrame_unitprime( n_p4PartoninXFrame_unit.Dot(n_unitx_1), n_p4PartoninXFrame_unit.Dot(n_unity_1), n_p4PartoninXFrame_unit.Dot(n_unitz_1) );
   // negative sign is for arrow convention in paper
   phistar1 = (n_p4PartoninXFrame_unitprime.Phi());
-  
-  // and the calculate phistar2
-  TLorentzVector n_p4Z2inXFrame( p4Z2 );
-  n_p4Z2inXFrame.Boost( boostX );
-  TVector3 n_p4Z2inXFrame_unit = n_p4Z2inXFrame.Vect().Unit();
-  TVector3 n_unitz_2( n_p4Z2inXFrame_unit );
-  //// y-axis is defined by neg lepton cross z-axis
-  //// the subtle part is here...
-  TVector3 n_unity_2 = n_unitz_2.Cross( n_p4M21inXFrame_unit );
-  TVector3 n_unitx_2 = n_unity_2.Cross( n_unitz_2 );
-  TVector3 n_p4PartoninZ2PlaneFrame_unitprime( n_p4PartoninXFrame_unit.Dot(n_unitx_2), n_p4PartoninXFrame_unit.Dot(n_unity_2), n_p4PartoninXFrame_unit.Dot(n_unitz_2) );
-  phistar2 = (n_p4PartoninZ2PlaneFrame_unitprime.Phi());
-  
-  float phistar12_0 = phistar1 + phistar2;
-  if (phistar12_0 > TMath::Pi()) phistar12 = phistar12_0 - 2*TMath::Pi();
-  else if (phistar12_0 < (-1.)*TMath::Pi()) phistar12 = phistar12_0 + 2*TMath::Pi();
-  else phistar12 = phistar12_0;
-	
 }
 
 

@@ -17,6 +17,7 @@ public:
   Particle* getAssociatedLepton(int index)const;
   Particle* getAssociatedNeutrino(int index)const;
   Particle* getAssociatedJet(int index)const;
+  TLorentzVector getAlternativeVMomentum(int index)const;
 
   int getNAssociatedLeptons()const{ return associatedLeptons.size(); };
   int getNAssociatedNeutrinos()const{ return associatedNeutrinos.size(); };
