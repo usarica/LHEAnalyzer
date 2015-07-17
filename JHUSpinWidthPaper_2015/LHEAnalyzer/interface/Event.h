@@ -11,12 +11,18 @@ public:
 
   // Constructors
 
-  Event(){};
+  Event(){ weight=0; xsec=0; };
   ~Event(){ wipeAll(); };
 
   // Data
 
   // Member functions
+  double getXSec() const{ return xsec; }
+  double getWeight() const{ return weight; }
+  std::vector<double>& getExtraWeights(){ return extraWeight; }
+  void setXSec(double xsec_){ xsec=xsec_; }
+  void setWeight(double weight_){ weight=weight_; }
+
   void constructVVCandidates(bool isZZ=true, int fstype=0);
   void applyParticleSelection();
   void addVVCandidateAppendages();
@@ -49,13 +55,17 @@ protected:
   std::vector<Particle*> jets;
   std::vector<ZZCandidate*> ZZcandidates;
 
-  template<typename ParticleType> void wipeArray(std::vector<ParticleType*>& particleArray){ for (int i=0; i<particleArray.size(); i++) delete particleArray.at(i); particleArray.clear(); };
-  void wipeAll(){ leptons.clear(); jets.clear(); wipeArray(ZZcandidates); wipeArray(particles); };
+  template<typename ParticleType> void wipeArray(std::vector<ParticleType*>& particleArray, bool doDelete=true){ if (doDelete){ for (int i=0; i<particleArray.size(); i++){ ParticleType* delpar = particleArray.at(i); delete delpar; } } particleArray.clear(); };
+  void wipeAll(){ leptons.clear(); neutrinos.clear(); jets.clear(); wipeArray(ZZcandidates, true); wipeArray(particles, false); };
 
   void applyLeptonSelection();
   void applyNeutrinoSelection();
   void applyJetSelection();
   void applyZZSelection();
+
+  double xsec;
+  double weight;
+  std::vector<double> extraWeight;
 };
 
 

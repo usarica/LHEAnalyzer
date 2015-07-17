@@ -1,9 +1,13 @@
 #include "../interface/LHEParticleSmear.h"
 
+namespace LHEParticleSmear{
+  TRandom randomForSmearing;
+}
 
 Particle* LHEParticleSmear::smearParticle(Particle* myParticle){
-  TLorentzVector pOriginal = myParticle->p4;
-  TLorentzVector pSmeared;
+  TLorentzVector pOriginal, pSmeared;
+  pOriginal.SetXYZT(myParticle->x(), myParticle->y(), myParticle->z(), myParticle->t());
+
   if (PDGHelpers::isALepton(myParticle->id)){
     pSmeared = LHEParticleSmear::smearLepton(pOriginal);
   }
@@ -11,6 +15,7 @@ Particle* LHEParticleSmear::smearParticle(Particle* myParticle){
     pSmeared = LHEParticleSmear::smearJet(pOriginal);
   }
   else pSmeared = pOriginal;
+
   Particle* smearedParticle = new Particle(myParticle->id, pSmeared);
   return smearedParticle;
 }

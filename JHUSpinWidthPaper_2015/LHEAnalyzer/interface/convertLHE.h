@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <vector>
 #include "Event.h"
+#include "LHEParticleSmear.h"
 
 using namespace std;
 

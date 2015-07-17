@@ -36,6 +36,10 @@ bool PDGHelpers::isAWBoson(int id){
   if (std::abs(id)==24) return true;
   else return false;
 }
+bool PDGHelpers::isAHiggs(int id){
+  if (std::abs(id)==25) return true;
+  else return false;
+}
 void PDGHelpers::setHVVmass(double mymass){
   PDGHelpers::HVVmass=mymass;
 }

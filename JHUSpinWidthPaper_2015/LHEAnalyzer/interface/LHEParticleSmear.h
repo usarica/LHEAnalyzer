@@ -5,7 +5,7 @@
 #include "TRandom.h"
 
 namespace LHEParticleSmear{
-  TRandom randomForSmearing;
+  extern TRandom randomForSmearing;
 
 
   Particle* smearParticle(Particle* myParticle);

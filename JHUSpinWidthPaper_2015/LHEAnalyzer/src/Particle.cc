@@ -1,5 +1,4 @@
 #include "../interface/Particle.h"
-#include "../interface/PDGHelpers.h"
 
 using namespace PDGHelpers;
 

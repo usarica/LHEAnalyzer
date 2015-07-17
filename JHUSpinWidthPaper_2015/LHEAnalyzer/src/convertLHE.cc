@@ -13,6 +13,8 @@
 #include "TLorentzVector.h"
 #include "../interface/convertLHE.h"
 
+using namespace PDGHelpers;
+using namespace LHEParticleSmear;
 
 int main(int argc, char ** argv){
   const int minArgsExpected=6;
@@ -52,77 +54,142 @@ int main(int argc, char ** argv){
   TTree* tree = new TTree(TREE_NAME, TREE_NAME);
   tree->SetAutoSave(5000000000);
 
-  Float_t m_costheta1, m_costheta2, m_phi, m_costhetastar, m_phistar1;
-  Float_t m_phistar2, m_phistar12, m_phi1, m_phi2;
-  Float_t m_zzmass, m_z1mass, m_z2mass, m_zamass, m_zbmass;
-  Float_t m_zzpt, m_zzpz, m_z1pt, m_z2pt, m_zapt, m_zbpt;
-  Float_t m_zzphi, m_z1phi, m_z2phi, m_zaphi, m_zbphi;
-  Float_t m_zzeta, m_z1eta, m_z2eta, m_zaeta, m_zbeta;
+  Float_t GenhelcosthetaZ1, GenhelcosthetaZ2, Genhelphi, Gencosthetastar, GenphistarZ1;
+  Float_t GenHMass, GenZ1Mass, GenZ2Mass, GenZaMass, GenZbMass;
+  Float_t GenHPt, GenHPz, GenZ1Pt, GenZ2Pt, GenZaPt, GenZbPt;
+  Float_t GenHPhi, GenZ1Phi, GenZ2Phi, GenZaPhi, GenZbPhi;
+  Float_t GenHEta, GenZ1Eta, GenZ2Eta, GenZaEta, GenZbEta;
 
-  Float_t m_l1minus_mass, m_l1plus_mass, m_l2minus_mass, m_l2plus_mass;
-  Float_t m_l1minus_pT, m_l1plus_pT, m_l2minus_pT, m_l2plus_pT;
-  Float_t m_l1minus_eta, m_l1plus_eta, m_l2minus_eta, m_l2plus_eta;
-  Float_t m_l1minus_phi, m_l1plus_phi, m_l2minus_phi, m_l2plus_phi;
-  Int_t m_l1minus_id, m_l1plus_id, m_l2minus_id, m_l2plus_id;
+  Float_t GenLep1Mass, GenLep2Mass, GenLep3Mass, GenLep4Mass;
+  Float_t GenLep1Pt, GenLep2Pt, GenLep3Pt, GenLep4Pt;
+  Float_t GenLep1Eta, GenLep2Eta, GenLep3Eta, GenLep4Eta;
+  Float_t GenLep1Phi, GenLep2Phi, GenLep3Phi, GenLep4Phi;
+  Int_t GenLep1Id, GenLep2Id, GenLep3Id, GenLep4Id;
 
-  Float_t m_wt;
+  Float_t helcosthetaZ1, helcosthetaZ2, helphi, costhetastar, phistarZ1;
+  Float_t ZZMass, Z1Mass, Z2Mass, ZaMass, ZbMass;
+  Float_t ZZPt, ZZPz, Z1Pt, Z2Pt, ZaPt, ZbPt;
+  Float_t ZZPhi, Z1Phi, Z2Phi, ZaPhi, ZbPhi;
+  Float_t ZZEta, Z1Eta, Z2Eta, ZaEta, ZbEta;
+
+  Float_t Lep1Mass, Lep2Mass, Lep3Mass, Lep4Mass;
+  Float_t Lep1Pt, Lep2Pt, Lep3Pt, Lep4Pt;
+  Float_t Lep1Eta, Lep2Eta, Lep3Eta, Lep4Eta;
+  Float_t Lep1Phi, Lep2Phi, Lep3Phi, Lep4Phi;
+  Int_t Lep1Id, Lep2Id, Lep3Id, Lep4Id;
+
+  Float_t MC_weight;
   double weight;
   int interf=-1;
   int genFinalState=-1;
 
-  tree->Branch("GenZZMass", &m_zzmass);
-  tree->Branch("GenZZPt", &m_zzpt);
-  tree->Branch("GenZZPz", &m_zzpz);
-  tree->Branch("GenZZPhi", &m_zzphi);
+  tree->Branch("GenZZMass", &GenHMass);
+  tree->Branch("GenZZPt", &GenHPt);
+  tree->Branch("GenZZPz", &GenHPz);
+  tree->Branch("GenZZPhi", &GenHPhi);
 
-  tree->Branch("GenZ1Mass", &m_z1mass);
-  tree->Branch("GenZ1Pt", &m_z1pt);
-  tree->Branch("GenZ1Phi", &m_z1phi);
-  tree->Branch("GenZ1Eta", &m_z1eta);
+  tree->Branch("GenZ1Mass", &GenZ1Mass);
+  tree->Branch("GenZ1Pt", &GenZ1Pt);
+  tree->Branch("GenZ1Phi", &GenZ1Phi);
+  tree->Branch("GenZ1Eta", &GenZ1Eta);
 
-  tree->Branch("GenZ2Mass", &m_z2mass);
-  tree->Branch("GenZ2Pt", &m_z2pt);
-  tree->Branch("GenZ2Phi", &m_z2phi);
-  tree->Branch("GenZ2Eta", &m_z2eta);
+  tree->Branch("GenZ2Mass", &GenZ2Mass);
+  tree->Branch("GenZ2Pt", &GenZ2Pt);
+  tree->Branch("GenZ2Phi", &GenZ2Phi);
+  tree->Branch("GenZ2Eta", &GenZ2Eta);
 
-  tree->Branch("GenZaMass", &m_zamass);
-  tree->Branch("GenZaPt", &m_zapt);
-  tree->Branch("GenZaPhi", &m_zaphi);
-  tree->Branch("GenZaEta", &m_zaeta);
+  tree->Branch("GenZaMass", &GenZaMass);
+  tree->Branch("GenZaPt", &GenZaPt);
+  tree->Branch("GenZaPhi", &GenZaPhi);
+  tree->Branch("GenZaEta", &GenZaEta);
 
-  tree->Branch("GenZbMass", &m_zbmass);
-  tree->Branch("GenZbPt", &m_zbpt);
-  tree->Branch("GenZbPhi", &m_zbphi);
-  tree->Branch("GenZbEta", &m_zbeta);
+  tree->Branch("GenZbMass", &GenZbMass);
+  tree->Branch("GenZbPt", &GenZbPt);
+  tree->Branch("GenZbPhi", &GenZbPhi);
+  tree->Branch("GenZbEta", &GenZbEta);
 
-  tree->Branch("GenhelcosthetaZ1", &m_costheta1);
-  tree->Branch("GenhelcosthetaZ2", &m_costheta2);
-  tree->Branch("Genhelphi", &m_phi);
-  tree->Branch("Gencosthetastar", &m_costhetastar);
-  tree->Branch("GenphistarZ1", &m_phistar1);
+  tree->Branch("GenhelcosthetaZ1", &GenhelcosthetaZ1);
+  tree->Branch("GenhelcosthetaZ2", &GenhelcosthetaZ2);
+  tree->Branch("Genhelphi", &Genhelphi);
+  tree->Branch("Gencosthetastar", &Gencosthetastar);
+  tree->Branch("GenphistarZ1", &GenphistarZ1);
 
-  tree->Branch("GenLep1Mass", &m_l1minus_mass);
-  tree->Branch("GenLep2Mass", &m_l1plus_mass);
-  tree->Branch("GenLep3Mass", &m_l2minus_mass);
-  tree->Branch("GenLep4Mass", &m_l2plus_mass);
-  tree->Branch("GenLep1Pt", &m_l1minus_pT);
-  tree->Branch("GenLep2Pt", &m_l1plus_pT);
-  tree->Branch("GenLep3Pt", &m_l2minus_pT);
-  tree->Branch("GenLep4Pt", &m_l2plus_pT);
-  tree->Branch("GenLep1Eta", &m_l1minus_eta);
-  tree->Branch("GenLep2Eta", &m_l1plus_eta);
-  tree->Branch("GenLep3Eta", &m_l2minus_eta);
-  tree->Branch("GenLep4Eta", &m_l2plus_eta);
-  tree->Branch("GenLep1Phi", &m_l1minus_phi);
-  tree->Branch("GenLep2Phi", &m_l1plus_phi);
-  tree->Branch("GenLep3Phi", &m_l2minus_phi);
-  tree->Branch("GenLep4Phi", &m_l2plus_phi);
-  tree->Branch("GenLep1Id", &m_l1minus_id);
-  tree->Branch("GenLep2Id", &m_l1plus_id);
-  tree->Branch("GenLep3Id", &m_l2minus_id);
-  tree->Branch("GenLep4Id", &m_l2plus_id);
+  tree->Branch("GenLep1Mass", &GenLep1Mass);
+  tree->Branch("GenLep2Mass", &GenLep2Mass);
+  tree->Branch("GenLep3Mass", &GenLep3Mass);
+  tree->Branch("GenLep4Mass", &GenLep4Mass);
+  tree->Branch("GenLep1Pt", &GenLep1Pt);
+  tree->Branch("GenLep2Pt", &GenLep2Pt);
+  tree->Branch("GenLep3Pt", &GenLep3Pt);
+  tree->Branch("GenLep4Pt", &GenLep4Pt);
+  tree->Branch("GenLep1Eta", &GenLep1Eta);
+  tree->Branch("GenLep2Eta", &GenLep2Eta);
+  tree->Branch("GenLep3Eta", &GenLep3Eta);
+  tree->Branch("GenLep4Eta", &GenLep4Eta);
+  tree->Branch("GenLep1Phi", &GenLep1Phi);
+  tree->Branch("GenLep2Phi", &GenLep2Phi);
+  tree->Branch("GenLep3Phi", &GenLep3Phi);
+  tree->Branch("GenLep4Phi", &GenLep4Phi);
+  tree->Branch("GenLep1Id", &GenLep1Id);
+  tree->Branch("GenLep2Id", &GenLep2Id);
+  tree->Branch("GenLep3Id", &GenLep3Id);
+  tree->Branch("GenLep4Id", &GenLep4Id);
+
   tree->Branch("genFinalState", &genFinalState);
-  tree->Branch("MC_weight", &m_wt, "MC_weight/F");
+  tree->Branch("MC_weight", &MC_weight, "MC_weight/F");
+
+  tree->Branch("ZZMass", &ZZMass);
+  tree->Branch("ZZPt", &ZZPt);
+  tree->Branch("ZZPz", &ZZPz);
+  tree->Branch("ZZPhi", &ZZPhi);
+
+  tree->Branch("Z1Mass", &Z1Mass);
+  tree->Branch("Z1Pt", &Z1Pt);
+  tree->Branch("Z1Phi", &Z1Phi);
+  tree->Branch("Z1Eta", &Z1Eta);
+
+  tree->Branch("Z2Mass", &Z2Mass);
+  tree->Branch("Z2Pt", &Z2Pt);
+  tree->Branch("Z2Phi", &Z2Phi);
+  tree->Branch("Z2Eta", &Z2Eta);
+
+  tree->Branch("ZaMass", &ZaMass);
+  tree->Branch("ZaPt", &ZaPt);
+  tree->Branch("ZaPhi", &ZaPhi);
+  tree->Branch("ZaEta", &ZaEta);
+
+  tree->Branch("ZbMass", &ZbMass);
+  tree->Branch("ZbPt", &ZbPt);
+  tree->Branch("ZbPhi", &ZbPhi);
+  tree->Branch("ZbEta", &ZbEta);
+
+  tree->Branch("helcosthetaZ1", &helcosthetaZ1);
+  tree->Branch("helcosthetaZ2", &helcosthetaZ2);
+  tree->Branch("helphi", &helphi);
+  tree->Branch("costhetastar", &costhetastar);
+  tree->Branch("phistarZ1", &phistarZ1);
+
+  tree->Branch("Lep1Mass", &Lep1Mass);
+  tree->Branch("Lep2Mass", &Lep2Mass);
+  tree->Branch("Lep3Mass", &Lep3Mass);
+  tree->Branch("Lep4Mass", &Lep4Mass);
+  tree->Branch("Lep1Pt", &Lep1Pt);
+  tree->Branch("Lep2Pt", &Lep2Pt);
+  tree->Branch("Lep3Pt", &Lep3Pt);
+  tree->Branch("Lep4Pt", &Lep4Pt);
+  tree->Branch("Lep1Eta", &Lep1Eta);
+  tree->Branch("Lep2Eta", &Lep2Eta);
+  tree->Branch("Lep3Eta", &Lep3Eta);
+  tree->Branch("Lep4Eta", &Lep4Eta);
+  tree->Branch("Lep1Phi", &Lep1Phi);
+  tree->Branch("Lep2Phi", &Lep2Phi);
+  tree->Branch("Lep3Phi", &Lep3Phi);
+  tree->Branch("Lep4Phi", &Lep4Phi);
+  tree->Branch("Lep1Id", &Lep1Id);
+  tree->Branch("Lep2Id", &Lep2Id);
+  tree->Branch("Lep3Id", &Lep3Id);
+  tree->Branch("Lep4Id", &Lep4Id);
+
 
   for (int f=0; f<filename.size(); f++){
     string cinput = filename.at(f);
@@ -131,16 +198,92 @@ int main(int argc, char ** argv){
     if (fin.good()){
       while (!fin.eof()){
         vector<Particle*> particleList = readLHEEvent(fin, weight);
+        vector<Particle*> smearedParticleList; // Bookkeeping
+        vector<ZZCandidate*> candList; // Bookkeeping
+        vector<ZZCandidate*> smearedCandList; // Bookkeeping
+
         if (particleList.size()==0 && weight!=0) weight=0;
         if (weight!=0){
+          Event genEvent;
+          genEvent.setWeight(weight);
+          Event smearedEvent;
+          smearedEvent.setWeight(weight);
+          for (int p=0; p<particleList.size(); p++){
+            Particle* genPart = particleList.at(p); // Has mother info from LHE reading
+            // No ZZCandidate at this moment
+            if (isALepton(genPart->id)) genEvent.addLepton(genPart);
+            else if (isANeutrino(genPart->id)) genEvent.addNeutrino(genPart);
+            else if (isAGluon(genPart->id) || isAQuark(genPart->id)) genEvent.addJet(genPart);
+            else genEvent.addParticle(genPart);
 
-          m_wt = (float)weight;
+            if (genPart->genStatus==1){
+              Particle* smearedPart = smearParticle(genPart); // Has no mother info
+              smearedParticleList.push_back(smearedPart);
+              if (isALepton(smearedPart->id)) smearedEvent.addLepton(smearedPart);
+              else if (isANeutrino(smearedPart->id)) smearedEvent.addNeutrino(smearedPart);
+              else if (isAGluon(smearedPart->id) || isAQuark(smearedPart->id)) smearedEvent.addJet(smearedPart);
+              else smearedEvent.addParticle(smearedPart);
+            }
+          }
+
+          //for (int p=0; p<genEvent.getNLeptons(); p++) cout << "Lepton " << p << " (x, y, z, t): " << genEvent.getLepton(p)->x() << '\t' << genEvent.getLepton(p)->y() << '\t' << genEvent.getLepton(p)->z() << '\t' << genEvent.getLepton(p)->t() << endl;
+
+          genEvent.constructVVCandidates();
+          ZZCandidate* genCand=0;
+          for (int t=0; t<genEvent.getNZZCandidates(); t++){
+            ZZCandidate* tmpCand = genEvent.getZZCandidate(t);
+            if (genCand==0) genCand=tmpCand;
+            else if (fabs(genCand->getSortedV(0)->m()-PDGHelpers::HVVmass)>fabs(tmpCand->getSortedV(0)->m()-PDGHelpers::HVVmass)) genCand=tmpCand;
+          }
+          Particle* gZ1=genCand->getSortedV(0);
+          Particle* gZ2=genCand->getSortedV(1);
+
+          GenHMass=genCand->m();
+          GenZ1Mass=gZ1->m();
+          GenZ2Mass=gZ2->m();
+
+          smearedEvent.constructVVCandidates();
+          ZZCandidate* rCand=0;
+          for (int t=0; t<smearedEvent.getNZZCandidates(); t++){
+            ZZCandidate* tmpCand = smearedEvent.getZZCandidate(t);
+            if (rCand==0) rCand=tmpCand;
+            else if (fabs(rCand->getSortedV(0)->m()-PDGHelpers::HVVmass)>fabs(tmpCand->getSortedV(0)->m()-PDGHelpers::HVVmass)) rCand=tmpCand;
+          }
+          Particle* rZ1=rCand->getSortedV(0);
+          Particle* rZ2=rCand->getSortedV(1);
+
+          ZZMass=rCand->m();
+          Z1Mass=rZ1->m();
+          Z2Mass=rZ2->m();
+
+          MC_weight = (float)weight;
           tree->Fill();
         }
-        for (int p=0; p<particleList.size(); p++){
-          Particle* tmpPart = (Particle*) particleList.at(p);
-          delete tmpPart;
+
+        for (int p=0; p<smearedCandList.size(); p++){ // Bookkeeping
+          ZZCandidate* tmpCand = (ZZCandidate*)smearedCandList.at(p);
+          if (tmpCand!=0) delete tmpCand;
         }
+        for (int p=0; p<smearedParticleList.size(); p++){ // Bookkeeping
+          Particle* tmpPart = (Particle*)smearedParticleList.at(p);
+//          cout << "smeared "  << tmpPart->genStatus << '\t'  << tmpPart->id << '\t' << tmpPart->m() << endl;
+          if (tmpPart!=0) delete tmpPart;
+        }
+
+        for (int p=0; p<candList.size(); p++){ // Bookkeeping
+          ZZCandidate* tmpCand = (ZZCandidate*)candList.at(p);
+          if (tmpCand!=0) delete tmpCand;
+        }
+        for (int p=0; p<particleList.size(); p++){ // Bookkeeping
+          Particle* tmpPart = (Particle*)particleList.at(p);
+//          cout << "gen "  << tmpPart->genStatus << '\t'  << tmpPart->id << '\t' << tmpPart->m() << endl;
+          if (tmpPart!=0) delete tmpPart;
+        }
+
+        // Bookkeeping
+        smearedCandList.clear();
+        smearedParticleList.clear();
+        candList.clear();
         particleList.clear();
       }
       fin.close();

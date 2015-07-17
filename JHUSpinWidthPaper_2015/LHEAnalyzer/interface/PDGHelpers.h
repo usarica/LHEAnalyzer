@@ -25,6 +25,7 @@ namespace PDGHelpers{
   bool isAGluon(int id);
   bool isAZBoson(int id);
   bool isAWBoson(int id);
+  bool isAHiggs(int id);
   void setHVVmass(double mymass);
 }
 

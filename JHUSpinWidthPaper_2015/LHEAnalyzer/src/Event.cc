@@ -223,10 +223,12 @@ void Event::constructVVCandidates(bool isZZ, int fstype){
   for (int i=0; i<tmpVhandle.size(); i++){
     for (int j=i; j<tmpVhandle.size(); j++){
       if ((tmpVhandle.at(i)->charge()+tmpVhandle.at(j)->charge())!=0) continue;
+      if (tmpVhandle.at(i)==tmpVhandle.at(j)) continue;
       Particle* Vi1 = tmpVhandle.at(i)->getDaughter(0);
       Particle* Vi2 = tmpVhandle.at(i)->getDaughter(1);
       Particle* Vj1 = tmpVhandle.at(j)->getDaughter(0);
       Particle* Vj2 = tmpVhandle.at(j)->getDaughter(1);
+      if (Vi1==Vj1 || Vi2==Vj2) continue;
 
       TLorentzVector pH = Vi1->p4+Vi2->p4+Vj1->p4+Vj2->p4;
       ZZCandidate* cand = new ZZCandidate(25, pH);
