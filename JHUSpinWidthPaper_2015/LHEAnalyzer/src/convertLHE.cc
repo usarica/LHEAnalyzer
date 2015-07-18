@@ -56,9 +56,8 @@ int main(int argc, char ** argv){
   HVVTree* tree = new HVVTree(TREE_NAME, TREE_NAME);
 
   double weight;
-  Float_t MC_weight;
-  Int_t isSelected;
-  Int_t genFinalState=-1;
+  Float_t MC_weight=0;
+  Int_t isSelected=0;
 
   tree->bookAllBranches();
 
@@ -140,7 +139,7 @@ int main(int argc, char ** argv){
           }
           MC_weight = (float)weight;
 
-          tree->fillEventVariables(MC_weight, isSelected, genFinalState);
+          tree->fillEventVariables(MC_weight, isSelected);
 
           tree->record();
         }

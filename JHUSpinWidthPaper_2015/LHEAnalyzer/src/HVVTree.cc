@@ -228,6 +228,26 @@ void HVVTree::fillDaughterProducts(ZZCandidate* pH, bool isGen){
       varname = strcore + strILep + "Id"; setVal(varname, (lepton!=0 ? lepton->id : 0));
     }
   }
+
+  if (isGen){
+    Int_t genFinalState=-1;
+    if (pH!=0){
+      if (PDGHelpers::isAZBoson(pH->getSortedV(0)->id) && PDGHelpers::isAZBoson(pH->getSortedV(1)->id)){
+        // 4l
+        if (std::abs(pH->getSortedV(0)->getDaughter(0)->id)==13 && std::abs(pH->getSortedV(1)->getDaughter(0)->id)==13) genFinalState=0; // 4mu
+        else if (std::abs(pH->getSortedV(0)->getDaughter(0)->id)==11 && std::abs(pH->getSortedV(1)->getDaughter(0)->id)==11) genFinalState=1; // 4e
+        else if ((std::abs(pH->getSortedV(0)->getDaughter(0)->id)==11 && std::abs(pH->getSortedV(1)->getDaughter(0)->id)==13) || (std::abs(pH->getSortedV(0)->getDaughter(0)->id)==13 && std::abs(pH->getSortedV(1)->getDaughter(0)->id)==11)) genFinalState=2; // 2e2mu
+        else if (std::abs(pH->getSortedV(0)->getDaughter(0)->id)==15 && std::abs(pH->getSortedV(1)->getDaughter(0)->id)==15) genFinalState=3; // 4tau
+        else if ((std::abs(pH->getSortedV(0)->getDaughter(0)->id)==15 && std::abs(pH->getSortedV(1)->getDaughter(0)->id)==13) || (std::abs(pH->getSortedV(0)->getDaughter(0)->id)==13 && std::abs(pH->getSortedV(1)->getDaughter(0)->id)==15)) genFinalState=4; // 2mu2tau
+        else if ((std::abs(pH->getSortedV(0)->getDaughter(0)->id)==11 && std::abs(pH->getSortedV(1)->getDaughter(0)->id)==15) || (std::abs(pH->getSortedV(0)->getDaughter(0)->id)==15 && std::abs(pH->getSortedV(1)->getDaughter(0)->id)==11)) genFinalState=5; // 2e2tau
+        // 4nu, 4q
+        else if (std::abs(pH->getSortedV(0)->getDaughter(0)->id)==std::abs(pH->getSortedV(1)->getDaughter(0)->id)) genFinalState=0;
+        else genFinalState=2;
+      }
+      else genFinalState=2; // WW has no interference
+    }
+    setVal("genFinalState", genFinalState);
+  }
 }
 void HVVTree::fillAssociatedInfo(ZZCandidate* pH, bool isGen){
   int NAssociatedVs=0;
@@ -313,11 +333,19 @@ void HVVTree::fillAssociatedInfo(ZZCandidate* pH, bool isGen){
 
 void HVVTree::fillDecayAngles(ZZCandidate* pH, bool isGen){
   Float_t helcosthetaZ1=0, helcosthetaZ2=0, helphi=0, costhetastar=0, phistarZ1=0;
-  if(pH!=0) calculateDecayAngles(
-    pH->getSortedV(0)->getDaughter(0)->p4, pH->getSortedV(0)->getDaughter(1)->p4,
-    pH->getSortedV(1)->getDaughter(0)->p4, pH->getSortedV(1)->getDaughter(1)->p4,
-    helcosthetaZ1, helcosthetaZ2, helphi, costhetastar, phistarZ1
+  if (pH!=0) mela::computeAngles(
+    pH->getSortedV(0)->getDaughter(0)->p4, pH->getSortedV(0)->getDaughter(0)->id,
+    pH->getSortedV(0)->getDaughter(1)->p4, pH->getSortedV(0)->getDaughter(1)->id,
+    pH->getSortedV(1)->getDaughter(0)->p4, pH->getSortedV(1)->getDaughter(0)->id,
+    pH->getSortedV(1)->getDaughter(1)->p4, pH->getSortedV(1)->getDaughter(1)->id,
+    costhetastar, helcosthetaZ1, helcosthetaZ2, helphi, phistarZ1
     );
+  // Protect against NaN
+  if (!(costhetastar==costhetastar)) costhetastar=0;
+  if (!(helcosthetaZ1==helcosthetaZ1)) helcosthetaZ1=0;
+  if (!(helcosthetaZ2==helcosthetaZ2)) helcosthetaZ2=0;
+  if (!(helphi==helphi)) helphi=0;
+  if (!(phistarZ1==phistarZ1)) phistarZ1=0;
 
   string varname;
   varname = "helcosthetaZ1"; if (isGen) varname.insert(0, "Gen"); setVal(varname, helcosthetaZ1);
@@ -328,13 +356,12 @@ void HVVTree::fillDecayAngles(ZZCandidate* pH, bool isGen){
 }
 //  void HVVTree::fillProductionAngles(Particle* pH, Particle* pV1, Particle* pV2, bool isGen=false);
 
-void HVVTree::fillEventVariables(Float_t weight, Int_t passSelection, Int_t genfinalstate){
+void HVVTree::fillEventVariables(Float_t weight, Int_t passSelection){
   setVal("MC_weight", weight);
   setVal("isSelected", passSelection);
-  setVal("genFinalState", genfinalstate);
 }
 
-
+/*
 void HVVTree::calculateDecayAngles(TLorentzVector thep4M11, TLorentzVector thep4M12, TLorentzVector thep4M21, TLorentzVector thep4M22, float& costheta1, float& costheta2, float& phi, float& costhetastar, float& phistar1){
 
   TLorentzVector thep4Z1 = thep4M11+thep4M12;
@@ -451,3 +478,4 @@ void HVVTree::calculateDecayAngles(TLorentzVector thep4M11, TLorentzVector thep4
   // negative sign is for arrow convention in paper
   phistar1 = (n_p4PartoninXFrame_unitprime.Phi());
 }
+*/
