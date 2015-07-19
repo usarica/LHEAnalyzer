@@ -2,6 +2,7 @@
 #define HVVTREE_H
 
 #include "BaseTree.h"
+#include "OptionParser.h"
 #include "ZZCandidate.h"
 #include <ZZMatrixElement/MELA/interface/Mela.h>
 #include <ZZMatrixElement/MELA/src/computeAngles.h>
@@ -13,6 +14,7 @@ public:
   HVVTree(string treename, string treetitle) : BaseTree(treename, treetitle){};
 
   void bookAllBranches();
+  void setOptions(OptionParser* options_){ options=options_; };
 
   void fillEventVariables(Float_t weight, Int_t passSelection);
   void fillMotherInfo(Particle* mother);
@@ -26,6 +28,8 @@ public:
   void fillDecayAngles(ZZCandidate* pH, bool isGen=false);
 //  void fillProductionAngles(ZZCandidate* pH, bool isGen=false);
 
+protected:
+  OptionParser* options;
 };
 
 #endif

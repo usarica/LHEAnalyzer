@@ -9,9 +9,24 @@
 #include <vector>
 #include "Event.h"
 #include "LHEParticleSmear.h"
+#include "HVVTree.h"
 
 using namespace std;
 
-vector<Particle*> readLHEEvent(ifstream& input_lhe, double& weight);
+class convertLHE{
+public:
+  convertLHE(OptionParser* options_);
+  ~convertLHE(){};
+  void run();
 
+protected:
+  void configure(OptionParser* options_); // Set output file, tree
+  void finalizeRun();
+  vector<Particle*> readEvent(ifstream& input_lhe, double& weight);
+
+  OptionParser* options;
+  vector<string> filename;
+  TFile* foutput;
+  HVVTree* tree;
+};
 #endif

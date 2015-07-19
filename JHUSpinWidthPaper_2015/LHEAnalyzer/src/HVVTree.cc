@@ -3,159 +3,172 @@
 
 void HVVTree::bookAllBranches(){
   bookBranch("MC_weight", BranchTypes::bFloat);
-  bookBranch("isSelected", BranchTypes::bInt);
-  bookBranch("genFinalState", BranchTypes::bInt);
 
-  bookBranch("GenHMass", BranchTypes::bFloat);
-  bookBranch("GenHPt", BranchTypes::bFloat);
-  bookBranch("GenHPz", BranchTypes::bFloat);
-  bookBranch("GenHPhi", BranchTypes::bFloat);
+  if (options->processGenInfo()){
+    bookBranch("genFinalState", BranchTypes::bInt);
 
-  bookBranch("GenZ1Mass", BranchTypes::bFloat);
-  bookBranch("GenZ1Pt", BranchTypes::bFloat);
-  bookBranch("GenZ1Phi", BranchTypes::bFloat);
-  bookBranch("GenZ1Eta", BranchTypes::bFloat);
+    bookBranch("GenMotherMass", BranchTypes::bVectorDouble);
+    bookBranch("GenMotherPt", BranchTypes::bVectorDouble);
+    bookBranch("GenMotherPz", BranchTypes::bVectorDouble);
+    bookBranch("GenMotherPhi", BranchTypes::bVectorDouble);
+    bookBranch("GenMotherId", BranchTypes::bVectorInt);
 
-  bookBranch("GenZ2Mass", BranchTypes::bFloat);
-  bookBranch("GenZ2Pt", BranchTypes::bFloat);
-  bookBranch("GenZ2Phi", BranchTypes::bFloat);
-  bookBranch("GenZ2Eta", BranchTypes::bFloat);
+    bookBranch("GenHMass", BranchTypes::bFloat);
+    bookBranch("GenHPt", BranchTypes::bFloat);
+    bookBranch("GenHPz", BranchTypes::bFloat);
+    bookBranch("GenHPhi", BranchTypes::bFloat);
 
-  bookBranch("GenZaMass", BranchTypes::bFloat);
-  bookBranch("GenZaPt", BranchTypes::bFloat);
-  bookBranch("GenZaPhi", BranchTypes::bFloat);
-  bookBranch("GenZaEta", BranchTypes::bFloat);
+    bookBranch("GenZ1Mass", BranchTypes::bFloat);
+    bookBranch("GenZ1Pt", BranchTypes::bFloat);
+    bookBranch("GenZ1Phi", BranchTypes::bFloat);
+    bookBranch("GenZ1Eta", BranchTypes::bFloat);
 
-  bookBranch("GenZbMass", BranchTypes::bFloat);
-  bookBranch("GenZbPt", BranchTypes::bFloat);
-  bookBranch("GenZbPhi", BranchTypes::bFloat);
-  bookBranch("GenZbEta", BranchTypes::bFloat);
+    bookBranch("GenZ2Mass", BranchTypes::bFloat);
+    bookBranch("GenZ2Pt", BranchTypes::bFloat);
+    bookBranch("GenZ2Phi", BranchTypes::bFloat);
+    bookBranch("GenZ2Eta", BranchTypes::bFloat);
 
-  bookBranch("GenMotherMass", BranchTypes::bVectorDouble);
-  bookBranch("GenMotherPt", BranchTypes::bVectorDouble);
-  bookBranch("GenMotherPz", BranchTypes::bVectorDouble);
-  bookBranch("GenMotherPhi", BranchTypes::bVectorDouble);
-  bookBranch("GenMotherId", BranchTypes::bVectorInt);
+    bookBranch("GenZaMass", BranchTypes::bFloat);
+    bookBranch("GenZaPt", BranchTypes::bFloat);
+    bookBranch("GenZaPhi", BranchTypes::bFloat);
+    bookBranch("GenZaEta", BranchTypes::bFloat);
 
-  bookBranch("GenNAssociatedVs", BranchTypes::bInt);
-  bookBranch("GenAssociatedParticleMass", BranchTypes::bVectorDouble);
-  bookBranch("GenAssociatedParticlePt", BranchTypes::bVectorDouble);
-  bookBranch("GenAssociatedParticleEta", BranchTypes::bVectorDouble);
-  bookBranch("GenAssociatedParticlePhi", BranchTypes::bVectorDouble);
-  bookBranch("GenAssociatedParticleId", BranchTypes::bVectorInt);
-  bookBranch("GenAssociatedVMass", BranchTypes::bVectorDouble);
-  bookBranch("GenAssociatedVPt", BranchTypes::bVectorDouble);
-  bookBranch("GenAssociatedVEta", BranchTypes::bVectorDouble);
-  bookBranch("GenAssociatedVPhi", BranchTypes::bVectorDouble);
-  bookBranch("GenAssociatedVId", BranchTypes::bVectorInt);
-  bookBranch("GenAssociatedV_Particle1Index", BranchTypes::bVectorInt);
-  bookBranch("GenAssociatedV_Particle2Index", BranchTypes::bVectorInt);
+    bookBranch("GenZbMass", BranchTypes::bFloat);
+    bookBranch("GenZbPt", BranchTypes::bFloat);
+    bookBranch("GenZbPhi", BranchTypes::bFloat);
+    bookBranch("GenZbEta", BranchTypes::bFloat);
 
-  bookBranch("GenhelcosthetaZ1", BranchTypes::bFloat);
-  bookBranch("GenhelcosthetaZ2", BranchTypes::bFloat);
-  bookBranch("Genhelphi", BranchTypes::bFloat);
-  bookBranch("Gencosthetastar", BranchTypes::bFloat);
-  bookBranch("GenphistarZ1", BranchTypes::bFloat);
+    bookBranch("GenAssociatedParticleMass", BranchTypes::bVectorDouble);
+    bookBranch("GenAssociatedParticlePt", BranchTypes::bVectorDouble);
+    bookBranch("GenAssociatedParticleEta", BranchTypes::bVectorDouble);
+    bookBranch("GenAssociatedParticlePhi", BranchTypes::bVectorDouble);
+    bookBranch("GenAssociatedParticleId", BranchTypes::bVectorInt);
+    bookBranch("GenDijetMass", BranchTypes::bFloat);
 
-  bookBranch("GenLep1Mass", BranchTypes::bFloat);
-  bookBranch("GenLep2Mass", BranchTypes::bFloat);
-  bookBranch("GenLep3Mass", BranchTypes::bFloat);
-  bookBranch("GenLep4Mass", BranchTypes::bFloat);
-  bookBranch("GenLep1Pt", BranchTypes::bFloat);
-  bookBranch("GenLep2Pt", BranchTypes::bFloat);
-  bookBranch("GenLep3Pt", BranchTypes::bFloat);
-  bookBranch("GenLep4Pt", BranchTypes::bFloat);
-  bookBranch("GenLep1Eta", BranchTypes::bFloat);
-  bookBranch("GenLep2Eta", BranchTypes::bFloat);
-  bookBranch("GenLep3Eta", BranchTypes::bFloat);
-  bookBranch("GenLep4Eta", BranchTypes::bFloat);
-  bookBranch("GenLep1Phi", BranchTypes::bFloat);
-  bookBranch("GenLep2Phi", BranchTypes::bFloat);
-  bookBranch("GenLep3Phi", BranchTypes::bFloat);
-  bookBranch("GenLep4Phi", BranchTypes::bFloat);
-  bookBranch("GenLep1Id", BranchTypes::bInt);
-  bookBranch("GenLep2Id", BranchTypes::bInt);
-  bookBranch("GenLep3Id", BranchTypes::bInt);
-  bookBranch("GenLep4Id", BranchTypes::bInt);
+    bookBranch("GenNAssociatedVs", BranchTypes::bInt);
+    bookBranch("GenAssociatedVMass", BranchTypes::bVectorDouble);
+    bookBranch("GenAssociatedVPt", BranchTypes::bVectorDouble);
+    bookBranch("GenAssociatedVEta", BranchTypes::bVectorDouble);
+    bookBranch("GenAssociatedVPhi", BranchTypes::bVectorDouble);
+    bookBranch("GenAssociatedVId", BranchTypes::bVectorInt);
+    bookBranch("GenAssociatedV_Particle1Index", BranchTypes::bVectorInt);
+    bookBranch("GenAssociatedV_Particle2Index", BranchTypes::bVectorInt);
 
+    bookBranch("GenhelcosthetaZ1", BranchTypes::bFloat);
+    bookBranch("GenhelcosthetaZ2", BranchTypes::bFloat);
+    bookBranch("Genhelphi", BranchTypes::bFloat);
+    bookBranch("Gencosthetastar", BranchTypes::bFloat);
+    bookBranch("GenphistarZ1", BranchTypes::bFloat);
 
-  bookBranch("ZZMass", BranchTypes::bFloat);
-  bookBranch("ZZPt", BranchTypes::bFloat);
-  bookBranch("ZZPz", BranchTypes::bFloat);
-  bookBranch("ZZPhi", BranchTypes::bFloat);
+    bookBranch("GenLep1Mass", BranchTypes::bFloat);
+    bookBranch("GenLep2Mass", BranchTypes::bFloat);
+    bookBranch("GenLep3Mass", BranchTypes::bFloat);
+    bookBranch("GenLep4Mass", BranchTypes::bFloat);
+    bookBranch("GenLep1Pt", BranchTypes::bFloat);
+    bookBranch("GenLep2Pt", BranchTypes::bFloat);
+    bookBranch("GenLep3Pt", BranchTypes::bFloat);
+    bookBranch("GenLep4Pt", BranchTypes::bFloat);
+    bookBranch("GenLep1Eta", BranchTypes::bFloat);
+    bookBranch("GenLep2Eta", BranchTypes::bFloat);
+    bookBranch("GenLep3Eta", BranchTypes::bFloat);
+    bookBranch("GenLep4Eta", BranchTypes::bFloat);
+    bookBranch("GenLep1Phi", BranchTypes::bFloat);
+    bookBranch("GenLep2Phi", BranchTypes::bFloat);
+    bookBranch("GenLep3Phi", BranchTypes::bFloat);
+    bookBranch("GenLep4Phi", BranchTypes::bFloat);
+    bookBranch("GenLep1Id", BranchTypes::bInt);
+    bookBranch("GenLep2Id", BranchTypes::bInt);
+    bookBranch("GenLep3Id", BranchTypes::bInt);
+    bookBranch("GenLep4Id", BranchTypes::bInt);
+  }
 
-  bookBranch("Z1Mass", BranchTypes::bFloat);
-  bookBranch("Z1Pt", BranchTypes::bFloat);
-  bookBranch("Z1Phi", BranchTypes::bFloat);
-  bookBranch("Z1Eta", BranchTypes::bFloat);
+  if (options->processRecoInfo()){
+    bookBranch("isSelected", BranchTypes::bInt);
 
-  bookBranch("Z2Mass", BranchTypes::bFloat);
-  bookBranch("Z2Pt", BranchTypes::bFloat);
-  bookBranch("Z2Phi", BranchTypes::bFloat);
-  bookBranch("Z2Eta", BranchTypes::bFloat);
+    bookBranch("ZZMass", BranchTypes::bFloat);
+    bookBranch("ZZPt", BranchTypes::bFloat);
+    bookBranch("ZZPz", BranchTypes::bFloat);
+    bookBranch("ZZPhi", BranchTypes::bFloat);
 
-  bookBranch("ZaMass", BranchTypes::bFloat);
-  bookBranch("ZaPt", BranchTypes::bFloat);
-  bookBranch("ZaPhi", BranchTypes::bFloat);
-  bookBranch("ZaEta", BranchTypes::bFloat);
+    bookBranch("Z1Mass", BranchTypes::bFloat);
+    bookBranch("Z1Pt", BranchTypes::bFloat);
+    bookBranch("Z1Phi", BranchTypes::bFloat);
+    bookBranch("Z1Eta", BranchTypes::bFloat);
 
-  bookBranch("ZbMass", BranchTypes::bFloat);
-  bookBranch("ZbPt", BranchTypes::bFloat);
-  bookBranch("ZbPhi", BranchTypes::bFloat);
-  bookBranch("ZbEta", BranchTypes::bFloat);
+    bookBranch("Z2Mass", BranchTypes::bFloat);
+    bookBranch("Z2Pt", BranchTypes::bFloat);
+    bookBranch("Z2Phi", BranchTypes::bFloat);
+    bookBranch("Z2Eta", BranchTypes::bFloat);
 
-  bookBranch("NAssociatedVs", BranchTypes::bInt);
-  bookBranch("AssociatedParticleMass", BranchTypes::bVectorDouble);
-  bookBranch("AssociatedParticlePt", BranchTypes::bVectorDouble);
-  bookBranch("AssociatedParticleEta", BranchTypes::bVectorDouble);
-  bookBranch("AssociatedParticlePhi", BranchTypes::bVectorDouble);
-  bookBranch("AssociatedParticleId", BranchTypes::bVectorInt);
-  bookBranch("AssociatedVMass", BranchTypes::bVectorDouble);
-  bookBranch("AssociatedVPt", BranchTypes::bVectorDouble);
-  bookBranch("AssociatedVEta", BranchTypes::bVectorDouble);
-  bookBranch("AssociatedVPhi", BranchTypes::bVectorDouble);
-  bookBranch("AssociatedVId", BranchTypes::bVectorInt);
-  bookBranch("AssociatedV_Particle1Index", BranchTypes::bVectorInt);
-  bookBranch("AssociatedV_Particle2Index", BranchTypes::bVectorInt);
+    bookBranch("ZaMass", BranchTypes::bFloat);
+    bookBranch("ZaPt", BranchTypes::bFloat);
+    bookBranch("ZaPhi", BranchTypes::bFloat);
+    bookBranch("ZaEta", BranchTypes::bFloat);
 
-  bookBranch("helcosthetaZ1", BranchTypes::bFloat);
-  bookBranch("helcosthetaZ2", BranchTypes::bFloat);
-  bookBranch("helphi", BranchTypes::bFloat);
-  bookBranch("costhetastar", BranchTypes::bFloat);
-  bookBranch("phistarZ1", BranchTypes::bFloat);
+    bookBranch("ZbMass", BranchTypes::bFloat);
+    bookBranch("ZbPt", BranchTypes::bFloat);
+    bookBranch("ZbPhi", BranchTypes::bFloat);
+    bookBranch("ZbEta", BranchTypes::bFloat);
 
-  bookBranch("Lep1Mass", BranchTypes::bFloat);
-  bookBranch("Lep2Mass", BranchTypes::bFloat);
-  bookBranch("Lep3Mass", BranchTypes::bFloat);
-  bookBranch("Lep4Mass", BranchTypes::bFloat);
-  bookBranch("Lep1Pt", BranchTypes::bFloat);
-  bookBranch("Lep2Pt", BranchTypes::bFloat);
-  bookBranch("Lep3Pt", BranchTypes::bFloat);
-  bookBranch("Lep4Pt", BranchTypes::bFloat);
-  bookBranch("Lep1Eta", BranchTypes::bFloat);
-  bookBranch("Lep2Eta", BranchTypes::bFloat);
-  bookBranch("Lep3Eta", BranchTypes::bFloat);
-  bookBranch("Lep4Eta", BranchTypes::bFloat);
-  bookBranch("Lep1Phi", BranchTypes::bFloat);
-  bookBranch("Lep2Phi", BranchTypes::bFloat);
-  bookBranch("Lep3Phi", BranchTypes::bFloat);
-  bookBranch("Lep4Phi", BranchTypes::bFloat);
-  bookBranch("Lep1Id", BranchTypes::bInt);
-  bookBranch("Lep2Id", BranchTypes::bInt);
-  bookBranch("Lep3Id", BranchTypes::bInt);
-  bookBranch("Lep4Id", BranchTypes::bInt);
+    bookBranch("AssociatedParticleMass", BranchTypes::bVectorDouble);
+    bookBranch("AssociatedParticlePt", BranchTypes::bVectorDouble);
+    bookBranch("AssociatedParticleEta", BranchTypes::bVectorDouble);
+    bookBranch("AssociatedParticlePhi", BranchTypes::bVectorDouble);
+    bookBranch("AssociatedParticleId", BranchTypes::bVectorInt);
+    bookBranch("DijetMass", BranchTypes::bFloat);
+
+    bookBranch("NAssociatedVs", BranchTypes::bInt);
+    bookBranch("AssociatedVMass", BranchTypes::bVectorDouble);
+    bookBranch("AssociatedVPt", BranchTypes::bVectorDouble);
+    bookBranch("AssociatedVEta", BranchTypes::bVectorDouble);
+    bookBranch("AssociatedVPhi", BranchTypes::bVectorDouble);
+    bookBranch("AssociatedVId", BranchTypes::bVectorInt);
+    bookBranch("AssociatedV_Particle1Index", BranchTypes::bVectorInt);
+    bookBranch("AssociatedV_Particle2Index", BranchTypes::bVectorInt);
+
+    bookBranch("helcosthetaZ1", BranchTypes::bFloat);
+    bookBranch("helcosthetaZ2", BranchTypes::bFloat);
+    bookBranch("helphi", BranchTypes::bFloat);
+    bookBranch("costhetastar", BranchTypes::bFloat);
+    bookBranch("phistarZ1", BranchTypes::bFloat);
+
+    bookBranch("Lep1Mass", BranchTypes::bFloat);
+    bookBranch("Lep2Mass", BranchTypes::bFloat);
+    bookBranch("Lep3Mass", BranchTypes::bFloat);
+    bookBranch("Lep4Mass", BranchTypes::bFloat);
+    bookBranch("Lep1Pt", BranchTypes::bFloat);
+    bookBranch("Lep2Pt", BranchTypes::bFloat);
+    bookBranch("Lep3Pt", BranchTypes::bFloat);
+    bookBranch("Lep4Pt", BranchTypes::bFloat);
+    bookBranch("Lep1Eta", BranchTypes::bFloat);
+    bookBranch("Lep2Eta", BranchTypes::bFloat);
+    bookBranch("Lep3Eta", BranchTypes::bFloat);
+    bookBranch("Lep4Eta", BranchTypes::bFloat);
+    bookBranch("Lep1Phi", BranchTypes::bFloat);
+    bookBranch("Lep2Phi", BranchTypes::bFloat);
+    bookBranch("Lep3Phi", BranchTypes::bFloat);
+    bookBranch("Lep4Phi", BranchTypes::bFloat);
+    bookBranch("Lep1Id", BranchTypes::bInt);
+    bookBranch("Lep2Id", BranchTypes::bInt);
+    bookBranch("Lep3Id", BranchTypes::bInt);
+    bookBranch("Lep4Id", BranchTypes::bInt);
+  }
 }
 
 void HVVTree::fillMotherInfo(Particle* mother){
-  setVal("GenMotherMass", mother->m());
-  setVal("GenMotherPt", mother->pt());
-  setVal("GenMotherPz", mother->z());
-  setVal("GenMotherPhi", mother->phi());
-  setVal("GenMotherId", mother->id);
+  if (options->processGenInfo() && mother!=0){
+    setVal("GenMotherMass", mother->m());
+    setVal("GenMotherPt", mother->pt());
+    setVal("GenMotherPz", mother->z());
+    setVal("GenMotherPhi", mother->phi());
+    setVal("GenMotherId", mother->id);
+  }
 }
 
 
 void HVVTree::fillCandidate(ZZCandidate* pH, bool isGen){
+  if ((!options->processGenInfo() && isGen) || (!options->processRecoInfo() && !isGen)) return;
+
   string varname;
   string strcore = "ZZ";
   if (isGen) strcore = "GenH";
@@ -169,6 +182,7 @@ void HVVTree::fillCandidate(ZZCandidate* pH, bool isGen){
   fillDaughterProducts(pH, isGen);
   fillAssociatedInfo(pH, isGen);
   fillDecayAngles(pH, isGen);
+//  fillProductionAngles(pH, isGen);
 }
 void HVVTree::fillCandidateDaughters(ZZCandidate* pH, bool isGen){
   string varname;
@@ -250,10 +264,11 @@ void HVVTree::fillDaughterProducts(ZZCandidate* pH, bool isGen){
   }
 }
 void HVVTree::fillAssociatedInfo(ZZCandidate* pH, bool isGen){
-  int NAssociatedVs=0;
   vector<Particle*> AssociatedParticle;
   vector<Particle*> tmpAssociatedParticle;
+  Float_t DijetMass=-1;
 
+  Int_t NAssociatedVs=0;
   vector<Particle*> AssociatedV;
   vector<int> AssociatedV_Particle1Index;
   vector<int> AssociatedV_Particle2Index;
@@ -304,6 +319,13 @@ void HVVTree::fillAssociatedInfo(ZZCandidate* pH, bool isGen){
   string varname;
   string strcore;
 
+  if (pH->getNAssociatedJets()>1){
+    DijetMass = (pH->getAssociatedJet(0)->p4+pH->getAssociatedJet(1)->p4).M();
+    varname = "DijetMass";
+    if (isGen) varname.insert(0, "Gen");
+    setVal(varname, DijetMass);
+  }
+
   varname = "NAssociatedVs";
   if (isGen) varname.insert(0, "Gen");
   setVal(varname, NAssociatedVs);
@@ -333,6 +355,8 @@ void HVVTree::fillAssociatedInfo(ZZCandidate* pH, bool isGen){
 
 void HVVTree::fillDecayAngles(ZZCandidate* pH, bool isGen){
   Float_t helcosthetaZ1=0, helcosthetaZ2=0, helphi=0, costhetastar=0, phistarZ1=0;
+
+  mela::applyLeptonMassCorrection(options->doRemoveLepMasses());
   if (pH!=0) mela::computeAngles(
     pH->getSortedV(0)->getDaughter(0)->p4, pH->getSortedV(0)->getDaughter(0)->id,
     pH->getSortedV(0)->getDaughter(1)->p4, pH->getSortedV(0)->getDaughter(1)->id,
@@ -354,128 +378,10 @@ void HVVTree::fillDecayAngles(ZZCandidate* pH, bool isGen){
   varname = "costhetastar"; if (isGen) varname.insert(0, "Gen"); setVal(varname, costhetastar);
   varname = "phistarZ1"; if (isGen) varname.insert(0, "Gen"); setVal(varname, phistarZ1);
 }
-//  void HVVTree::fillProductionAngles(Particle* pH, Particle* pV1, Particle* pV2, bool isGen=false);
+//  void HVVTree::fillProductionAngles(Particle* pH, bool isGen=false);
 
 void HVVTree::fillEventVariables(Float_t weight, Int_t passSelection){
   setVal("MC_weight", weight);
-  setVal("isSelected", passSelection);
+  if (options->processRecoInfo()) setVal("isSelected", passSelection);
 }
 
-/*
-void HVVTree::calculateDecayAngles(TLorentzVector thep4M11, TLorentzVector thep4M12, TLorentzVector thep4M21, TLorentzVector thep4M22, float& costheta1, float& costheta2, float& phi, float& costhetastar, float& phistar1){
-
-  TLorentzVector thep4Z1 = thep4M11+thep4M12;
-  TLorentzVector thep4Z2 = thep4M21+thep4M22;
-  TLorentzVector thep4H = thep4Z1+thep4Z2;
-
-  float norm;
-
-  TVector3 boostX = -(thep4H.BoostVector());
-  TLorentzVector thep4Z1inXFrame(thep4Z1);
-  TLorentzVector thep4Z2inXFrame(thep4Z2);
-  thep4Z1inXFrame.Boost(boostX);
-  thep4Z2inXFrame.Boost(boostX);
-  TVector3 theZ1X_p3 = TVector3(thep4Z1inXFrame.X(), thep4Z1inXFrame.Y(), thep4Z1inXFrame.Z());
-  TVector3 theZ2X_p3 = TVector3(thep4Z2inXFrame.X(), thep4Z2inXFrame.Y(), thep4Z2inXFrame.Z());
-
-
-  ///////////////////////////////////////////////
-  // check for z1/z2 convention, redefine all 4 vectors with convention
-  ///////////////////////////////////////////////	
-  TLorentzVector p4H, p4Z1, p4M11, p4M12, p4Z2, p4M21, p4M22;
-  p4H = thep4H;
-
-  p4Z1 = thep4Z1; p4M11 = thep4M11; p4M12 = thep4M12;
-  p4Z2 = thep4Z2; p4M21 = thep4M21; p4M22 = thep4M22;
-  costhetastar = theZ1X_p3.CosTheta();
-
-  // now helicity angles................................
-  // ...................................................
-  TVector3 boostZ1 = -(p4Z1.BoostVector());
-  TLorentzVector p4Z2Z1(p4Z2);
-  p4Z2Z1.Boost(boostZ1);
-  // find the decay axis
-  TVector3 unitx_1(-p4Z2Z1.X(), -p4Z2Z1.Y(), -p4Z2Z1.Z());
-  norm = 1/(unitx_1.Mag());
-  unitx_1*=norm;
-  // boost daughters of z2
-  TLorentzVector p4M21Z1(p4M21);
-  TLorentzVector p4M22Z1(p4M22);
-  p4M21Z1.Boost(boostZ1);
-  p4M22Z1.Boost(boostZ1);
-  // create z and y axes
-  TVector3 p4M21Z1_p3(p4M21Z1.X(), p4M21Z1.Y(), p4M21Z1.Z());
-  TVector3 p4M22Z1_p3(p4M22Z1.X(), p4M22Z1.Y(), p4M22Z1.Z());
-  TVector3 unitz_1 = p4M21Z1_p3.Cross(p4M22Z1_p3);
-  norm = 1/(unitz_1.Mag());
-  unitz_1 *= norm;
-  TVector3 unity_1 = unitz_1.Cross(unitx_1);
-
-  // calculate theta1
-  TLorentzVector p4M11Z1(p4M11);
-  p4M11Z1.Boost(boostZ1);
-  TVector3 p3M11(p4M11Z1.X(), p4M11Z1.Y(), p4M11Z1.Z());
-  TVector3 unitM11 = p3M11.Unit();
-  float x_m11 = unitM11.Dot(unitx_1); float y_m11 = unitM11.Dot(unity_1); float z_m11 = unitM11.Dot(unitz_1);
-  TVector3 M11_Z1frame(y_m11, z_m11, x_m11);
-  costheta1 = M11_Z1frame.CosTheta();
-
-  //////-----------------------old way of calculating phi---------------/////////
-  phi = M11_Z1frame.Phi();
-
-  // set axes for other system
-  TVector3 boostZ2 = -(p4Z2.BoostVector());
-  TLorentzVector p4Z1Z2(p4Z1);
-  p4Z1Z2.Boost(boostZ2);
-  TVector3 unitx_2(-p4Z1Z2.X(), -p4Z1Z2.Y(), -p4Z1Z2.Z());
-  norm = 1/(unitx_2.Mag());
-  unitx_2*=norm;
-  // boost daughters of z2
-  TLorentzVector p4M11Z2(p4M11);
-  TLorentzVector p4M12Z2(p4M12);
-  p4M11Z2.Boost(boostZ2);
-  p4M12Z2.Boost(boostZ2);
-  TVector3 p4M11Z2_p3(p4M11Z2.X(), p4M11Z2.Y(), p4M11Z2.Z());
-  TVector3 p4M12Z2_p3(p4M12Z2.X(), p4M12Z2.Y(), p4M12Z2.Z());
-  TVector3 unitz_2 = p4M11Z2_p3.Cross(p4M12Z2_p3);
-  norm = 1/(unitz_2.Mag());
-  unitz_2*=norm;
-  TVector3 unity_2 = unitz_2.Cross(unitx_2);
-  // calcuate theta2
-  TLorentzVector p4M21Z2(p4M21);
-  p4M21Z2.Boost(boostZ2);
-  TVector3 p3M21(p4M21Z2.X(), p4M21Z2.Y(), p4M21Z2.Z());
-  TVector3 unitM21 = p3M21.Unit();
-  float x_m21 = unitM21.Dot(unitx_2); float y_m21 = unitM21.Dot(unity_2); float z_m21 = unitM21.Dot(unitz_2);
-  TVector3 M21_Z2frame(y_m21, z_m21, x_m21);
-  costheta2 = M21_Z2frame.CosTheta();
-
-  // calculate phi
-  // calculating phi_n
-  TLorentzVector n_p4Z1inXFrame(p4Z1);
-  TLorentzVector n_p4M11inXFrame(p4M11);
-  n_p4Z1inXFrame.Boost(boostX);
-  n_p4M11inXFrame.Boost(boostX);
-  TVector3 n_p4Z1inXFrame_unit = n_p4Z1inXFrame.Vect().Unit();
-  TVector3 n_p4M11inXFrame_unit = n_p4M11inXFrame.Vect().Unit();
-  TVector3 n_unitz_1(n_p4Z1inXFrame_unit);
-  //// y-axis is defined by neg lepton cross z-axis
-  //// the subtle part is here...
-  TVector3 n_unity_1 = n_unitz_1.Cross(n_p4M11inXFrame_unit);
-  TVector3 n_unitx_1 = n_unity_1.Cross(n_unitz_1);
-
-  TLorentzVector n_p4M21inXFrame(p4M21);
-  n_p4M21inXFrame.Boost(boostX);
-  TVector3 n_p4M21inXFrame_unit = n_p4M21inXFrame.Vect().Unit();
-  //rotate into other plane
-  TVector3 n_p4M21inXFrame_unitprime(n_p4M21inXFrame_unit.Dot(n_unitx_1), n_p4M21inXFrame_unit.Dot(n_unity_1), n_p4M21inXFrame_unit.Dot(n_unitz_1));
-
-  ///////-----------------new way of calculating phi-----------------///////
-  // float phi_n =  n_p4M21inXFrame_unitprime.Phi();
-  /// and then calculate phistar1
-  TVector3 n_p4PartoninXFrame_unit(0.0, 0.0, 1.0);
-  TVector3 n_p4PartoninXFrame_unitprime(n_p4PartoninXFrame_unit.Dot(n_unitx_1), n_p4PartoninXFrame_unit.Dot(n_unity_1), n_p4PartoninXFrame_unit.Dot(n_unitz_1));
-  // negative sign is for arrow convention in paper
-  phistar1 = (n_p4PartoninXFrame_unitprime.Phi());
-}
-*/

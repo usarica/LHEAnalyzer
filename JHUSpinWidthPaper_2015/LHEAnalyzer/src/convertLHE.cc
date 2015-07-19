@@ -12,49 +12,40 @@
 #include "TRandom.h"
 #include "TLorentzVector.h"
 #include "../interface/convertLHE.h"
-#include "../interface/HVVTree.h"
 
 using namespace PDGHelpers;
 using namespace LHEParticleSmear;
 
+convertLHE::convertLHE(OptionParser* options_){
+  configure(options_);
+  run();
+}
 
-int main(int argc, char ** argv){
-  const int minArgsExpected=6;
-  if (argc<minArgsExpected){
-    cerr << "Minimum number of arguments should be " << (minArgsExpected-1) << ". Please review." << endl;
-    return 0;
-  }
-  double mPOLE = (double)atof(argv[1]);
-  int erg_tev = atoi(argv[2]);
-  string cdir = argv[3];
-  string coutput = argv[4];
-  if (cdir.find(".lhe")!=string::npos || coutput.find(".root")==string::npos || mPOLE==0 || erg_tev==0){
-    cerr << "Arguments should follow the order \"[mH] [sqrts] [main directory] [output file name] [file1] [optional: file2] ...\"." << endl;
-    return 0;
-  }
-  coutput = cdir + "/" + coutput;
-  char TREE_NAME[] = "SelectedTree";
+void convertLHE::configure(OptionParser* options_){
+  options=options_;
+  filename = options->inputfiles();
+  string cindir = options->inputDir();
+  cindir.append("/"); // Just for protection, extra "/"s do not matter for file names.
+  for (int f=0; f<filename.size(); f++) filename.at(f).insert(0, cindir);
 
-  vector<string> filename;
-  for (int a=5; a<argc; a++){
-    string ftmp = argv[a];
-    if (ftmp.find(".lhe")!=string::npos){
-      ftmp = cdir + "/" + ftmp;
-      filename.push_back(ftmp);
-    }
-    else cerr << "Argument " << a << " is not a LHE file! Skipping this file." << endl;
-  }
-  if (filename.size()==0){
-    cerr << "No valid LHE files are passed." << endl;
-    return 0;
-  }
+  string coutput = options->outputDir();
+  coutput.append(options->outputFilename());
 
-  cout << "Creating file " << coutput << endl;
-
-  TFile* foutput = new TFile(coutput.c_str(), "recreate");
+  cout << "convertLHE::configure -> Creating file " << coutput << endl;
+  foutput = new TFile(coutput.c_str(), "recreate");
   foutput->cd();
-  HVVTree* tree = new HVVTree(TREE_NAME, TREE_NAME);
-
+  char TREE_NAME[] = "SelectedTree";
+  tree = new HVVTree(TREE_NAME, TREE_NAME);
+  tree->setOptions(options);
+}
+void convertLHE::finalizeRun(){
+  cout << "Number of recorded events: " << tree->getTree()->GetEntries() << endl;
+  tree->writeTree(foutput);
+  delete tree;
+  foutput->Close();
+  options=0;
+}
+void convertLHE::run(){
   double weight;
   Float_t MC_weight=0;
   Int_t isSelected=0;
@@ -63,11 +54,12 @@ int main(int argc, char ** argv){
 
   for (int f=0; f<filename.size(); f++){
     string cinput = filename.at(f);
+    cout << "Processing " << cinput << "..." << endl;
     ifstream fin;
     fin.open(cinput.c_str());
     if (fin.good()){
       while (!fin.eof()){
-        vector<Particle*> particleList = readLHEEvent(fin, weight);
+        vector<Particle*> particleList = readEvent(fin, weight);
         vector<Particle*> smearedParticleList; // Bookkeeping
         vector<ZZCandidate*> candList; // Bookkeeping
         vector<ZZCandidate*> smearedCandList; // Bookkeeping
@@ -102,7 +94,7 @@ int main(int argc, char ** argv){
 
           //for (int p=0; p<genEvent.getNLeptons(); p++) cout << "Lepton " << p << " (x, y, z, t): " << genEvent.getLepton(p)->x() << '\t' << genEvent.getLepton(p)->y() << '\t' << genEvent.getLepton(p)->z() << '\t' << genEvent.getLepton(p)->t() << endl;
 
-          genEvent.constructVVCandidates();
+          genEvent.constructVVCandidates(options->doHZZdecay(), options->decayProducts());
           genEvent.addVVCandidateAppendages();
           ZZCandidate* genCand=0;
           for (int t=0; t<genEvent.getNZZCandidates(); t++){
@@ -171,15 +163,10 @@ int main(int argc, char ** argv){
       fin.close();
     }
   }
-
-  cout << "Number of recorded events: " << tree->getTree()->GetEntries() << endl;
-  tree->writeTree(foutput);
-  delete tree;
-  foutput->Close();
-  return 0;
+  finalizeRun();
 }
 
-vector<Particle*> readLHEEvent(ifstream& input_lhe, double& weight){
+vector<Particle*> convertLHE::readEvent(ifstream& input_lhe, double& weight){
   string event_beginning = "<event>";
   string event_end = "</event>";
   string file_closing = "</LesHouchesEvents>";

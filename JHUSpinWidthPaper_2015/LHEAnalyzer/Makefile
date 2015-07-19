@@ -38,6 +38,8 @@ $(OUTLIB)LHEParticleSmear.o: $(INCLUDEDIR)LHEParticleSmear.cc
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)LHEParticleSmear.o $(GLIBS) $<
 
 
+
+
 $(OUTLIB)Particle.o: $(INCLUDEDIR)Particle.cc $(OUTLIB)PDGHelpers.o 
 	@mkdir -p lib
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)Particle.o $(GLIBS) $<
@@ -45,25 +47,33 @@ $(OUTLIB)Particle.o: $(INCLUDEDIR)Particle.cc $(OUTLIB)PDGHelpers.o
 $(OUTLIB)ZZCandidate.o: $(INCLUDEDIR)ZZCandidate.cc $(OUTLIB)Particle.o
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)ZZCandidate.o $(GLIBS) $<
 
-
-$(OUTLIB)BaseTree.o: $(INCLUDEDIR)BaseTree.cc 
-	@mkdir -p lib
-	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)BaseTree.o $(GLIBS) $<
-
-$(OUTLIB)HVVTree.o: $(INCLUDEDIR)HVVTree.cc $(OUTLIB)BaseTree.o
-	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)HVVTree.o $(GLIBS) $<
-
-
 $(OUTLIB)Event.o: $(INCLUDEDIR)Event.cc $(OUTLIB)ZZCandidate.o
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)Event.o $(GLIBS) $<
 
 
-$(OUTLIB)convertLHE.o: $(INCLUDEDIR)convertLHE.cc $(OUTLIB)HVVTree.o $(OUTLIB)Event.o $(OUTLIB)LHEParticleSmear.o
+
+
+$(OUTLIB)OptionParser.o: $(INCLUDEDIR)OptionParser.cc $(OUTLIB)PDGHelpers.o 
+	@mkdir -p lib
+	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)OptionParser.o $(GLIBS) $<
+
+$(OUTLIB)BaseTree.o: $(INCLUDEDIR)BaseTree.cc
+	@mkdir -p lib
+	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)BaseTree.o $(GLIBS) $<
+
+$(OUTLIB)HVVTree.o: $(INCLUDEDIR)HVVTree.cc $(OUTLIB)BaseTree.o $(OUTLIB)OptionParser.o
+	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)HVVTree.o $(GLIBS) $<
+
+$(OUTLIB)convertLHE.o: $(INCLUDEDIR)convertLHE.cc $(OUTLIB)HVVTree.o $(OUTLIB)LHEParticleSmear.o $(OUTLIB)Event.o
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)convertLHE.o $(GLIBS) $<
 
+$(OUTLIB)main.o: $(INCLUDEDIR)main.cc $(OUTLIB)convertLHE.o
+	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)main.o $(GLIBS) $<
 
-convertLHE: $(OUTLIB)convertLHE.o
-	$(CXX) $(CXXFLAGS) -o convertLHE $(OUTLIB)*.o $(GLIBS)
+
+
+converter: $(OUTLIB)main.o
+	$(CXX) $(CXXFLAGS) -o converter $(OUTLIB)*.o $(GLIBS)
 
 clean:
 	rm -rf $(OUTLIB)

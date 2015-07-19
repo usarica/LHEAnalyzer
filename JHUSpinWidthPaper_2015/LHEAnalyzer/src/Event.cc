@@ -239,13 +239,13 @@ void Event::constructVVCandidates(bool isZZ, int fstype){
 
       double defaultHVVmass = HVVmass;
       if (isZZ){
-        HVVmass=Zmass;
+        setHVVmass(Zmass);
       }
       else{
-        HVVmass=Wmass;
+        setHVVmass(Wmass);
       }
       cand->sortDaughters();
-      HVVmass = defaultHVVmass;
+      setHVVmass(defaultHVVmass);
 
       addZZCandidate(cand);
     }
