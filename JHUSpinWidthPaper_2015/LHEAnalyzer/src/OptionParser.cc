@@ -9,8 +9,10 @@ includeGenInfo(1), // Record gen. level quantities
 includeRecoInfo(1), // Record reco. level quantities
 removeDaughterMasses(1), // Force lepton masses to 0 in MELA
 fileLevel(0), // LHE, Pythia
-isHZZ(1), // H->ZZ or H->WW
-decayMode(0), // 4l with HZZ, 2l2nu with HWW, see Event::constructVVCandidates(bool isZZ, int fstype).
+isGenHZZ(1), // H->ZZ or H->WW
+isRecoHZZ(1), // H->ZZ or H->WW
+genDecayMode(0), // 4l with HZZ, 2l2nu with HWW, see Event::constructVVCandidates(bool isZZ, int fstype).
+recoDecayMode(0), // 4l with HZZ, 2l2nu with HWW, see Event::constructVVCandidates(bool isZZ, int fstype).
 indir("./"),
 outdir("./"),
 coutput("tmp.root")
@@ -69,12 +71,14 @@ void OptionParser::interpretOption(string wish, string value){
   else if (wish=="includeRecoInfo") includeRecoInfo = (int)atoi(value.c_str());
   else if (wish=="removeDaughterMasses") removeDaughterMasses = (int)atoi(value.c_str());
   else if (wish=="fileLevel") fileLevel = (int)atoi(value.c_str());
-  else if (wish=="isHZZ") {
-    isHZZ = (int)atoi(value.c_str());
-    if (isHZZ==0) PDGHelpers::setHVVmass(PDGHelpers::Wmass);
+  else if (wish=="isGenHZZ") {
+    isGenHZZ = (int)atoi(value.c_str());
+    if (isGenHZZ==0) PDGHelpers::setHVVmass(PDGHelpers::Wmass);
     else PDGHelpers::setHVVmass(PDGHelpers::Zmass);
   }
-  else if (wish=="decayMode") decayMode = (int)atoi(value.c_str());
+  else if (wish=="isRecoHZZ") isRecoHZZ = (int)atoi(value.c_str());
+  else if (wish=="genDecayMode") genDecayMode = (int)atoi(value.c_str());
+  else if (wish=="recoDecayMode") recoDecayMode = (int)atoi(value.c_str());
   else if (wish=="indir") indir = value;
   else if (wish=="outdir") outdir = value;
   else if (wish=="outfile") coutput = value;

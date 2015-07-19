@@ -31,8 +31,18 @@ public:
   Bool_t processRecoInfo(){ bool doProcess=true; if (includeRecoInfo==0) doProcess=false; return doProcess; }
   Bool_t doRemoveLepMasses(){ bool doProcess=true; if (removeDaughterMasses==0) doProcess=false; return doProcess; }
   Int_t analysisLevel(){ return fileLevel; }
-  Bool_t doHZZdecay(){ bool doHZZ=true; if (isHZZ==0) doHZZ=false; return doHZZ; }
-  Int_t decayProducts(){ return decayMode; }
+  Bool_t doGenHZZdecay(){ 
+    bool doHZZ=true;
+    if (isGenHZZ==0) doHZZ=false;
+    return doHZZ;
+  }
+  Bool_t doRecoHZZdecay(){
+    bool doHZZ=true;
+    if (isRecoHZZ==0) doHZZ=false;
+    return doHZZ;
+  }
+  Int_t genDecayProducts(){ return genDecayMode; }
+  Int_t recoDecayProducts(){ return recoDecayMode; }
   string inputDir(){ return indir; }
   string outputDir(){ return outdir; }
   string outputFilename(){ return coutput; }
@@ -48,8 +58,10 @@ protected:
   Int_t includeRecoInfo;
   Int_t removeDaughterMasses;
   Int_t fileLevel;
-  Int_t isHZZ;
-  Int_t decayMode;
+  Int_t isGenHZZ;
+  Int_t isRecoHZZ;
+  Int_t genDecayMode;
+  Int_t recoDecayMode;
   string indir;
   string outdir;
   string coutput;

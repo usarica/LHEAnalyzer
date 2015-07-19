@@ -86,7 +86,10 @@ void convertLHE::run(){
               smearedParticleList.push_back(smearedPart);
               if (isALepton(smearedPart->id)) smearedEvent.addLepton(smearedPart);
               else if (isANeutrino(smearedPart->id)) smearedEvent.addNeutrino(smearedPart);
-              else if (isAGluon(smearedPart->id) || isAQuark(smearedPart->id)) smearedEvent.addJet(smearedPart);
+              else if (isAGluon(smearedPart->id) || isAQuark(smearedPart->id)){
+                smearedPart->id=0; // Wipe id from reco. quark/gluon
+                smearedEvent.addJet(smearedPart);
+              }
               else smearedEvent.addParticle(smearedPart);
             }
             else if (genPart->genStatus==-1) tree->fillMotherInfo(genPart);
@@ -94,7 +97,7 @@ void convertLHE::run(){
 
           //for (int p=0; p<genEvent.getNLeptons(); p++) cout << "Lepton " << p << " (x, y, z, t): " << genEvent.getLepton(p)->x() << '\t' << genEvent.getLepton(p)->y() << '\t' << genEvent.getLepton(p)->z() << '\t' << genEvent.getLepton(p)->t() << endl;
 
-          genEvent.constructVVCandidates(options->doHZZdecay(), options->decayProducts());
+          genEvent.constructVVCandidates(options->doGenHZZdecay(), options->genDecayProducts());
           genEvent.addVVCandidateAppendages();
           ZZCandidate* genCand=0;
           for (int t=0; t<genEvent.getNZZCandidates(); t++){
@@ -106,12 +109,9 @@ void convertLHE::run(){
             else if (fabs(genCand->getSortedV(0)->m()-PDGHelpers::HVVmass)>fabs(tmpCand->getSortedV(0)->m()-PDGHelpers::HVVmass)) genCand=tmpCand;
           }
           if (genCand!=0) tree->fillCandidate(genCand, true);
-          else{
-            cout << "No gen. level Higgs candidate was found!" << endl;
-//            tree->fillCandidate(genCand, true);
-          }
+          else cout << "No gen. level Higgs candidate was found!" << endl;
 
-          smearedEvent.constructVVCandidates();
+          smearedEvent.constructVVCandidates(options->doRecoHZZdecay(), options->recoDecayProducts());
           smearedEvent.applyParticleSelection();
           smearedEvent.addVVCandidateAppendages();
           ZZCandidate* rCand=0;
@@ -125,12 +125,8 @@ void convertLHE::run(){
             isSelected=1;
             tree->fillCandidate(rCand, false);
           }
-          else{
-            isSelected=0;
-//            tree->fillCandidate(rCand, false);
-          }
+          else isSelected=0;
           MC_weight = (float)weight;
-
           tree->fillEventVariables(MC_weight, isSelected);
 
           tree->record();

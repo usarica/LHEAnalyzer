@@ -45,12 +45,12 @@ void ZZCandidate::sortDaughtersInitial(){
     ds[sindex] = dtmp;
     sindex++;
   }
-  if (df[0]->id<df[1]->id){
+  if ((df[0]->id<df[1]->id && PDGHelpers::HVVmass==PDGHelpers::Zmass) || (std::abs(df[0]->id)<std::abs(df[1]->id) && PDGHelpers::HVVmass==PDGHelpers::Wmass)){
     Particle* dtmp = df[0];
     df[0] = df[1];
     df[1] = dtmp;
   }
-  if (ds[0]->id<ds[1]->id){
+  if ((ds[0]->id<ds[1]->id && PDGHelpers::HVVmass==PDGHelpers::Zmass) || (std::abs(ds[0]->id)<std::abs(ds[1]->id) && PDGHelpers::HVVmass==PDGHelpers::Wmass)){
     Particle* dtmp = ds[0];
     ds[0] = ds[1];
     ds[1] = dtmp;
@@ -199,8 +199,16 @@ void ZZCandidate::createAssociatedVs(std::vector<Particle*>& particleArray){
       if (bosonId!=-1){
         TLorentzVector pV = particleArray.at(i)->p4+particleArray.at(j)->p4;
         Particle* boson = new Particle(bosonId, pV);
-        boson->addDaughter(particleArray.at(i));
-        boson->addDaughter(particleArray.at(j));
+        int firstdaughter = i, seconddaughter = j;
+        if (
+          (particleArray.at(firstdaughter)->id<particleArray.at(seconddaughter)->id && !PDGHelpers::isAWBoson(bosonId))
+          ||
+          (std::abs(particleArray.at(firstdaughter)->id)<std::abs(particleArray.at(seconddaughter)->id) && PDGHelpers::isAWBoson(bosonId))
+          ){
+          firstdaughter = j; seconddaughter = i;
+        }
+        boson->addDaughter(particleArray.at(firstdaughter));
+        boson->addDaughter(particleArray.at(seconddaughter));
         addSortedV(boson);
       }
     }

@@ -58,8 +58,8 @@ void Event::applyZZSelection(){
       }
     }
     TLorentzVector pLOC[2];
-    pLOC[0]=(*it)->getSortedDaughter(0)->p4+(*it)->getSortedDaughter(3)->p4;
-    pLOC[1]=(*it)->getSortedDaughter(1)->p4+(*it)->getSortedDaughter(2)->p4;
+    pLOC[0]=(*it)->getAlternativeVMomentum(0);
+    pLOC[1]=(*it)->getAlternativeVMomentum(1);
     if (pLOC[0].M()<=4 || pLOC[1].M()<=4) passAcceptance=false;
 
     (*it)->setSelected(passAcceptance);
