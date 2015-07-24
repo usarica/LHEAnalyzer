@@ -43,5 +43,15 @@ bool PDGHelpers::isAHiggs(int id){
 void PDGHelpers::setHVVmass(double mymass){
   PDGHelpers::HVVmass=mymass;
 }
+int PDGHelpers::convertPythiaStatus(int pSt){
+  if (pSt==0) return 1;
+  else if (pSt==1 || pSt==23) return 1;
+  else if (pSt==21) return -1;
+  else if (pSt==22 || pSt==62) return 2;
+  else{
+    std::cerr << "Unknown Pythia particle status: " << pSt << std::endl;
+    return -99;
+  }
+}
 
 

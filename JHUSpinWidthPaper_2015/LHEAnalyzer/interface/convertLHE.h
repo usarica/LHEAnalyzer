@@ -7,9 +7,10 @@
 #include <string>
 #include <iomanip>
 #include <vector>
-#include "Event.h"
 #include "LHEParticleSmear.h"
 #include "HVVTree.h"
+#include "ParticleComparators.h"
+
 
 using namespace std;
 

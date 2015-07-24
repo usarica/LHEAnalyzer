@@ -70,12 +70,12 @@ void convertLHE::run(){
 
           Event genEvent;
           genEvent.setWeight(weight);
-          bool hasGenHiggs=false;
+          vector<int> hasGenHiggs;
           Event smearedEvent;
           smearedEvent.setWeight(weight);
           for (int p=0; p<particleList.size(); p++){
             Particle* genPart = particleList.at(p); // Has mother info from LHE reading
-            if (isAHiggs(genPart->id)) hasGenHiggs=true;
+            if (isAHiggs(genPart->id)) hasGenHiggs.push_back(p);
 
             if (genPart->genStatus==1){
               if (isALepton(genPart->id)) genEvent.addLepton(genPart);
@@ -100,27 +100,23 @@ void convertLHE::run(){
           genEvent.constructVVCandidates(options->doGenHZZdecay(), options->genDecayProducts());
           genEvent.addVVCandidateAppendages();
           ZZCandidate* genCand=0;
-          for (int t=0; t<genEvent.getNZZCandidates(); t++){
-            ZZCandidate* tmpCand = genEvent.getZZCandidate(t);
-            if (hasGenHiggs){
-              if (!(isAHiggs(tmpCand->getSortedV(0)->getDaughter(0)->getMother(0)->id) || isAHiggs(tmpCand->getSortedV(0)->getDaughter(0)->getMother(0)->getMother(0)->id))) continue;
+          if (hasGenHiggs.size()>0){
+            for (int gk=0; gk<hasGenHiggs.size(); gk++){
+              ZZCandidate* tmpCand = HiggsComparators::matchAHiggsToParticle(genEvent, particleList.at(hasGenHiggs.at(gk)));
+              if (tmpCand!=0){
+                if (genCand==0) genCand=tmpCand;
+                else genCand = HiggsComparators::candComparator(genCand, tmpCand, options->getHiggsCandidateSelectionScheme(true), options->doGenHZZdecay());
+              }
             }
-            if (genCand==0) genCand=tmpCand;
-            else if (fabs(genCand->getSortedV(0)->m()-PDGHelpers::HVVmass)>fabs(tmpCand->getSortedV(0)->m()-PDGHelpers::HVVmass)) genCand=tmpCand;
           }
+          else genCand = HiggsComparators::candidateSelector(genEvent, options->getHiggsCandidateSelectionScheme(true), options->doGenHZZdecay());
           if (genCand!=0) tree->fillCandidate(genCand, true);
           else cout << "No gen. level Higgs candidate was found!" << endl;
 
           smearedEvent.constructVVCandidates(options->doRecoHZZdecay(), options->recoDecayProducts());
           smearedEvent.applyParticleSelection();
           smearedEvent.addVVCandidateAppendages();
-          ZZCandidate* rCand=0;
-          for (int t=0; t<smearedEvent.getNZZCandidates(); t++){
-            ZZCandidate* tmpCand = smearedEvent.getZZCandidate(t);
-            if (!tmpCand->passSelection) continue;
-            if (rCand==0) rCand=tmpCand;
-            else if (fabs(rCand->getSortedV(0)->m()-PDGHelpers::HVVmass)>fabs(tmpCand->getSortedV(0)->m()-PDGHelpers::HVVmass)) rCand=tmpCand;
-          }
+          ZZCandidate* rCand = HiggsComparators::candidateSelector(smearedEvent, options->getHiggsCandidateSelectionScheme(false), options->doRecoHZZdecay());
           if (rCand!=0){
             isSelected=1;
             tree->fillCandidate(rCand, false);

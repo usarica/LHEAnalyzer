@@ -10,6 +10,7 @@
 #include <cassert>
 #include "TString.h"
 #include "PDGHelpers.h"
+#include "HiggsComparators.h"
 
 using namespace std;
 
@@ -31,7 +32,7 @@ public:
   Bool_t processRecoInfo(){ bool doProcess=true; if (includeRecoInfo==0) doProcess=false; return doProcess; }
   Bool_t doRemoveLepMasses(){ bool doProcess=true; if (removeDaughterMasses==0) doProcess=false; return doProcess; }
   Int_t analysisLevel(){ return fileLevel; }
-  Bool_t doGenHZZdecay(){ 
+  Bool_t doGenHZZdecay(){
     bool doHZZ=true;
     if (isGenHZZ==0) doHZZ=false;
     return doHZZ;
@@ -43,8 +44,10 @@ public:
   }
   Int_t genDecayProducts(){ return genDecayMode; }
   Int_t recoDecayProducts(){ return recoDecayMode; }
+  HiggsComparators::CandidateSelection getHiggsCandidateSelectionScheme(bool isGen=false){ if (isGen) return genHiggsCandidateSelectionScheme; else return recoHiggsCandidateSelectionScheme; }
   string inputDir(){ return indir; }
   string outputDir(){ return outdir; }
+  string getTempDir(){ return tmpDir; }
   string outputFilename(){ return coutput; }
   vector<string> inputfiles(){ return filename; }
 
@@ -62,9 +65,12 @@ protected:
   Int_t isRecoHZZ;
   Int_t genDecayMode;
   Int_t recoDecayMode;
+  HiggsComparators::CandidateSelection genHiggsCandidateSelectionScheme;
+  HiggsComparators::CandidateSelection recoHiggsCandidateSelectionScheme;
   string indir;
   string outdir;
   string coutput;
+  string tmpDir;
 
   vector<string> filename;
 };

@@ -1,6 +1,7 @@
 #ifndef PDGHELPERS_H
 #define PDGHELPERS_H
 
+#include <iostream>
 #include <cmath>
 
 namespace PDGHelpers{
@@ -27,6 +28,8 @@ namespace PDGHelpers{
   bool isAWBoson(int id);
   bool isAHiggs(int id);
   void setHVVmass(double mymass);
+
+  int convertPythiaStatus(int pSt);
 }
 
 #endif

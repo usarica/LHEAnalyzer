@@ -3,7 +3,6 @@
 
 #include "BaseTree.h"
 #include "OptionParser.h"
-#include "ZZCandidate.h"
 #include <ZZMatrixElement/MELA/interface/Mela.h>
 #include <ZZMatrixElement/MELA/src/computeAngles.h>
 

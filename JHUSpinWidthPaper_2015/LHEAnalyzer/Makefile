@@ -30,50 +30,62 @@ INCLUDEDIR       = $(PWD)/src/
 OUTLIB           = $(PWD)/lib/
 
 $(OUTLIB)PDGHelpers.o: $(INCLUDEDIR)PDGHelpers.cc
-	@mkdir -p lib
+	@mkdir -p $(OUTLIB)
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)PDGHelpers.o $(GLIBS) $<
 
 $(OUTLIB)LHEParticleSmear.o: $(INCLUDEDIR)LHEParticleSmear.cc
-	@mkdir -p lib
+	@mkdir -p $(OUTLIB)
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)LHEParticleSmear.o $(GLIBS) $<
 
 
 
 
 $(OUTLIB)Particle.o: $(INCLUDEDIR)Particle.cc $(OUTLIB)PDGHelpers.o 
-	@mkdir -p lib
+	@mkdir -p $(OUTLIB)
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)Particle.o $(GLIBS) $<
 
 $(OUTLIB)ZZCandidate.o: $(INCLUDEDIR)ZZCandidate.cc $(OUTLIB)Particle.o
+	@mkdir -p $(OUTLIB)
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)ZZCandidate.o $(GLIBS) $<
 
 $(OUTLIB)Event.o: $(INCLUDEDIR)Event.cc $(OUTLIB)ZZCandidate.o
+	@mkdir -p $(OUTLIB)
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)Event.o $(GLIBS) $<
 
 
+$(OUTLIB)HiggsComparators.o: $(INCLUDEDIR)HiggsComparators.cc $(OUTLIB)Event.o
+	@mkdir -p $(OUTLIB)
+	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)HiggsComparators.o $(GLIBS) $<
 
-
-$(OUTLIB)OptionParser.o: $(INCLUDEDIR)OptionParser.cc $(OUTLIB)PDGHelpers.o 
-	@mkdir -p lib
+$(OUTLIB)OptionParser.o: $(INCLUDEDIR)OptionParser.cc $(OUTLIB)HiggsComparators.o 
+	@mkdir -p $(OUTLIB)
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)OptionParser.o $(GLIBS) $<
 
+
 $(OUTLIB)BaseTree.o: $(INCLUDEDIR)BaseTree.cc
-	@mkdir -p lib
+	@mkdir -p $(OUTLIB)
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)BaseTree.o $(GLIBS) $<
 
 $(OUTLIB)HVVTree.o: $(INCLUDEDIR)HVVTree.cc $(OUTLIB)BaseTree.o $(OUTLIB)OptionParser.o
+	@mkdir -p $(OUTLIB)
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)HVVTree.o $(GLIBS) $<
 
-$(OUTLIB)convertLHE.o: $(INCLUDEDIR)convertLHE.cc $(OUTLIB)HVVTree.o $(OUTLIB)LHEParticleSmear.o $(OUTLIB)Event.o
+$(OUTLIB)convertLHE.o: $(INCLUDEDIR)convertLHE.cc $(OUTLIB)HVVTree.o $(OUTLIB)LHEParticleSmear.o
+	@mkdir -p $(OUTLIB)
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)convertLHE.o $(GLIBS) $<
 
-$(OUTLIB)main.o: $(INCLUDEDIR)main.cc $(OUTLIB)convertLHE.o
-	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)main.o $(GLIBS) $<
+$(OUTLIB)convertPythia.o: $(INCLUDEDIR)convertPythia.cc $(OUTLIB)HVVTree.o
+	@mkdir -p $(OUTLIB)
+	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)convertPythia.o $(GLIBS) $<
 
+$(OUTLIB)main.o: $(INCLUDEDIR)main.cc $(OUTLIB)convertPythia.o $(OUTLIB)convertLHE.o
+	@mkdir -p $(OUTLIB)
+	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)main.o $(GLIBS) $<
 
 
 converter: $(OUTLIB)main.o
 	$(CXX) $(CXXFLAGS) -o converter $(OUTLIB)*.o $(GLIBS)
+
 
 clean:
 	rm -rf $(OUTLIB)
