@@ -133,10 +133,7 @@ void convertPythia::run(){
               Particle* smearedPart = smearedParticleList.at(p);
               if (isALepton(smearedPart->id)) smearedEvent.addLepton(smearedPart);
               else if (isANeutrino(smearedPart->id)) smearedEvent.addNeutrino(smearedPart);
-              else if (isAGluon(smearedPart->id) || isAQuark(smearedPart->id)){
-                smearedPart->id=0; // Wipe id from reco. quark/gluon
-                smearedEvent.addJet(smearedPart);
-              }
+              else if (smearedPart->id==0) smearedEvent.addJet(smearedPart);
               else smearedEvent.addParticle(smearedPart);
             }
             smearedEvent.constructVVCandidates(options->doRecoHZZdecay(), options->recoDecayProducts());

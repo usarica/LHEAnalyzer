@@ -78,7 +78,6 @@ void trimPythia(TString cinput, TString outdir="./"){
       const vector<reco::GenJet>* reco_GenJets = jetWrapper->product();
       const vector<reco::GenParticle>* reco_GenParticles = genparticleWrapper->product();
 
-//      int nlep=0;
       for (int p=0; p<reco_GenParticles->size(); p++){
         reco::GenParticle& part = reco_GenParticles->at(p);
         if (
@@ -94,29 +93,31 @@ void trimPythia(TString cinput, TString outdir="./"){
           reco_GenParticle_FV[3].push_back(part.energy());
           reco_GenParticle_id.push_back(part.pdgId());
           reco_GenParticle_status.push_back(part.status());
-          if ((std::abs(part.pdgId())>=11 && std::abs(part.pdgId())<=16) && std::abs(part.pdgId()) % 2 == 1){
-//            nlep++;
-
-            if (part.status()==1){
-              reco_GenJet_FV[0].push_back(part.px());
-              reco_GenJet_FV[1].push_back(part.py());
-              reco_GenJet_FV[2].push_back(part.pz());
-              reco_GenJet_FV[3].push_back(part.energy());
-              reco_GenJet_id.push_back(part.pdgId());
-              reco_GenJet_status.push_back(part.status());
-            }
-
-          }
         }
       }
-//      cout << "Nleps: " << nlep << endl;
+
       vector<pair<int, int>> reco_GenParticle_duplicates = findDuplicates(reco_GenParticle_FV, reco_GenParticle_id, reco_GenParticle_status);
+
+      // Add status==1 or status==23 (with precedence for status==1) leptons to genJet collection
+      for (int p=0; p<reco_GenParticle_id.size(); p++){
+        if ((std::abs(reco_GenParticle_id.at(p))>=11 && std::abs(reco_GenParticle_id.at(p))<=16) && std::abs(reco_GenParticle_id.at(p)) % 2 == 1){
+          bool match=false;
+          for (int dd=0; dd<reco_GenParticle_duplicates.size(); dd++){
+            pair<int, int> duplicate = reco_GenParticle_duplicates.at(dd);
+            int iOriginal = duplicate.first; // Status==23 particle
+            if (iOriginal==p){ match=true; break; }
+          }
+          if (match) continue;
+          for(int fv=0;fv<4;fv++) reco_GenJet_FV[fv].push_back(reco_GenParticle_FV[fv].at(p));
+          reco_GenJet_id.push_back(reco_GenParticle_id.at(p));
+          reco_GenJet_status.push_back(reco_GenParticle_status.at(p));
+        }
+      }
+
       vector<int> removalArray;
       for (int dd=0; dd<reco_GenParticle_duplicates.size(); dd++){
         pair<int, int> duplicate = reco_GenParticle_duplicates.at(dd);
-        int iOriginal = duplicate.first;
-        int iTransfer = duplicate.second;
-
+        int iTransfer = duplicate.second; // Status==1 particle
         bool inserted=false;
         for (int it = 0; it<removalArray.size(); it++){
           int iIndex = removalArray.at(it);
@@ -128,7 +129,7 @@ void trimPythia(TString cinput, TString outdir="./"){
         }
         if (!inserted) removalArray.push_back(iTransfer);
       }
-//      cout << "Nremoved: " << removalArray.size() << endl;
+      // Remove status==1 duplicates from genParticles
       for (int dd=0; dd<removalArray.size(); dd++){
         int iTransfer = removalArray.at(dd);
         for (int fv=0; fv<4; fv++){
@@ -147,14 +148,7 @@ void trimPythia(TString cinput, TString outdir="./"){
         reco_GenJet_id.push_back(jet.pdgId());
         reco_GenJet_status.push_back(jet.status());
       }
-/*
-      int nlepreco = 0;
-      for (int r=0; r<reco_GenJet_id.size(); r++){
-        int pid = reco_GenJet_id.at(r);
-        if ((std::abs(pid)>=11 && std::abs(pid)<=16) && std::abs(pid) % 2 == 1) nlepreco++;
-      }
-      cout << "Nrecolep: " << nlepreco << endl;
-*/
+
       tmpTree->Fill();
     }
     f.Close();
