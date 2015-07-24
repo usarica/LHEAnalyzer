@@ -9,7 +9,7 @@
 #include <vector>
 #include "LHEParticleSmear.h"
 #include "HVVTree.h"
-#include "ParticleComparators.h"
+#include "HiggsComparators.h"
 
 
 using namespace std;

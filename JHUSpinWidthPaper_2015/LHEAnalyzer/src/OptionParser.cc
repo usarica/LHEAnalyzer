@@ -102,24 +102,24 @@ void OptionParser::interpretOption(string wish, string value){
 
 void OptionParser::printOptionsHelp(){
   cout << endl;
-  cout << "The options implemented for the LHEAnalyzer (format: specifier=value):\n";
+  cout << "The options implemented for the LHEAnalyzer (format: specifier=value):\n\n";
 
-  cout << "No option specifier: Input files with extension .lhe or .root. Multiple input files can be passed as different arguments.\n";
-  cout << "indir: Location of input files. Default=\"./\"\n";
-  cout << "fileLevel: 0==LHE (no .root extensions), 1==Pythia8 (no .lhe extensions). Default=0\n";
-  cout << "outfile: Output file name. Default=\"tmp.root\"\n";
-  cout << "outdir: Location of the output file. Default=\"./\"\n";
-  cout << "tmpDir: Location of temporary files. Default=\"./tmpStore/\"\n";
+  cout << "- No option specifier: Input files with extension .lhe or .root. Multiple input files can be passed as different arguments.\n\n";
+  cout << "- indir: Location of input files. Default=\"./\"\n\n";
+  cout << "- fileLevel: 0==LHE (no .root extensions), 1==Pythia8 (no .lhe extensions). Default=0\n\n";
+  cout << "- outfile: Output file name. Default=\"tmp.root\"\n\n";
+  cout << "- outdir: Location of the output file. Default=\"./\"\n\n";
+  cout << "- tmpDir: Location of temporary files. Default=\"./tmpStore/\"\n\n";
 
-  cout << "mH / MH / mPOLE: Mass of the Higgs. Used in common for generator and reco. objects. Default=125 (GeV)\n";
-  cout << "GH / GaH / GammaH / wPOLE: Width of the generated Higgs. Used in generator objects. Default=4.07 (MeV)\n";
-  cout << "sqrts: Width of the generated Higgs. Used in generator objects. Default=13 (TeV)\n";
-  cout << "includeGenInfo, includeRecoInfo: Flags to control the writing of gen. and reco. info., respctively. Cannot be both false (0). Default=(1, 1)\n";
-  cout << "removeDaughterMasses: Flag to control the removal of lepton masses in the angle computation. Default=1\n";
-  cout << "isGenHZZ, isRecoHZZ: Gen. or reco. H->VV decay. 0==H->ZZ decay, 1==H->WW decay. Defaults=(0, 0)\n";
-  cout << "genDecayMode, recoDecayMode: Gen. or reco. H->VV->final states. Defaults=(0, 0)\n\tIf H->ZZ decay is specified, 0-5==4l, 4q, 2l2q, 2l2nu, 2q2nu, 4nu.\n\tIf H->WW decay is specified, 0-2==2l2nu, 4nu, lnu2q.\n";
+  cout << "- mH / MH / mPOLE: Mass of the Higgs. Used in common for generator and reco. objects. Default=125 (GeV)\n\n";
+  cout << "- GH / GaH / GammaH / wPOLE: Width of the generated Higgs. Used in generator objects. Default=4.07 (MeV)\n\n";
+  cout << "- sqrts: pp collision c.o.m. energy. Default=13 (TeV)\n\n";
+  cout << "- includeGenInfo, includeRecoInfo: Flags to control the writing of gen. and reco. info., respectively. Cannot be both false (0). Default=(1, 1)\n\n";
+  cout << "- removeDaughterMasses: Flag to control the removal of lepton masses in the angle computation. Default=1\n\n";
+  cout << "- isGenHZZ, isRecoHZZ: Gen. or reco. H->VV decay. 0==H->ZZ decay, 1==H->WW decay. Defaults=(0, 0)\n\n";
+  cout << "- genDecayMode, recoDecayMode: Gen. or reco. H->VV->final states. Defaults=(0, 0)\n\tIf H->ZZ decay is specified, 0-5==4l, 4q, 2l2q, 2l2nu, 2q2nu, 4nu.\n\tIf H->WW decay is specified, 0-2==2l2nu, 4nu, lnu2q.\n\n";
 
-  cout << "genCandidateSelection, recoCandidateSelection: Higgs candidate selection algorithm. Values accepted are\n\t->BestZ1ThenZ2 (=BestZ1ThenZ2ScSumPt).\n\tDefaults==(BestZ1ThenZ2, BestZ1ThenZ2)\n";
+  cout << "- genCandidateSelection, recoCandidateSelection: Higgs candidate selection algorithm. Values accepted are\n\t->BestZ1ThenZ2 (=BestZ1ThenZ2ScSumPt).\n\tDefaults==(BestZ1ThenZ2, BestZ1ThenZ2)\n\n";
 
 
   cout << endl;
