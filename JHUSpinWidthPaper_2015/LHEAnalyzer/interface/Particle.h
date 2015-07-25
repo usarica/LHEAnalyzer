@@ -15,7 +15,7 @@ public:
   Particle(int id_, TLorentzVector p4_);
   Particle(const Particle& particle_);
   Particle& operator=(const Particle& particle_);
-  ~Particle(){};
+  virtual ~Particle(){};
 
   // Data
 
