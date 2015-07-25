@@ -8,8 +8,8 @@ bool BaseTree::bookBranch(string branchname, BaseTree::BranchTypes bType, bool d
   if (hvvtree!=0){
     if (bType==BaseTree::bInt){
       Int_t* container = 0;
-      if (!doSetAddress) container = new Int_t;
       if (!doSetAddress || hvvtree->GetBranchStatus(branchname.c_str())){
+        container = new Int_t; // Cannot be a null pointer even if setting branch address
         pair<string, Int_t*> varPair(branchname, container);
         intBranches.push_back(varPair);
       }
@@ -17,8 +17,8 @@ bool BaseTree::bookBranch(string branchname, BaseTree::BranchTypes bType, bool d
     }
     else if (bType==BaseTree::bFloat){
       Float_t* container = 0;
-      if (!doSetAddress) container = new Float_t;
       if (!doSetAddress || hvvtree->GetBranchStatus(branchname.c_str())){
+        container = new Float_t; // Cannot be a null pointer even if setting branch address
         pair<string, Float_t*> varPair(branchname, container);
         floatBranches.push_back(varPair);
       }
@@ -58,10 +58,10 @@ bool BaseTree::actuateBranches(bool doSetAddress){
       for (int el=0; el<vectorDoubleBranches.size(); el++) hvvtree->Branch(vectorDoubleBranches.at(el).first.c_str(), vectorDoubleBranches.at(el).second);
     }
     else{
-      for (int el=0; el<intBranches.size(); el++) hvvtree->SetBranchAddress(intBranches.at(el).first.c_str(), &(intBranches.at(el).second));
-      for (int el=0; el<floatBranches.size(); el++) hvvtree->SetBranchAddress(floatBranches.at(el).first.c_str(), &(floatBranches.at(el).second));
-      for (int el=0; el<vectorIntBranches.size(); el++) hvvtree->SetBranchAddress(vectorIntBranches.at(el).first.c_str(), &(vectorIntBranches.at(el).second));
-      for (int el=0; el<vectorDoubleBranches.size(); el++) hvvtree->SetBranchAddress(vectorDoubleBranches.at(el).first.c_str(), &(vectorDoubleBranches.at(el).second));
+      for (int el=0; el<intBranches.size(); el++) hvvtree->SetBranchAddress(intBranches.at(el).first.c_str(), intBranches.at(el).second); // Already a pointer
+      for (int el=0; el<floatBranches.size(); el++) hvvtree->SetBranchAddress(floatBranches.at(el).first.c_str(), floatBranches.at(el).second); // Already a pointer
+      for (int el=0; el<vectorIntBranches.size(); el++) hvvtree->SetBranchAddress(vectorIntBranches.at(el).first.c_str(), &(vectorIntBranches.at(el).second)); // Need to pass the address to the pointer to std::vector
+      for (int el=0; el<vectorDoubleBranches.size(); el++) hvvtree->SetBranchAddress(vectorDoubleBranches.at(el).first.c_str(), &(vectorDoubleBranches.at(el).second)); // Need to pass the address to the pointer to std::vector
     }
   }
   else success=false;
