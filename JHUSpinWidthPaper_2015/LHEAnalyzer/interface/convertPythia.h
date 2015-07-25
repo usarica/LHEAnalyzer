@@ -1,14 +1,9 @@
 #ifndef CONVERT_PYTHIA_H
 #define CONVERT_PYTHIA_H
 
-#include <iostream>
-#include <fstream>
-#include <iomanip>
-#include <cstdio>
+#include "converter.h"
 #include <cstdlib>
-#include <string>
 #include <sstream>
-#include <vector>
 #include <utility>
 //#include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
 //#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
@@ -30,26 +25,18 @@
 //#include "DataFormats/PatCandidates/interface/MET.h"
 //#include "DataFormats/PatCandidates/interface/Tau.h"
 //#include "DataFormats/PatCandidates/interface/PackedTriggerPrescales.h"
-#include "HVVTree.h"
 
-using namespace std;
-
-class convertPythia{
+class convertPythia : public converter{
 public:
   convertPythia(OptionParser* options_);
   ~convertPythia(){};
   void run();
 
 protected:
-  void configure(OptionParser* options_); // Set output file, tree
+  void configure(); // Set output file, tree
   void finalizeRun();
   void readEvent(TTree* tin, int ev, vector<Particle*>& genCollection, bool& genSuccess, vector<Particle*>& recoCollection, bool& smearedSuccess, double& eventWeight);
 
   TFile* getIntermediateFile(string cinput);
-
-  OptionParser* options;
-  vector<string> filename;
-  TFile* foutput;
-  HVVTree* tree;
 };
 #endif

@@ -7,28 +7,12 @@
 
 using namespace PDGHelpers;
 
-convertPythia::convertPythia(OptionParser* options_){
-  configure(options_);
+convertPythia::convertPythia(OptionParser* options_) : converter(options_){
+  configure();
   run();
 }
 
-void convertPythia::configure(OptionParser* options_){
-  options=options_;
-  filename = options->inputfiles();
-  string cindir = options->inputDir();
-  cindir.append("/"); // Just for protection, extra "/"s do not matter for file names.
-  for (int f=0; f<filename.size(); f++) filename.at(f).insert(0, cindir);
-
-  string coutput = options->outputDir();
-  coutput.append(options->outputFilename());
-
-  cout << "convertPythia::configure -> Creating file " << coutput << endl;
-  foutput = new TFile(coutput.c_str(), "recreate");
-  foutput->cd();
-  char TREE_NAME[] = "SelectedTree";
-  tree = new HVVTree(TREE_NAME, TREE_NAME);
-  tree->setOptions(options);
-
+void convertPythia::configure(){
   string tmpdir = options->getTempDir();
   string strCmd = "mkdir -p ";
   strCmd.append(tmpdir);
@@ -40,17 +24,10 @@ void convertPythia::configure(OptionParser* options_){
   gSystem->Exec(strCmd.c_str());
 }
 void convertPythia::finalizeRun(){
-  cout << "Number of recorded events: " << tree->getTree()->GetEntries() << endl;
-  tree->writeTree(foutput);
-  delete tree;
-  foutput->Close();
-
   string tmpdir = options->getTempDir();
   string strCmd = "rm -rf ";
   strCmd.append(tmpdir);
   gSystem->Exec(strCmd.c_str());
-
-  options=0;
 }
 void convertPythia::run(){
   Float_t MC_weight=0;

@@ -60,8 +60,8 @@ bool BaseTree::actuateBranches(bool doSetAddress){
     else{
       for (int el=0; el<intBranches.size(); el++) hvvtree->SetBranchAddress(intBranches.at(el).first.c_str(), intBranches.at(el).second); // Already a pointer
       for (int el=0; el<floatBranches.size(); el++) hvvtree->SetBranchAddress(floatBranches.at(el).first.c_str(), floatBranches.at(el).second); // Already a pointer
-      for (int el=0; el<vectorIntBranches.size(); el++) hvvtree->SetBranchAddress(vectorIntBranches.at(el).first.c_str(), &(vectorIntBranches.at(el).second)); // Need to pass the address to the pointer to std::vector
-      for (int el=0; el<vectorDoubleBranches.size(); el++) hvvtree->SetBranchAddress(vectorDoubleBranches.at(el).first.c_str(), &(vectorDoubleBranches.at(el).second)); // Need to pass the address to the pointer to std::vector
+      for (int el=0; el<vectorIntBranches.size(); el++) hvvtree->SetBranchAddress(vectorIntBranches.at(el).first.c_str(), &(vectorIntBranches.at(el).second)); // Need to pass the address of the pointer to std::vector
+      for (int el=0; el<vectorDoubleBranches.size(); el++) hvvtree->SetBranchAddress(vectorDoubleBranches.at(el).first.c_str(), &(vectorDoubleBranches.at(el).second)); // Need to pass the address of the pointer to std::vector
     }
   }
   else success=false;

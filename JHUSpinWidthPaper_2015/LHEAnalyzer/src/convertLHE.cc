@@ -16,35 +16,13 @@
 using namespace PDGHelpers;
 using namespace LHEParticleSmear;
 
-convertLHE::convertLHE(OptionParser* options_){
-  configure(options_);
+convertLHE::convertLHE(OptionParser* options_) : converter(options_){
+  configure();
   run();
 }
 
-void convertLHE::configure(OptionParser* options_){
-  options=options_;
-  filename = options->inputfiles();
-  string cindir = options->inputDir();
-  cindir.append("/"); // Just for protection, extra "/"s do not matter for file names.
-  for (int f=0; f<filename.size(); f++) filename.at(f).insert(0, cindir);
-
-  string coutput = options->outputDir();
-  coutput.append(options->outputFilename());
-
-  cout << "convertLHE::configure -> Creating file " << coutput << endl;
-  foutput = new TFile(coutput.c_str(), "recreate");
-  foutput->cd();
-  char TREE_NAME[] = "SelectedTree";
-  tree = new HVVTree(TREE_NAME, TREE_NAME);
-  tree->setOptions(options);
-}
-void convertLHE::finalizeRun(){
-  cout << "Number of recorded events: " << tree->getTree()->GetEntries() << endl;
-  tree->writeTree(foutput);
-  delete tree;
-  foutput->Close();
-  options=0;
-}
+void convertLHE::configure(){}
+void convertLHE::finalizeRun(){}
 void convertLHE::run(){
   double weight;
   Float_t MC_weight=0;

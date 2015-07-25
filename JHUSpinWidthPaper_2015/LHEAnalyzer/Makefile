@@ -74,11 +74,15 @@ $(OUTLIB)HVVTree.o: $(INCLUDEDIR)HVVTree.cc $(OUTLIB)BaseTree.o $(OUTLIB)OptionP
 	@mkdir -p $(OUTLIB)
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)HVVTree.o $(GLIBS) $<
 
-$(OUTLIB)convertLHE.o: $(INCLUDEDIR)convertLHE.cc $(OUTLIB)HVVTree.o $(OUTLIB)LHEParticleSmear.o
+$(OUTLIB)converter.o: $(INCLUDEDIR)converter.cc $(OUTLIB)HVVTree.o $(OUTLIB)LHEParticleSmear.o
+	@mkdir -p $(OUTLIB)
+	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)converter.o $(GLIBS) $<
+
+$(OUTLIB)convertLHE.o: $(INCLUDEDIR)convertLHE.cc $(OUTLIB)converter.o
 	@mkdir -p $(OUTLIB)
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)convertLHE.o $(GLIBS) $<
 
-$(OUTLIB)convertPythia.o: $(INCLUDEDIR)convertPythia.cc $(OUTLIB)HVVTree.o
+$(OUTLIB)convertPythia.o: $(INCLUDEDIR)convertPythia.cc $(OUTLIB)converter.o
 	@mkdir -p $(OUTLIB)
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)convertPythia.o $(GLIBS) $<
 
