@@ -94,4 +94,5 @@ converter: $(OUTLIB)main.o
 clean:
 	rm -rf $(OUTLIB)
 	rm -f $(PWD)*.o
+	rm -f *.cc
 	rm -f convert*

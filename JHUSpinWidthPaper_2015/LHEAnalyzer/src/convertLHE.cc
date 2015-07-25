@@ -50,7 +50,7 @@ void convertLHE::run(){
   Float_t MC_weight=0;
   Int_t isSelected=0;
 
-  tree->bookAllBranches();
+  tree->bookAllBranches(false);
 
   for (int f=0; f<filename.size(); f++){
     string cinput = filename.at(f);

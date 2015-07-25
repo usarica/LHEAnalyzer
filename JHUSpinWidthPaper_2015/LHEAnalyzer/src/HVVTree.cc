@@ -1,158 +1,160 @@
 #include "../interface/HVVTree.h"
 
 
-void HVVTree::bookAllBranches(){
-  bookBranch("MC_weight", BranchTypes::bFloat);
+void HVVTree::bookAllBranches(bool doSetAddress){
+  bookBranch("MC_weight", BranchTypes::bFloat, doSetAddress);
 
   if (options->processGenInfo()){
-    bookBranch("genFinalState", BranchTypes::bInt);
+    bookBranch("genFinalState", BranchTypes::bInt, doSetAddress);
 
-    bookBranch("GenMotherMass", BranchTypes::bVectorDouble);
-    bookBranch("GenMotherPt", BranchTypes::bVectorDouble);
-    bookBranch("GenMotherPz", BranchTypes::bVectorDouble);
-    bookBranch("GenMotherPhi", BranchTypes::bVectorDouble);
-    bookBranch("GenMotherId", BranchTypes::bVectorInt);
+    bookBranch("GenMotherMass", BranchTypes::bVectorDouble, doSetAddress);
+    bookBranch("GenMotherPt", BranchTypes::bVectorDouble, doSetAddress);
+    bookBranch("GenMotherPz", BranchTypes::bVectorDouble, doSetAddress);
+    bookBranch("GenMotherPhi", BranchTypes::bVectorDouble, doSetAddress);
+    bookBranch("GenMotherId", BranchTypes::bVectorInt, doSetAddress);
 
-    bookBranch("GenHMass", BranchTypes::bFloat);
-    bookBranch("GenHPt", BranchTypes::bFloat);
-    bookBranch("GenHPz", BranchTypes::bFloat);
-    bookBranch("GenHPhi", BranchTypes::bFloat);
+    bookBranch("GenHMass", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenHPt", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenHPz", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenHPhi", BranchTypes::bFloat, doSetAddress);
 
-    bookBranch("GenZ1Mass", BranchTypes::bFloat);
-    bookBranch("GenZ1Pt", BranchTypes::bFloat);
-    bookBranch("GenZ1Phi", BranchTypes::bFloat);
-    bookBranch("GenZ1Eta", BranchTypes::bFloat);
+    bookBranch("GenZ1Mass", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenZ1Pt", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenZ1Phi", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenZ1Eta", BranchTypes::bFloat, doSetAddress);
 
-    bookBranch("GenZ2Mass", BranchTypes::bFloat);
-    bookBranch("GenZ2Pt", BranchTypes::bFloat);
-    bookBranch("GenZ2Phi", BranchTypes::bFloat);
-    bookBranch("GenZ2Eta", BranchTypes::bFloat);
+    bookBranch("GenZ2Mass", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenZ2Pt", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenZ2Phi", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenZ2Eta", BranchTypes::bFloat, doSetAddress);
 
-    bookBranch("GenZaMass", BranchTypes::bFloat);
-    bookBranch("GenZaPt", BranchTypes::bFloat);
-    bookBranch("GenZaPhi", BranchTypes::bFloat);
-    bookBranch("GenZaEta", BranchTypes::bFloat);
+    bookBranch("GenZaMass", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenZaPt", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenZaPhi", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenZaEta", BranchTypes::bFloat, doSetAddress);
 
-    bookBranch("GenZbMass", BranchTypes::bFloat);
-    bookBranch("GenZbPt", BranchTypes::bFloat);
-    bookBranch("GenZbPhi", BranchTypes::bFloat);
-    bookBranch("GenZbEta", BranchTypes::bFloat);
+    bookBranch("GenZbMass", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenZbPt", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenZbPhi", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenZbEta", BranchTypes::bFloat, doSetAddress);
 
-    bookBranch("GenAssociatedParticleMass", BranchTypes::bVectorDouble);
-    bookBranch("GenAssociatedParticlePt", BranchTypes::bVectorDouble);
-    bookBranch("GenAssociatedParticleEta", BranchTypes::bVectorDouble);
-    bookBranch("GenAssociatedParticlePhi", BranchTypes::bVectorDouble);
-    bookBranch("GenAssociatedParticleId", BranchTypes::bVectorInt);
-    bookBranch("GenDijetMass", BranchTypes::bFloat);
+    bookBranch("GenAssociatedParticleMass", BranchTypes::bVectorDouble, doSetAddress);
+    bookBranch("GenAssociatedParticlePt", BranchTypes::bVectorDouble, doSetAddress);
+    bookBranch("GenAssociatedParticleEta", BranchTypes::bVectorDouble, doSetAddress);
+    bookBranch("GenAssociatedParticlePhi", BranchTypes::bVectorDouble, doSetAddress);
+    bookBranch("GenAssociatedParticleId", BranchTypes::bVectorInt, doSetAddress);
+    bookBranch("GenDijetMass", BranchTypes::bFloat, doSetAddress);
 
-    bookBranch("GenNAssociatedVs", BranchTypes::bInt);
-    bookBranch("GenAssociatedVMass", BranchTypes::bVectorDouble);
-    bookBranch("GenAssociatedVPt", BranchTypes::bVectorDouble);
-    bookBranch("GenAssociatedVEta", BranchTypes::bVectorDouble);
-    bookBranch("GenAssociatedVPhi", BranchTypes::bVectorDouble);
-    bookBranch("GenAssociatedVId", BranchTypes::bVectorInt);
-    bookBranch("GenAssociatedV_Particle1Index", BranchTypes::bVectorInt);
-    bookBranch("GenAssociatedV_Particle2Index", BranchTypes::bVectorInt);
+    bookBranch("GenNAssociatedVs", BranchTypes::bInt, doSetAddress);
+    bookBranch("GenAssociatedVMass", BranchTypes::bVectorDouble, doSetAddress);
+    bookBranch("GenAssociatedVPt", BranchTypes::bVectorDouble, doSetAddress);
+    bookBranch("GenAssociatedVEta", BranchTypes::bVectorDouble, doSetAddress);
+    bookBranch("GenAssociatedVPhi", BranchTypes::bVectorDouble, doSetAddress);
+    bookBranch("GenAssociatedVId", BranchTypes::bVectorInt, doSetAddress);
+    bookBranch("GenAssociatedV_Particle1Index", BranchTypes::bVectorInt, doSetAddress);
+    bookBranch("GenAssociatedV_Particle2Index", BranchTypes::bVectorInt, doSetAddress);
 
-    bookBranch("GenhelcosthetaZ1", BranchTypes::bFloat);
-    bookBranch("GenhelcosthetaZ2", BranchTypes::bFloat);
-    bookBranch("Genhelphi", BranchTypes::bFloat);
-    bookBranch("Gencosthetastar", BranchTypes::bFloat);
-    bookBranch("GenphistarZ1", BranchTypes::bFloat);
+    bookBranch("GenhelcosthetaZ1", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenhelcosthetaZ2", BranchTypes::bFloat, doSetAddress);
+    bookBranch("Genhelphi", BranchTypes::bFloat, doSetAddress);
+    bookBranch("Gencosthetastar", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenphistarZ1", BranchTypes::bFloat, doSetAddress);
 
-    bookBranch("GenLep1Mass", BranchTypes::bFloat);
-    bookBranch("GenLep2Mass", BranchTypes::bFloat);
-    bookBranch("GenLep3Mass", BranchTypes::bFloat);
-    bookBranch("GenLep4Mass", BranchTypes::bFloat);
-    bookBranch("GenLep1Pt", BranchTypes::bFloat);
-    bookBranch("GenLep2Pt", BranchTypes::bFloat);
-    bookBranch("GenLep3Pt", BranchTypes::bFloat);
-    bookBranch("GenLep4Pt", BranchTypes::bFloat);
-    bookBranch("GenLep1Eta", BranchTypes::bFloat);
-    bookBranch("GenLep2Eta", BranchTypes::bFloat);
-    bookBranch("GenLep3Eta", BranchTypes::bFloat);
-    bookBranch("GenLep4Eta", BranchTypes::bFloat);
-    bookBranch("GenLep1Phi", BranchTypes::bFloat);
-    bookBranch("GenLep2Phi", BranchTypes::bFloat);
-    bookBranch("GenLep3Phi", BranchTypes::bFloat);
-    bookBranch("GenLep4Phi", BranchTypes::bFloat);
-    bookBranch("GenLep1Id", BranchTypes::bInt);
-    bookBranch("GenLep2Id", BranchTypes::bInt);
-    bookBranch("GenLep3Id", BranchTypes::bInt);
-    bookBranch("GenLep4Id", BranchTypes::bInt);
+    bookBranch("GenLep1Mass", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenLep2Mass", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenLep3Mass", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenLep4Mass", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenLep1Pt", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenLep2Pt", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenLep3Pt", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenLep4Pt", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenLep1Eta", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenLep2Eta", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenLep3Eta", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenLep4Eta", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenLep1Phi", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenLep2Phi", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenLep3Phi", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenLep4Phi", BranchTypes::bFloat, doSetAddress);
+    bookBranch("GenLep1Id", BranchTypes::bInt, doSetAddress);
+    bookBranch("GenLep2Id", BranchTypes::bInt, doSetAddress);
+    bookBranch("GenLep3Id", BranchTypes::bInt, doSetAddress);
+    bookBranch("GenLep4Id", BranchTypes::bInt, doSetAddress);
   }
 
   if (options->processRecoInfo()){
-    bookBranch("isSelected", BranchTypes::bInt);
+    bookBranch("isSelected", BranchTypes::bInt, doSetAddress);
 
-    bookBranch("ZZMass", BranchTypes::bFloat);
-    bookBranch("ZZPt", BranchTypes::bFloat);
-    bookBranch("ZZPz", BranchTypes::bFloat);
-    bookBranch("ZZPhi", BranchTypes::bFloat);
+    bookBranch("ZZMass", BranchTypes::bFloat, doSetAddress);
+    bookBranch("ZZPt", BranchTypes::bFloat, doSetAddress);
+    bookBranch("ZZPz", BranchTypes::bFloat, doSetAddress);
+    bookBranch("ZZPhi", BranchTypes::bFloat, doSetAddress);
 
-    bookBranch("Z1Mass", BranchTypes::bFloat);
-    bookBranch("Z1Pt", BranchTypes::bFloat);
-    bookBranch("Z1Phi", BranchTypes::bFloat);
-    bookBranch("Z1Eta", BranchTypes::bFloat);
+    bookBranch("Z1Mass", BranchTypes::bFloat, doSetAddress);
+    bookBranch("Z1Pt", BranchTypes::bFloat, doSetAddress);
+    bookBranch("Z1Phi", BranchTypes::bFloat, doSetAddress);
+    bookBranch("Z1Eta", BranchTypes::bFloat, doSetAddress);
 
-    bookBranch("Z2Mass", BranchTypes::bFloat);
-    bookBranch("Z2Pt", BranchTypes::bFloat);
-    bookBranch("Z2Phi", BranchTypes::bFloat);
-    bookBranch("Z2Eta", BranchTypes::bFloat);
+    bookBranch("Z2Mass", BranchTypes::bFloat, doSetAddress);
+    bookBranch("Z2Pt", BranchTypes::bFloat, doSetAddress);
+    bookBranch("Z2Phi", BranchTypes::bFloat, doSetAddress);
+    bookBranch("Z2Eta", BranchTypes::bFloat, doSetAddress);
 
-    bookBranch("ZaMass", BranchTypes::bFloat);
-    bookBranch("ZaPt", BranchTypes::bFloat);
-    bookBranch("ZaPhi", BranchTypes::bFloat);
-    bookBranch("ZaEta", BranchTypes::bFloat);
+    bookBranch("ZaMass", BranchTypes::bFloat, doSetAddress);
+    bookBranch("ZaPt", BranchTypes::bFloat, doSetAddress);
+    bookBranch("ZaPhi", BranchTypes::bFloat, doSetAddress);
+    bookBranch("ZaEta", BranchTypes::bFloat, doSetAddress);
 
-    bookBranch("ZbMass", BranchTypes::bFloat);
-    bookBranch("ZbPt", BranchTypes::bFloat);
-    bookBranch("ZbPhi", BranchTypes::bFloat);
-    bookBranch("ZbEta", BranchTypes::bFloat);
+    bookBranch("ZbMass", BranchTypes::bFloat, doSetAddress);
+    bookBranch("ZbPt", BranchTypes::bFloat, doSetAddress);
+    bookBranch("ZbPhi", BranchTypes::bFloat, doSetAddress);
+    bookBranch("ZbEta", BranchTypes::bFloat, doSetAddress);
 
-    bookBranch("AssociatedParticleMass", BranchTypes::bVectorDouble);
-    bookBranch("AssociatedParticlePt", BranchTypes::bVectorDouble);
-    bookBranch("AssociatedParticleEta", BranchTypes::bVectorDouble);
-    bookBranch("AssociatedParticlePhi", BranchTypes::bVectorDouble);
-    bookBranch("AssociatedParticleId", BranchTypes::bVectorInt);
-    bookBranch("DijetMass", BranchTypes::bFloat);
+    bookBranch("AssociatedParticleMass", BranchTypes::bVectorDouble, doSetAddress);
+    bookBranch("AssociatedParticlePt", BranchTypes::bVectorDouble, doSetAddress);
+    bookBranch("AssociatedParticleEta", BranchTypes::bVectorDouble, doSetAddress);
+    bookBranch("AssociatedParticlePhi", BranchTypes::bVectorDouble, doSetAddress);
+    bookBranch("AssociatedParticleId", BranchTypes::bVectorInt, doSetAddress);
+    bookBranch("DijetMass", BranchTypes::bFloat, doSetAddress);
 
-    bookBranch("NAssociatedVs", BranchTypes::bInt);
-    bookBranch("AssociatedVMass", BranchTypes::bVectorDouble);
-    bookBranch("AssociatedVPt", BranchTypes::bVectorDouble);
-    bookBranch("AssociatedVEta", BranchTypes::bVectorDouble);
-    bookBranch("AssociatedVPhi", BranchTypes::bVectorDouble);
-    bookBranch("AssociatedVId", BranchTypes::bVectorInt);
-    bookBranch("AssociatedV_Particle1Index", BranchTypes::bVectorInt);
-    bookBranch("AssociatedV_Particle2Index", BranchTypes::bVectorInt);
+    bookBranch("NAssociatedVs", BranchTypes::bInt, doSetAddress);
+    bookBranch("AssociatedVMass", BranchTypes::bVectorDouble, doSetAddress);
+    bookBranch("AssociatedVPt", BranchTypes::bVectorDouble, doSetAddress);
+    bookBranch("AssociatedVEta", BranchTypes::bVectorDouble, doSetAddress);
+    bookBranch("AssociatedVPhi", BranchTypes::bVectorDouble, doSetAddress);
+    bookBranch("AssociatedVId", BranchTypes::bVectorInt, doSetAddress);
+    bookBranch("AssociatedV_Particle1Index", BranchTypes::bVectorInt, doSetAddress);
+    bookBranch("AssociatedV_Particle2Index", BranchTypes::bVectorInt, doSetAddress);
 
-    bookBranch("helcosthetaZ1", BranchTypes::bFloat);
-    bookBranch("helcosthetaZ2", BranchTypes::bFloat);
-    bookBranch("helphi", BranchTypes::bFloat);
-    bookBranch("costhetastar", BranchTypes::bFloat);
-    bookBranch("phistarZ1", BranchTypes::bFloat);
+    bookBranch("helcosthetaZ1", BranchTypes::bFloat, doSetAddress);
+    bookBranch("helcosthetaZ2", BranchTypes::bFloat, doSetAddress);
+    bookBranch("helphi", BranchTypes::bFloat, doSetAddress);
+    bookBranch("costhetastar", BranchTypes::bFloat, doSetAddress);
+    bookBranch("phistarZ1", BranchTypes::bFloat, doSetAddress);
 
-    bookBranch("Lep1Mass", BranchTypes::bFloat);
-    bookBranch("Lep2Mass", BranchTypes::bFloat);
-    bookBranch("Lep3Mass", BranchTypes::bFloat);
-    bookBranch("Lep4Mass", BranchTypes::bFloat);
-    bookBranch("Lep1Pt", BranchTypes::bFloat);
-    bookBranch("Lep2Pt", BranchTypes::bFloat);
-    bookBranch("Lep3Pt", BranchTypes::bFloat);
-    bookBranch("Lep4Pt", BranchTypes::bFloat);
-    bookBranch("Lep1Eta", BranchTypes::bFloat);
-    bookBranch("Lep2Eta", BranchTypes::bFloat);
-    bookBranch("Lep3Eta", BranchTypes::bFloat);
-    bookBranch("Lep4Eta", BranchTypes::bFloat);
-    bookBranch("Lep1Phi", BranchTypes::bFloat);
-    bookBranch("Lep2Phi", BranchTypes::bFloat);
-    bookBranch("Lep3Phi", BranchTypes::bFloat);
-    bookBranch("Lep4Phi", BranchTypes::bFloat);
-    bookBranch("Lep1Id", BranchTypes::bInt);
-    bookBranch("Lep2Id", BranchTypes::bInt);
-    bookBranch("Lep3Id", BranchTypes::bInt);
-    bookBranch("Lep4Id", BranchTypes::bInt);
+    bookBranch("Lep1Mass", BranchTypes::bFloat, doSetAddress);
+    bookBranch("Lep2Mass", BranchTypes::bFloat, doSetAddress);
+    bookBranch("Lep3Mass", BranchTypes::bFloat, doSetAddress);
+    bookBranch("Lep4Mass", BranchTypes::bFloat, doSetAddress);
+    bookBranch("Lep1Pt", BranchTypes::bFloat, doSetAddress);
+    bookBranch("Lep2Pt", BranchTypes::bFloat, doSetAddress);
+    bookBranch("Lep3Pt", BranchTypes::bFloat, doSetAddress);
+    bookBranch("Lep4Pt", BranchTypes::bFloat, doSetAddress);
+    bookBranch("Lep1Eta", BranchTypes::bFloat, doSetAddress);
+    bookBranch("Lep2Eta", BranchTypes::bFloat, doSetAddress);
+    bookBranch("Lep3Eta", BranchTypes::bFloat, doSetAddress);
+    bookBranch("Lep4Eta", BranchTypes::bFloat, doSetAddress);
+    bookBranch("Lep1Phi", BranchTypes::bFloat, doSetAddress);
+    bookBranch("Lep2Phi", BranchTypes::bFloat, doSetAddress);
+    bookBranch("Lep3Phi", BranchTypes::bFloat, doSetAddress);
+    bookBranch("Lep4Phi", BranchTypes::bFloat, doSetAddress);
+    bookBranch("Lep1Id", BranchTypes::bInt, doSetAddress);
+    bookBranch("Lep2Id", BranchTypes::bInt, doSetAddress);
+    bookBranch("Lep3Id", BranchTypes::bInt, doSetAddress);
+    bookBranch("Lep4Id", BranchTypes::bInt, doSetAddress);
   }
+
+  actuateBranches(doSetAddress);
 }
 
 void HVVTree::fillMotherInfo(Particle* mother){

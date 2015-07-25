@@ -12,7 +12,7 @@ public:
   HVVTree(string treename) : BaseTree(treename){};
   HVVTree(string treename, string treetitle) : BaseTree(treename, treetitle){};
 
-  void bookAllBranches();
+  void bookAllBranches(bool doSetAddress);
   void setOptions(OptionParser* options_){ options=options_; };
 
   void fillEventVariables(Float_t weight, Int_t passSelection);

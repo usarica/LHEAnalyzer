@@ -27,7 +27,8 @@ public:
 
   // This is where things get complicated pretty quickly
   enum BranchTypes{ bInt, bFloat, bVectorInt, bVectorDouble, nBranchTypes };
-  bool bookBranch(string branchname, BaseTree::BranchTypes bType);
+  bool bookBranch(string branchname, BaseTree::BranchTypes bType, bool doSetAddress);
+  bool actuateBranches(bool doSetAddress);
   BranchTypes searchArray(string branchname, int& position);
   template<typename varType> void setVal(string branchname, varType value){
     int varposition=-1;
