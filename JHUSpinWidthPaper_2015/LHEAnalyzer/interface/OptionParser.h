@@ -10,6 +10,7 @@
 #include <cassert>
 #include "TString.h"
 #include "PDGHelpers.h"
+#include "ParticleComparators.h"
 #include "HiggsComparators.h"
 
 using namespace std;

@@ -1,7 +1,8 @@
-#include "../interface/Event.h"
 #include <iostream>
+#include "../interface/Event.h"
 
 using namespace PDGHelpers;
+using namespace ParticleComparators;
 
 void Event::applyParticleSelection(){
   applyLeptonSelection();
@@ -13,12 +14,12 @@ void Event::applyLeptonSelection(){
   for (std::vector<Particle*>::iterator it = leptons.begin(); it<leptons.end(); it++){
     // Trigger and acceptance
     bool passAcceptance = true;
-    if (std::abs((*it)->id)==11 && ((*it)->pt()<=7 || std::abs((*it)->eta())>=2.5)) passAcceptance = false;
-    else if (std::abs((*it)->id)==13 && ((*it)->pt()<=5 || std::abs((*it)->eta())>=2.4)) passAcceptance = false;
+    if (std::abs((*it)->id)==11 && ((*it)->pt()<=electronPTCut || std::abs((*it)->eta())>=electronEtaAcceptanceCut)) passAcceptance = false;
+    else if (std::abs((*it)->id)==13 && ((*it)->pt()<=muonPTCut || std::abs((*it)->eta())>=muonEtaAcceptanceCut)) passAcceptance = false;
     else if (std::abs((*it)->id)==15) passAcceptance = false;
     for (std::vector<Particle*>::iterator it2 = leptons.begin(); it2<leptons.end(); it2++){
       if ((*it2)==(*it)) continue; // Every particle is their own ghost.
-      else if ((*it)->deltaR((*it2)->p4)<=0.02) passAcceptance = false; // Ghost removal
+      else if ((*it)->deltaR((*it2)->p4)<=ghostDeltaRCut) passAcceptance = false; // Ghost removal
     }
     (*it)->setSelected(passAcceptance);
   }
@@ -29,10 +30,10 @@ void Event::applyNeutrinoSelection(){
 void Event::applyJetSelection(){
   for (std::vector<Particle*>::iterator it = jets.begin(); it<jets.end(); it++){
     bool passAcceptance = true;
-    if ((*it)->pt()<=30 || std::abs((*it)->eta())>=4.7) passAcceptance = false; // ZZ4l selection and acceptance
+    if ((*it)->pt()<=jetPTCut || std::abs((*it)->eta())>=jetEtaAcceptanceCut) passAcceptance = false; // ZZ4l selection and acceptance
     for (std::vector<Particle*>::iterator it2 = leptons.begin(); it2<leptons.end(); it2++){ // Clean from selected leptons
       if ((*it2)->passSelection){ // If it is not selected at all, why would I care?
-        if ((*it)->deltaR((*it2)->p4)<=0.5) passAcceptance = false;
+        if ((*it)->deltaR((*it2)->p4)<=jetDeltaR) passAcceptance = false;
       }
     }
     (*it)->setSelected(passAcceptance);
@@ -44,23 +45,23 @@ void Event::applyZZSelection(){
     if (!(*it)->passSelection) continue;
 
     bool passAcceptance = true;
-    if ((*it)->getSortedV(0)->m()<=40. || (*it)->getSortedV(0)->m()>=120.){
+    if ((*it)->getSortedV(0)->m()<=mV1LowCut || (*it)->getSortedV(0)->m()>=mV12HighCut){
       passAcceptance = false; (*it)->getSortedV(0)->setSelected(passAcceptance);
     } // Z1 selection
-    if ((*it)->getSortedV(1)->m()<=12. || (*it)->getSortedV(1)->m()>=120.){
+    if ((*it)->getSortedV(1)->m()<=mV2LowCut || (*it)->getSortedV(1)->m()>=mV12HighCut){
       passAcceptance = false; (*it)->getSortedV(1)->setSelected(passAcceptance);
     } // Z2 selection
     for (int iZ=2; iZ<(*it)->getNSortedVs(); iZ++){
       Particle* extraV = (*it)->getSortedV(iZ);
       if (!isAZBoson(extraV->id)) continue;
       else{
-        if (extraV->m()<=4. || extraV->m()>=120. || (extraV->getDaughter(0)!=0 && isANeutrino(extraV->getDaughter(0)->id))) extraV->setSelected(false); // Extra Z selection, no effect on ZZ candidate
+        if (extraV->m()<=mllLowCut || extraV->m()>=mV12HighCut || (extraV->getDaughter(0)!=0 && isANeutrino(extraV->getDaughter(0)->id))) extraV->setSelected(false); // Extra Z selection, no effect on ZZ candidate
       }
     }
     TLorentzVector pLOC[2];
     pLOC[0]=(*it)->getAlternativeVMomentum(0);
     pLOC[1]=(*it)->getAlternativeVMomentum(1);
-    if (pLOC[0].M()<=4 || pLOC[1].M()<=4) passAcceptance=false;
+    if (pLOC[0].M()<=mllLowCut || pLOC[1].M()<=mllLowCut) passAcceptance=false;
 
     (*it)->setSelected(passAcceptance);
   }
