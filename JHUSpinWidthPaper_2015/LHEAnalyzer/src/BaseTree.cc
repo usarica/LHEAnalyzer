@@ -68,7 +68,14 @@ bool BaseTree::actuateBranches(bool doSetAddress){
   if (!success) cerr << "BaseTree::actuateBranch: Failed to actuate the branches!" << endl;
   return success;
 }
-
+vector<string> BaseTree::getBranchList(){
+  vector<string> branchlist;
+  for (int el=0; el<intBranches.size(); el++) branchlist.push_back(intBranches.at(el).first);
+  for (int el=0; el<floatBranches.size(); el++) branchlist.push_back(floatBranches.at(el).first);
+  for (int el=0; el<vectorIntBranches.size(); el++) branchlist.push_back(vectorIntBranches.at(el).first);
+  for (int el=0; el<vectorDoubleBranches.size(); el++) branchlist.push_back(vectorDoubleBranches.at(el).first);
+  return branchlist;
+}
 
 BaseTree::BranchTypes BaseTree::searchArray(string branchname, int& position){
   for (int el=0; el<intBranches.size(); el++){

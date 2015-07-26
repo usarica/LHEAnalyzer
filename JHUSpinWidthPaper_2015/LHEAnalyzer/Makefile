@@ -105,7 +105,7 @@ dolinks:
 analyzer: $(OUTLIB)main.o
 	$(CXX) $(CXXFLAGS) -o $(RUNDIR)analyzer $(OUTLIB)*.o $(GLIBS)
 
-all: dolinks analyzer
+all: analyzer dolinks
 
 clean:
 	rm -rf $(OUTLIB)

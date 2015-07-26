@@ -21,6 +21,77 @@ template<typename returnType> bool Reader::setVariable(const Event* ev, string& 
   return true;
 }
 
+void Reader::bindInputBranches(HVVTree* tin){
+  vector<string> inputBranches = tin->getBranchList();
+  for (int br=0; br<inputBranches.size(); br++){
+    int pos=-1;
+    string branchname = inputBranches.at(br);
+    bool outfound=false;
+    BaseTree::BranchTypes oBT = tree->searchArray(branchname, pos);
+    if (!(pos==-1 || oBT==BaseTree::nBranchTypes)) outfound = true;
+    pos=-1;
+    BaseTree::BranchTypes iBT = tin->searchArray(branchname, pos);
+    if (iBT!=oBT) outfound = false;
+    if (!outfound) continue;
+    else{
+      void* iBVRef = tin->getBranchHandleRef(branchname);
+      void* oBVRef = tree->getBranchHandleRef(branchname);
+      if (iBVRef==0 || oBVRef==0) continue;
+      if (iBT == BaseTree::bInt){
+        Int_t* iBRef = (Int_t*)iBVRef;
+        Int_t* oBRef = (Int_t*)oBVRef;
+        pair<Int_t*, Int_t*> refpair(iBRef, oBRef);
+        intBranchMap.push_back(refpair);
+      }
+      else if (iBT == BaseTree::bFloat){
+        Float_t* iBRef = (Float_t*)iBVRef;
+        Float_t* oBRef = (Float_t*)oBVRef;
+        pair<Float_t*, Float_t*> refpair(iBRef, oBRef);
+        floatBranchMap.push_back(refpair);
+      }
+      else if (iBT == BaseTree::bVectorInt){
+        vector<int>** iBRef = (vector<int>**)iBVRef;
+        vector<int>* oBRef = (vector<int>*)oBVRef;
+        pair<vector<int>**, vector<int>*> refpair(iBRef, oBRef);
+        vectorIntBranchMap.push_back(refpair);
+      }
+      else if (iBT == BaseTree::bVectorDouble){
+        vector<double>** iBRef = (vector<double>**)iBVRef;
+        vector<double>* oBRef = (vector<double>*)oBVRef;
+        pair<vector<double>**, vector<double>*> refpair(iBRef, oBRef);
+        vectorDoubleBranchMap.push_back(refpair);
+      }
+    }
+  }
+}
+void Reader::resetBranchBinding(){
+  intBranchMap.clear();
+  floatBranchMap.clear();
+  vectorIntBranchMap.clear();
+  vectorDoubleBranchMap.clear();
+}
+
+
+void Reader::synchMappedBranches(){
+  for (int b=0; b<intBranchMap.size(); b++) *(intBranchMap.at(b).second) = *(intBranchMap.at(b).first);
+  for (int b=0; b<floatBranchMap.size(); b++) *(floatBranchMap.at(b).second) = *(floatBranchMap.at(b).first);
+  for (int b=0; b<vectorIntBranchMap.size(); b++){
+    vector<int>* inhandle = *(vectorIntBranchMap.at(b).first);
+    vector<int>* outhandle = vectorIntBranchMap.at(b).second;
+    for (int el=0; el<inhandle->size(); el++){
+      outhandle->push_back(inhandle->at(el));
+    }
+  }
+  for (int b=0; b<vectorDoubleBranchMap.size(); b++){
+    vector<double>* inhandle = *(vectorDoubleBranchMap.at(b).first);
+    vector<double>* outhandle = vectorDoubleBranchMap.at(b).second;
+    for (int el=0; el<inhandle->size(); el++){
+      outhandle->push_back(inhandle->at(el));
+    }
+  }
+}
+
+
 
 void Reader::run(){/*
   Float_t MC_weight=0;

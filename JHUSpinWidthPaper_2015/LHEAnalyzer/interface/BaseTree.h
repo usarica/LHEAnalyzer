@@ -29,6 +29,7 @@ public:
   enum BranchTypes{ bInt, bFloat, bVectorInt, bVectorDouble, nBranchTypes };
   bool bookBranch(string branchname, BaseTree::BranchTypes bType, bool doSetAddress);
   bool actuateBranches(bool doSetAddress);
+  vector<string> getBranchList();
   BranchTypes searchArray(string branchname, int& position);
   template<typename varType> void setVal(string branchname, varType value){
     int varposition=-1;
@@ -43,9 +44,23 @@ public:
       else if (varbranchtype==BaseTree::bVectorDouble) vectorDoubleBranches.at(varposition).second->push_back(value);
     }
   }
+  void * getBranchHandleRef(string branchname){
+    int varposition=-1;
+    BaseTree::BranchTypes varbranchtype = searchArray(branchname, varposition);
+    if (varposition==-1 || varbranchtype==BaseTree::nBranchTypes){
+      cerr << "Could not find the branch called " << branchname << "!" << endl;
+      return 0;
+    }
+    else{
+      if (varbranchtype==BaseTree::bInt) return intBranches.at(varposition).second;
+      else if (varbranchtype==BaseTree::bFloat) return floatBranches.at(varposition).second;
+      else if (varbranchtype==BaseTree::bVectorInt) return &(vectorIntBranches.at(varposition).second);
+      else if (varbranchtype==BaseTree::bVectorDouble) return &(vectorDoubleBranches.at(varposition).second);
+      else return 0;
+    }
+  }
   void initializeBranches();
   void cleanBranches();
-
 
 
 protected:
