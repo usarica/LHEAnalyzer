@@ -133,29 +133,24 @@ TLorentzVector ZZCandidate::getAlternativeVMomentum(int index)const{
   return (index==0 ? pZ1 : pZ2);
 }
 
-void ZZCandidate::addAssociatedLeptons(Particle* myParticle){
-  bool isADaughter=false;
+bool ZZCandidate::checkDaughtership(Particle* myParticle)const{
   for (int dd=0; dd<getNDaughters(); dd++){
-    if (myParticle==getDaughter(dd)){ isADaughter=true; break; }
+    if (myParticle==getDaughter(dd)) return true;
   }
-  if (!isADaughter) addByHighestPt(myParticle, associatedLeptons);
+  return false;
+}
+
+void ZZCandidate::addAssociatedLeptons(Particle* myParticle){
+  if (!checkDaughtership(myParticle)) addByHighestPt(myParticle, associatedLeptons);
 }
 void ZZCandidate::addAssociatedNeutrinos(Particle* myParticle){
-  bool isADaughter=false;
-  for (int dd=0; dd<getNDaughters(); dd++){
-    if (myParticle==getDaughter(dd)){ isADaughter=true; break; }
-  }
-  if (!isADaughter){
+  if (!checkDaughtership(myParticle)){
     addByHighestPt(myParticle, associatedLeptons); // Neutrinos are leptons at the ZZ candidate level
     addByHighestPt(myParticle, associatedNeutrinos);
   }
 }
 void ZZCandidate::addAssociatedJets(Particle* myParticle){
-  bool isADaughter=false;
-  for (int dd=0; dd<getNDaughters(); dd++){
-    if (myParticle==getDaughter(dd)){ isADaughter=true; break; }
-  }
-  if (!isADaughter) addByHighestPt(myParticle, associatedJets);
+  if (!checkDaughtership(myParticle)) addByHighestPt(myParticle, associatedJets);
 }
 void ZZCandidate::addByHighestPt(Particle* myParticle, std::vector<Particle*>& particleArray){
   bool inserted=false;
@@ -165,6 +160,7 @@ void ZZCandidate::addByHighestPt(Particle* myParticle, std::vector<Particle*>& p
       particleArray.insert(it, myParticle);
       break;
     }
+    else if ((*it)==myParticle){ inserted=true; break; } // Test if particle already exists
   }
   if (!inserted) particleArray.push_back(myParticle);
 }
@@ -215,7 +211,7 @@ void ZZCandidate::createAssociatedVs(std::vector<Particle*>& particleArray){
   }
 }
 
-void ZZCandidate::testPreSelectedLeptons(){
+void ZZCandidate::testPreSelectedDaughters(){
   for (int i = 0; i<getNDaughters(); i++){
     if (!(daughters.at(i)->passSelection)){
       passSelection=false;

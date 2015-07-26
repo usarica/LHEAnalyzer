@@ -11,17 +11,20 @@ public:
 
   // Constructors
 
-  Event(){ weight=0; xsec=0; };
-  ~Event(){ wipeAll(); };
+  Event() : weight(0),xsec(0){}
+  ~Event(){ wipeAll(); }
 
   // Data
 
   // Member functions
-  double getXSec() const{ return xsec; }
-  double getWeight() const{ return weight; }
+  void setWeight(double weight_){ weight=weight_; }
+  void addExtraWeight(double weight_){ extraWeight.push_back(weight_); }
+  int getNExtraWeights() const{ return extraWeight.size(); }
+  double getWeight(int index=-1) const{ if (index==-1) return weight; else if (index<getNExtraWeights()) return extraWeight.at(index); else return 0; }
   std::vector<double>& getExtraWeights(){ return extraWeight; }
   void setXSec(double xsec_){ xsec=xsec_; }
-  void setWeight(double weight_){ weight=weight_; }
+  double getXSec() const{ return xsec; }
+
 
   void constructVVCandidates(bool isZZ=true, int fstype=0);
   void applyParticleSelection();

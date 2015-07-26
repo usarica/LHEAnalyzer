@@ -31,7 +31,7 @@ public:
   void addAssociatedVs();
 
   void sortDaughters();
-  void testPreSelectedLeptons();
+  void testPreSelectedDaughters();
 
 private:
   std::vector<Particle*> associatedLeptons;
@@ -45,6 +45,7 @@ private:
   void sortDaughtersInitial();
   void sortDaughtersByBestZ1();
   void createSortedVs();
+  bool checkDaughtership(Particle* myParticle)const;
   void createAssociatedVs(std::vector<Particle*>& particleArray);
   void addByHighestPt(Particle* myParticle, std::vector<Particle*>& particleArray);
 };
