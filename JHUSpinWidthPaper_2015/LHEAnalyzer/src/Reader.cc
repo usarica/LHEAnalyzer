@@ -3,28 +3,26 @@
 #include "TList.h"
 #include "TRandom.h"
 #include "TLorentzVector.h"
-#include "../interface/convertPythia.h"
+#include "../interface/Reader.h"
 
 using namespace PDGHelpers;
 
-convertPythia::convertPythia(OptionParser* options_) : converter(options_){
+Reader::Reader(OptionParser* options_) : converter(options_){
   configure();
   run();
 }
 
-void convertPythia::configure(){
-  string tmpdir = options->getTempDir();
-  string strCmd = "mkdir -p ";
-  strCmd.append(tmpdir);
-  gSystem->Exec(strCmd.c_str());
+void Reader::configure(){}
+void Reader::finalizeRun(){}
+
+template<typename returnType> bool Reader::setVariable(const Event* ev, string& branchname, returnType(*evalVar)(const Event*, string&)){
+  returnType result = evalVar(ev, branchname);
+  tree->setVal(branchname, result);
+  return true;
 }
-void convertPythia::finalizeRun(){
-  string tmpdir = options->getTempDir();
-  string strCmd = "rm -rf ";
-  strCmd.append(tmpdir);
-  gSystem->Exec(strCmd.c_str());
-}
-void convertPythia::run(){
+
+
+void Reader::run(){/*
   Float_t MC_weight=0;
   Int_t isSelected=0;
 
@@ -152,25 +150,11 @@ void convertPythia::run(){
     }
   }
   finalizeRun();
-}
+*/}
 
 
-TFile* convertPythia::getIntermediateFile(string cinput){
-  string coutput = options->getTempDir();
-  string strCmd = "root -b -l -q loadLib.cc 'trimPythia.cc(\"";
-  strCmd.append(cinput);
-  strCmd.append("\", \"");
-  strCmd.append(coutput);
-  strCmd.append("\")'");
-  gSystem->Exec(strCmd.c_str());
-  string strtmp=coutput;
-  strtmp.append("pythiaTemp.root");
-  TFile* ftmp = new TFile(strtmp.c_str(), "read");
-  return ftmp;
-}
 
-
-void convertPythia::readEvent(TTree* tin, int ev, vector<Particle*>& genCollection, bool& genSuccess, vector<Particle*>& recoCollection, bool& smearedSuccess, double& eventWeight){
+void Reader::readEvent(TTree* tin, int ev, bool isGen, Event& outEvent){/*
   int nEvents = tin->GetEntries();
   vector<double> weights;
   if (ev>=nEvents){
@@ -228,7 +212,7 @@ void convertPythia::readEvent(TTree* tin, int ev, vector<Particle*>& genCollecti
       TLorentzVector partFourVec(reco_GenParticle_FV[0]->at(a), reco_GenParticle_FV[1]->at(a), reco_GenParticle_FV[2]->at(a), reco_GenParticle_FV[3]->at(a));
 
       Particle* onePart = new Particle(idup, partFourVec);
-      onePart->setGenStatus(PDGHelpers::convertPythiaStatus(istup));
+      onePart->setGenStatus(PDGHelpers::ReaderStatus(istup));
       onePart->setLifetime(0);
       genCollection.push_back(onePart);
     }
@@ -244,7 +228,7 @@ void convertPythia::readEvent(TTree* tin, int ev, vector<Particle*>& genCollecti
       TLorentzVector partFourVec(reco_GenJet_FV[0]->at(a), reco_GenJet_FV[1]->at(a), reco_GenJet_FV[2]->at(a), reco_GenJet_FV[3]->at(a));
 
       Particle* onePart = new Particle(idup, partFourVec);
-      onePart->setGenStatus(PDGHelpers::convertPythiaStatus(istup));
+      onePart->setGenStatus(PDGHelpers::ReaderStatus(istup));
       onePart->setLifetime(0);
       recoCollection.push_back(onePart);
     }
@@ -259,5 +243,5 @@ void convertPythia::readEvent(TTree* tin, int ev, vector<Particle*>& genCollecti
     else weights.push_back(1.);
   }
   eventWeight = weights.at(0);
-}
+*/}
 

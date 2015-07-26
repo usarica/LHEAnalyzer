@@ -36,6 +36,7 @@ void convertLHE::run(){
     ifstream fin;
     fin.open(cinput.c_str());
     if (fin.good()){
+      int nProcessed = 0;
       while (!fin.eof()){
         vector<Particle*> particleList = readEvent(fin, weight);
         vector<Particle*> smearedParticleList; // Bookkeeping
@@ -89,7 +90,7 @@ void convertLHE::run(){
           }
           else genCand = HiggsComparators::candidateSelector(genEvent, options->getHiggsCandidateSelectionScheme(true), options->doGenHZZdecay());
           if (genCand!=0) tree->fillCandidate(genCand, true);
-          else cout << "No gen. level Higgs candidate was found!" << endl;
+          else cout << cinput << " (" << nProcessed << "): No gen. level Higgs candidate was found!" << endl;
 
           smearedEvent.constructVVCandidates(options->doRecoHZZdecay(), options->recoDecayProducts());
           smearedEvent.applyParticleSelection();
@@ -104,6 +105,7 @@ void convertLHE::run(){
           tree->fillEventVariables(MC_weight, isSelected);
 
           tree->record();
+          nProcessed++;
         }
 
         for (int p=0; p<smearedCandList.size(); p++){ // Bookkeeping

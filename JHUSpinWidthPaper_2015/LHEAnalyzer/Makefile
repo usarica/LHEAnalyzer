@@ -25,9 +25,12 @@ NGLIBS        += -L $(ROOFITSYS)/lib/ -lMinuit -lRooFitCore -lRooFit #-lboost_re
 NGLIBS  += -L $(CMSSW_BASE)/lib/$(SCRAM_ARCH)/ -lZZMatrixElementMELA
 GLIBS          = $(filter-out -lNew, $(NGLIBS))
 
-INCLUDEDIR       = $(PWD)/src/
 
-OUTLIB           = $(PWD)/lib/
+COMPILEPATH      = $(PWD)/
+INCLUDEDIR       = $(COMPILEPATH)src/
+OUTLIB           = $(COMPILEPATH)lib/
+RUNDIR           = $(COMPILEPATH)
+
 
 $(OUTLIB)PDGHelpers.o: $(INCLUDEDIR)PDGHelpers.cc
 	@mkdir -p $(OUTLIB)
@@ -86,17 +89,26 @@ $(OUTLIB)convertPythia.o: $(INCLUDEDIR)convertPythia.cc $(OUTLIB)converter.o
 	@mkdir -p $(OUTLIB)
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)convertPythia.o $(GLIBS) $<
 
-$(OUTLIB)main.o: $(INCLUDEDIR)main.cc $(OUTLIB)convertPythia.o $(OUTLIB)convertLHE.o
+$(OUTLIB)Reader.o: $(INCLUDEDIR)Reader.cc $(OUTLIB)converter.o
+	@mkdir -p $(OUTLIB)
+	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)Reader.o $(GLIBS) $<
+
+$(OUTLIB)main.o: $(INCLUDEDIR)main.cc $(OUTLIB)Reader.o $(OUTLIB)convertPythia.o $(OUTLIB)convertLHE.o
 	@mkdir -p $(OUTLIB)
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)main.o $(GLIBS) $<
 
 
-converter: $(OUTLIB)main.o
-	$(CXX) $(CXXFLAGS) -o converter $(OUTLIB)*.o $(GLIBS)
+dolinks:
+	ln -sf $(COMPILEPATH)macros/loadLib.cc $(RUNDIR)loadLib.cc
+	ln -sf $(COMPILEPATH)macros/trimPythia.cc $(RUNDIR)trimPythia.cc
 
+analyzer: $(OUTLIB)main.o
+	$(CXX) $(CXXFLAGS) -o $(RUNDIR)analyzer $(OUTLIB)*.o $(GLIBS)
+
+all: dolinks analyzer
 
 clean:
 	rm -rf $(OUTLIB)
-	rm -f $(PWD)*.o
-	rm -f *.cc
-	rm -f convert*
+	rm -f $(RUNDIR)*.cc
+	rm -f $(RUNDIR)analyze*
+	rm -f $(COMPILEPATH)*.o

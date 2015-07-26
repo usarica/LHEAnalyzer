@@ -24,7 +24,7 @@ protected:
   virtual void finalizeRun();
 
   OptionParser* options;
-  vector<string> filename;
+  vector<string> filename; // Input files
   TFile* foutput;
   HVVTree* tree;
 };
