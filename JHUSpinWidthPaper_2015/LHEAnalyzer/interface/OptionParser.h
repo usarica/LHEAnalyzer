@@ -21,7 +21,8 @@ public:
   ~OptionParser(){};
 
   void analyze();
-  void splitOption(string rawoption, string& wish, string& value);
+  void splitOption(string rawoption, string& wish, string& value, char delimiter='=');
+  void splitOptionRecursive(string rawoption, vector<string>& splitoptions, char delimiter=',');
   void interpretOption(string wish, string value);
   void printOptionsHelp();
   void printOptionSummary();
@@ -32,6 +33,7 @@ public:
   Bool_t processGenInfo(){ bool doProcess=true; if (includeGenInfo==0) doProcess=false; return doProcess; }
   Bool_t processRecoInfo(){ bool doProcess=true; if (includeRecoInfo==0) doProcess=false; return doProcess; }
   Bool_t doRemoveLepMasses(){ bool doProcess=true; if (removeDaughterMasses==0) doProcess=false; return doProcess; }
+  Bool_t isAnExcludedBranch(string branchname);
   Int_t analysisLevel(){ return fileLevel; }
   Bool_t doGenHZZdecay(){
     bool doHZZ=true;
@@ -74,6 +76,7 @@ protected:
   string tmpDir;
 
   vector<string> filename;
+  vector<string> excludedBranch;
 };
 
 #endif

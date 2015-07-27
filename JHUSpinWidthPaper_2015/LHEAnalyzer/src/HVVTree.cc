@@ -1,160 +1,170 @@
 #include "../interface/HVVTree.h"
 
 
+bool HVVTree::reserveBranch(string branchname, BaseTree::BranchTypes branchtype, bool doSetAddress){
+  bool isAvailable = true;
+  if (options->isAnExcludedBranch(branchname)){
+    isAvailable=false;
+    if (doSetAddress && hvvtree->GetBranchStatus(branchname.c_str())) hvvtree->SetBranchStatus(branchname.c_str(), 0);
+  }
+  else if (doSetAddress && !hvvtree->GetBranchStatus(branchname.c_str())) isAvailable=false;
+  if (isAvailable) bookBranch(branchname, branchtype, doSetAddress);
+  return isAvailable;
+}
 void HVVTree::bookAllBranches(bool doSetAddress){
-  bookBranch("MC_weight", BranchTypes::bFloat, doSetAddress);
-
   if (!options){
-    cerr << "HVVTree::bookAllBranches -> No options are set for the HVVTree!" << endl;
+    cerr << "HVVTree::reserveAllBranches -> No options are set for the HVVTree!" << endl;
     return;
   }
+
+  reserveBranch("MC_weight", BranchTypes::bFloat, doSetAddress);
   if (options->processGenInfo()){
-    bookBranch("genFinalState", BranchTypes::bInt, doSetAddress);
+    reserveBranch("genFinalState", BranchTypes::bInt, doSetAddress);
 
-    bookBranch("GenMotherMass", BranchTypes::bVectorDouble, doSetAddress);
-    bookBranch("GenMotherPt", BranchTypes::bVectorDouble, doSetAddress);
-    bookBranch("GenMotherPz", BranchTypes::bVectorDouble, doSetAddress);
-    bookBranch("GenMotherPhi", BranchTypes::bVectorDouble, doSetAddress);
-    bookBranch("GenMotherId", BranchTypes::bVectorInt, doSetAddress);
+    reserveBranch("GenMotherMass", BranchTypes::bVectorDouble, doSetAddress);
+    reserveBranch("GenMotherPt", BranchTypes::bVectorDouble, doSetAddress);
+    reserveBranch("GenMotherPz", BranchTypes::bVectorDouble, doSetAddress);
+    reserveBranch("GenMotherPhi", BranchTypes::bVectorDouble, doSetAddress);
+    reserveBranch("GenMotherId", BranchTypes::bVectorInt, doSetAddress);
 
-    bookBranch("GenHMass", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenHPt", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenHPz", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenHPhi", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenHMass", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenHPt", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenHPz", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenHPhi", BranchTypes::bFloat, doSetAddress);
 
-    bookBranch("GenZ1Mass", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenZ1Pt", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenZ1Phi", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenZ1Eta", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenZ1Mass", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenZ1Pt", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenZ1Phi", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenZ1Eta", BranchTypes::bFloat, doSetAddress);
 
-    bookBranch("GenZ2Mass", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenZ2Pt", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenZ2Phi", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenZ2Eta", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenZ2Mass", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenZ2Pt", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenZ2Phi", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenZ2Eta", BranchTypes::bFloat, doSetAddress);
 
-    bookBranch("GenZaMass", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenZaPt", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenZaPhi", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenZaEta", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenZaMass", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenZaPt", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenZaPhi", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenZaEta", BranchTypes::bFloat, doSetAddress);
 
-    bookBranch("GenZbMass", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenZbPt", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenZbPhi", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenZbEta", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenZbMass", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenZbPt", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenZbPhi", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenZbEta", BranchTypes::bFloat, doSetAddress);
 
-    bookBranch("GenAssociatedParticleMass", BranchTypes::bVectorDouble, doSetAddress);
-    bookBranch("GenAssociatedParticlePt", BranchTypes::bVectorDouble, doSetAddress);
-    bookBranch("GenAssociatedParticleEta", BranchTypes::bVectorDouble, doSetAddress);
-    bookBranch("GenAssociatedParticlePhi", BranchTypes::bVectorDouble, doSetAddress);
-    bookBranch("GenAssociatedParticleId", BranchTypes::bVectorInt, doSetAddress);
-    bookBranch("GenDijetMass", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenAssociatedParticleMass", BranchTypes::bVectorDouble, doSetAddress);
+    reserveBranch("GenAssociatedParticlePt", BranchTypes::bVectorDouble, doSetAddress);
+    reserveBranch("GenAssociatedParticleEta", BranchTypes::bVectorDouble, doSetAddress);
+    reserveBranch("GenAssociatedParticlePhi", BranchTypes::bVectorDouble, doSetAddress);
+    reserveBranch("GenAssociatedParticleId", BranchTypes::bVectorInt, doSetAddress);
+    reserveBranch("GenDijetMass", BranchTypes::bFloat, doSetAddress);
 
-    bookBranch("GenNAssociatedVs", BranchTypes::bInt, doSetAddress);
-    bookBranch("GenAssociatedVMass", BranchTypes::bVectorDouble, doSetAddress);
-    bookBranch("GenAssociatedVPt", BranchTypes::bVectorDouble, doSetAddress);
-    bookBranch("GenAssociatedVEta", BranchTypes::bVectorDouble, doSetAddress);
-    bookBranch("GenAssociatedVPhi", BranchTypes::bVectorDouble, doSetAddress);
-    bookBranch("GenAssociatedVId", BranchTypes::bVectorInt, doSetAddress);
-    bookBranch("GenAssociatedV_Particle1Index", BranchTypes::bVectorInt, doSetAddress);
-    bookBranch("GenAssociatedV_Particle2Index", BranchTypes::bVectorInt, doSetAddress);
+    reserveBranch("GenNAssociatedVs", BranchTypes::bInt, doSetAddress);
+    reserveBranch("GenAssociatedVMass", BranchTypes::bVectorDouble, doSetAddress);
+    reserveBranch("GenAssociatedVPt", BranchTypes::bVectorDouble, doSetAddress);
+    reserveBranch("GenAssociatedVEta", BranchTypes::bVectorDouble, doSetAddress);
+    reserveBranch("GenAssociatedVPhi", BranchTypes::bVectorDouble, doSetAddress);
+    reserveBranch("GenAssociatedVId", BranchTypes::bVectorInt, doSetAddress);
+    reserveBranch("GenAssociatedV_Particle1Index", BranchTypes::bVectorInt, doSetAddress);
+    reserveBranch("GenAssociatedV_Particle2Index", BranchTypes::bVectorInt, doSetAddress);
 
-    bookBranch("GenhelcosthetaZ1", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenhelcosthetaZ2", BranchTypes::bFloat, doSetAddress);
-    bookBranch("Genhelphi", BranchTypes::bFloat, doSetAddress);
-    bookBranch("Gencosthetastar", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenphistarZ1", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenhelcosthetaZ1", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenhelcosthetaZ2", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("Genhelphi", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("Gencosthetastar", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenphistarZ1", BranchTypes::bFloat, doSetAddress);
 
-    bookBranch("GenLep1Mass", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenLep2Mass", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenLep3Mass", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenLep4Mass", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenLep1Pt", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenLep2Pt", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenLep3Pt", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenLep4Pt", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenLep1Eta", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenLep2Eta", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenLep3Eta", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenLep4Eta", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenLep1Phi", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenLep2Phi", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenLep3Phi", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenLep4Phi", BranchTypes::bFloat, doSetAddress);
-    bookBranch("GenLep1Id", BranchTypes::bInt, doSetAddress);
-    bookBranch("GenLep2Id", BranchTypes::bInt, doSetAddress);
-    bookBranch("GenLep3Id", BranchTypes::bInt, doSetAddress);
-    bookBranch("GenLep4Id", BranchTypes::bInt, doSetAddress);
+    reserveBranch("GenLep1Mass", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenLep2Mass", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenLep3Mass", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenLep4Mass", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenLep1Pt", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenLep2Pt", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenLep3Pt", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenLep4Pt", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenLep1Eta", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenLep2Eta", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenLep3Eta", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenLep4Eta", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenLep1Phi", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenLep2Phi", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenLep3Phi", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenLep4Phi", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenLep1Id", BranchTypes::bInt, doSetAddress);
+    reserveBranch("GenLep2Id", BranchTypes::bInt, doSetAddress);
+    reserveBranch("GenLep3Id", BranchTypes::bInt, doSetAddress);
+    reserveBranch("GenLep4Id", BranchTypes::bInt, doSetAddress);
   }
   if (options->processRecoInfo()){
-    bookBranch("isSelected", BranchTypes::bInt, doSetAddress);
+    reserveBranch("isSelected", BranchTypes::bInt, doSetAddress);
 
-    bookBranch("ZZMass", BranchTypes::bFloat, doSetAddress);
-    bookBranch("ZZPt", BranchTypes::bFloat, doSetAddress);
-    bookBranch("ZZPz", BranchTypes::bFloat, doSetAddress);
-    bookBranch("ZZPhi", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("ZZMass", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("ZZPt", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("ZZPz", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("ZZPhi", BranchTypes::bFloat, doSetAddress);
 
-    bookBranch("Z1Mass", BranchTypes::bFloat, doSetAddress);
-    bookBranch("Z1Pt", BranchTypes::bFloat, doSetAddress);
-    bookBranch("Z1Phi", BranchTypes::bFloat, doSetAddress);
-    bookBranch("Z1Eta", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("Z1Mass", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("Z1Pt", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("Z1Phi", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("Z1Eta", BranchTypes::bFloat, doSetAddress);
 
-    bookBranch("Z2Mass", BranchTypes::bFloat, doSetAddress);
-    bookBranch("Z2Pt", BranchTypes::bFloat, doSetAddress);
-    bookBranch("Z2Phi", BranchTypes::bFloat, doSetAddress);
-    bookBranch("Z2Eta", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("Z2Mass", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("Z2Pt", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("Z2Phi", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("Z2Eta", BranchTypes::bFloat, doSetAddress);
 
-    bookBranch("ZaMass", BranchTypes::bFloat, doSetAddress);
-    bookBranch("ZaPt", BranchTypes::bFloat, doSetAddress);
-    bookBranch("ZaPhi", BranchTypes::bFloat, doSetAddress);
-    bookBranch("ZaEta", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("ZaMass", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("ZaPt", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("ZaPhi", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("ZaEta", BranchTypes::bFloat, doSetAddress);
 
-    bookBranch("ZbMass", BranchTypes::bFloat, doSetAddress);
-    bookBranch("ZbPt", BranchTypes::bFloat, doSetAddress);
-    bookBranch("ZbPhi", BranchTypes::bFloat, doSetAddress);
-    bookBranch("ZbEta", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("ZbMass", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("ZbPt", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("ZbPhi", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("ZbEta", BranchTypes::bFloat, doSetAddress);
 
-    bookBranch("AssociatedParticleMass", BranchTypes::bVectorDouble, doSetAddress);
-    bookBranch("AssociatedParticlePt", BranchTypes::bVectorDouble, doSetAddress);
-    bookBranch("AssociatedParticleEta", BranchTypes::bVectorDouble, doSetAddress);
-    bookBranch("AssociatedParticlePhi", BranchTypes::bVectorDouble, doSetAddress);
-    bookBranch("AssociatedParticleId", BranchTypes::bVectorInt, doSetAddress);
-    bookBranch("DijetMass", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("AssociatedParticleMass", BranchTypes::bVectorDouble, doSetAddress);
+    reserveBranch("AssociatedParticlePt", BranchTypes::bVectorDouble, doSetAddress);
+    reserveBranch("AssociatedParticleEta", BranchTypes::bVectorDouble, doSetAddress);
+    reserveBranch("AssociatedParticlePhi", BranchTypes::bVectorDouble, doSetAddress);
+    reserveBranch("AssociatedParticleId", BranchTypes::bVectorInt, doSetAddress);
+    reserveBranch("DijetMass", BranchTypes::bFloat, doSetAddress);
 
-    bookBranch("NAssociatedVs", BranchTypes::bInt, doSetAddress);
-    bookBranch("AssociatedVMass", BranchTypes::bVectorDouble, doSetAddress);
-    bookBranch("AssociatedVPt", BranchTypes::bVectorDouble, doSetAddress);
-    bookBranch("AssociatedVEta", BranchTypes::bVectorDouble, doSetAddress);
-    bookBranch("AssociatedVPhi", BranchTypes::bVectorDouble, doSetAddress);
-    bookBranch("AssociatedVId", BranchTypes::bVectorInt, doSetAddress);
-    bookBranch("AssociatedV_Particle1Index", BranchTypes::bVectorInt, doSetAddress);
-    bookBranch("AssociatedV_Particle2Index", BranchTypes::bVectorInt, doSetAddress);
+    reserveBranch("NAssociatedVs", BranchTypes::bInt, doSetAddress);
+    reserveBranch("AssociatedVMass", BranchTypes::bVectorDouble, doSetAddress);
+    reserveBranch("AssociatedVPt", BranchTypes::bVectorDouble, doSetAddress);
+    reserveBranch("AssociatedVEta", BranchTypes::bVectorDouble, doSetAddress);
+    reserveBranch("AssociatedVPhi", BranchTypes::bVectorDouble, doSetAddress);
+    reserveBranch("AssociatedVId", BranchTypes::bVectorInt, doSetAddress);
+    reserveBranch("AssociatedV_Particle1Index", BranchTypes::bVectorInt, doSetAddress);
+    reserveBranch("AssociatedV_Particle2Index", BranchTypes::bVectorInt, doSetAddress);
 
-    bookBranch("helcosthetaZ1", BranchTypes::bFloat, doSetAddress);
-    bookBranch("helcosthetaZ2", BranchTypes::bFloat, doSetAddress);
-    bookBranch("helphi", BranchTypes::bFloat, doSetAddress);
-    bookBranch("costhetastar", BranchTypes::bFloat, doSetAddress);
-    bookBranch("phistarZ1", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("helcosthetaZ1", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("helcosthetaZ2", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("helphi", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("costhetastar", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("phistarZ1", BranchTypes::bFloat, doSetAddress);
 
-    bookBranch("Lep1Mass", BranchTypes::bFloat, doSetAddress);
-    bookBranch("Lep2Mass", BranchTypes::bFloat, doSetAddress);
-    bookBranch("Lep3Mass", BranchTypes::bFloat, doSetAddress);
-    bookBranch("Lep4Mass", BranchTypes::bFloat, doSetAddress);
-    bookBranch("Lep1Pt", BranchTypes::bFloat, doSetAddress);
-    bookBranch("Lep2Pt", BranchTypes::bFloat, doSetAddress);
-    bookBranch("Lep3Pt", BranchTypes::bFloat, doSetAddress);
-    bookBranch("Lep4Pt", BranchTypes::bFloat, doSetAddress);
-    bookBranch("Lep1Eta", BranchTypes::bFloat, doSetAddress);
-    bookBranch("Lep2Eta", BranchTypes::bFloat, doSetAddress);
-    bookBranch("Lep3Eta", BranchTypes::bFloat, doSetAddress);
-    bookBranch("Lep4Eta", BranchTypes::bFloat, doSetAddress);
-    bookBranch("Lep1Phi", BranchTypes::bFloat, doSetAddress);
-    bookBranch("Lep2Phi", BranchTypes::bFloat, doSetAddress);
-    bookBranch("Lep3Phi", BranchTypes::bFloat, doSetAddress);
-    bookBranch("Lep4Phi", BranchTypes::bFloat, doSetAddress);
-    bookBranch("Lep1Id", BranchTypes::bInt, doSetAddress);
-    bookBranch("Lep2Id", BranchTypes::bInt, doSetAddress);
-    bookBranch("Lep3Id", BranchTypes::bInt, doSetAddress);
-    bookBranch("Lep4Id", BranchTypes::bInt, doSetAddress);
+    reserveBranch("Lep1Mass", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("Lep2Mass", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("Lep3Mass", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("Lep4Mass", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("Lep1Pt", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("Lep2Pt", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("Lep3Pt", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("Lep4Pt", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("Lep1Eta", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("Lep2Eta", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("Lep3Eta", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("Lep4Eta", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("Lep1Phi", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("Lep2Phi", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("Lep3Phi", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("Lep4Phi", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("Lep1Id", BranchTypes::bInt, doSetAddress);
+    reserveBranch("Lep2Id", BranchTypes::bInt, doSetAddress);
+    reserveBranch("Lep3Id", BranchTypes::bInt, doSetAddress);
+    reserveBranch("Lep4Id", BranchTypes::bInt, doSetAddress);
   }
   actuateBranches(doSetAddress);
 }

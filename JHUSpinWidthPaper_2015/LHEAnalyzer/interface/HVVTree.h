@@ -15,6 +15,7 @@ public:
 
   void setOptions(OptionParser* options_){ options=options_; }
 
+  bool reserveBranch(string branchname, BaseTree::BranchTypes branchtype, bool doSetAddress);
   void bookAllBranches(bool doSetAddress);
 
   void fillEventVariables(Float_t weight, Int_t passSelection);

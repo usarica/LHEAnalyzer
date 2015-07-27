@@ -29,9 +29,10 @@ coutput("tmp.root")
 void OptionParser::analyze(){
   bool hasInvalidOption=false;
   bool redefinedOutputFile=false;
+  char rawdelimiter = '=';
   for (int opt=1; opt<rawOptions.size(); opt++){
     string wish, value;
-    splitOption(rawOptions.at(opt), wish, value);
+    splitOption(rawOptions.at(opt), wish, value, rawdelimiter);
     interpretOption(wish, value);
     if (wish=="outfile") redefinedOutputFile=true;
   }
@@ -53,8 +54,8 @@ void OptionParser::analyze(){
 
   if (hasInvalidOption) printOptionsHelp();
 }
-void OptionParser::splitOption(string rawoption, string& wish, string& value){
-  size_t posEq = rawoption.find('=');
+void OptionParser::splitOption(string rawoption, string& wish, string& value, char delimiter){
+  size_t posEq = rawoption.find(delimiter);
   if (posEq!=string::npos){
     wish=rawoption;
     value=rawoption.substr(posEq+1);
@@ -65,6 +66,28 @@ void OptionParser::splitOption(string rawoption, string& wish, string& value){
     value=rawoption;
   }
 }
+void OptionParser::splitOptionRecursive(string rawoption, vector<string>& splitoptions, char delimiter){
+  string suboption=rawoption, result=rawoption;
+  string remnant;
+  while (result!=""){
+    splitOption(suboption, result, remnant, delimiter);
+    if (result!="") splitoptions.push_back(result);
+    suboption = remnant;
+  }
+  if (remnant!="") splitoptions.push_back(remnant);
+}
+Bool_t OptionParser::isAnExcludedBranch(string branchname){
+  bool isExcluded=false;
+  for (int eb=0; eb<excludedBranch.size(); eb++){
+    if (branchname.find(excludedBranch.at(eb))!=string::npos){
+      isExcluded=true;
+      break;
+    }
+  }
+  return isExcluded;
+}
+
+
 
 void OptionParser::interpretOption(string wish, string value){
   if (wish.empty()){
@@ -97,6 +120,7 @@ void OptionParser::interpretOption(string wish, string value){
   else if (wish=="outdir") outdir = value;
   else if (wish=="outfile") coutput = value;
   else if (wish=="tmpDir" || wish=="tempDir") tmpDir = value;
+  else if (wish=="excludeBranch") splitOptionRecursive(value, excludedBranch, ',');
   else cerr << "Unknown specified argument: " << value << " with specifier " << wish << endl;
 }
 
@@ -116,10 +140,12 @@ void OptionParser::printOptionsHelp(){
   cout << "- sqrts: pp collision c.o.m. energy. Default=13 (TeV)\n\n";
   cout << "- includeGenInfo, includeRecoInfo: Flags to control the writing of gen. and reco. info., respectively. Cannot be both false (0). Default=(1, 1)\n\n";
   cout << "- removeDaughterMasses: Flag to control the removal of lepton masses in the angle computation. Default=1\n\n";
-  cout << "- isGenHZZ, isRecoHZZ: Gen. or reco. H->VV decay. 0==H->ZZ decay, 1==H->WW decay. Defaults=(0, 0)\n\n";
+  cout << "- isGenHZZ, isRecoHZZ: Gen. or reco. H->VV decay. 0==H->ZZ decay, 1==H->WW decay. isGenHZZ also (re)sets the default V mass in H->VV decay. Defaults=(0, 0)\n\n";
   cout << "- genDecayMode, recoDecayMode: Gen. or reco. H->VV->final states. Defaults=(0, 0)\n\tIf H->ZZ decay is specified, 0-5==4l, 4q, 2l2q, 2l2nu, 2q2nu, 4nu.\n\tIf H->WW decay is specified, 0-2==2l2nu, 4nu, lnu2q.\n\n";
 
   cout << "- genCandidateSelection, recoCandidateSelection: Higgs candidate selection algorithm. Values accepted are\n\t->BestZ1ThenZ2 (=BestZ1ThenZ2ScSumPt).\n\tDefaults==(BestZ1ThenZ2, BestZ1ThenZ2)\n\n";
+
+  cout << "- excludeBranch: Comma-separated list of excluded branches. Default is to include all branches called via HVVTree::bookAllBranches. \n\n";
 
 
   cout << endl;
