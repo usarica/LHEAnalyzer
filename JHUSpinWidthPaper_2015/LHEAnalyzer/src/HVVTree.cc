@@ -13,7 +13,7 @@ bool HVVTree::reserveBranch(string branchname, BaseTree::BranchTypes branchtype,
 }
 void HVVTree::bookAllBranches(bool doSetAddress){
   if (!options){
-    cerr << "HVVTree::reserveAllBranches -> No options are set for the HVVTree!" << endl;
+    cerr << "HVVTree::bookAllBranches -> No options are set for the HVVTree!" << endl;
     return;
   }
 

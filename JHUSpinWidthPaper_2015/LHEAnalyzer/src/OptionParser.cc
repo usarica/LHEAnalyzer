@@ -79,7 +79,7 @@ void OptionParser::splitOptionRecursive(string rawoption, vector<string>& splito
 Bool_t OptionParser::isAnExcludedBranch(string branchname){
   bool isExcluded=false;
   for (int eb=0; eb<excludedBranch.size(); eb++){
-    if (branchname.find(excludedBranch.at(eb))!=string::npos){
+    if (branchname.find(excludedBranch.at(eb))!=string::npos && !(branchname.find("Gen")!=string::npos && excludedBranch.at(eb).find("Gen")==string::npos)){
       isExcluded=true;
       break;
     }
