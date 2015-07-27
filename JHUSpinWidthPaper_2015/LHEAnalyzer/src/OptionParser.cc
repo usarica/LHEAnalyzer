@@ -8,7 +8,7 @@ erg_tev(13), // C.o.M. energy in TeV
 includeGenInfo(1), // Record gen. level quantities
 includeRecoInfo(1), // Record reco. level quantities
 removeDaughterMasses(1), // Force lepton masses to 0 in MELA
-fileLevel(0), // LHE, Pythia
+fileLevel(0), // -1: ReadMode, 0: LHE, 1: Pythia, 
 isGenHZZ(1), // H->ZZ or H->WW
 isRecoHZZ(1), // H->ZZ or H->WW
 genDecayMode(0), // 4l with HZZ, 2l2nu with HWW, see Event::constructVVCandidates(bool isZZ, int fstype)
@@ -39,7 +39,7 @@ void OptionParser::analyze(){
   if (filename.size()==0){ cerr << "You have to specify the input files." << endl; if(!hasInvalidOption) hasInvalidOption=true; }
   else{
     for (int f=0; f<filename.size(); f++){
-      if ((filename.at(f).find(".lhe")!=string::npos && fileLevel==1) || (filename.at(f).find(".root")!=string::npos && fileLevel==0)){
+      if ((filename.at(f).find(".lhe")!=string::npos && fileLevel!=0) || (filename.at(f).find(".root")!=string::npos && fileLevel==0)){
         cerr << "Inconsistent fila name " << filename.at(f) << " and fileLevel option " << fileLevel << "!" << endl;
         if(!hasInvalidOption) hasInvalidOption=true;
       }
@@ -106,7 +106,7 @@ void OptionParser::printOptionsHelp(){
 
   cout << "- No option specifier: Input files with extension .lhe or .root. Multiple input files can be passed as different arguments.\n\n";
   cout << "- indir: Location of input files. Default=\"./\"\n\n";
-  cout << "- fileLevel: 0==LHE (no .root extensions), 1==Pythia8 (no .lhe extensions). Default=0\n\n";
+  cout << "- fileLevel: -1: ReadMode, 0==LHE, 1==Pythia8. \".lhe\" extension only allowed for 0, and \".root\" is the only format for the others. Default=0\n\n";
   cout << "- outfile: Output file name. Default=\"tmp.root\"\n\n";
   cout << "- outdir: Location of the output file. Default=\"./\"\n\n";
   cout << "- tmpDir: Location of temporary files. Default=\"./tmpStore/\"\n\n";

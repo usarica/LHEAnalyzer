@@ -49,7 +49,7 @@ void convertLHE::run(){
 
           Event genEvent;
           genEvent.setWeight(weight);
-          vector<int> hasGenHiggs;
+          vectorInt hasGenHiggs;
           Event smearedEvent;
           smearedEvent.setWeight(weight);
           for (int p=0; p<particleList.size(); p++){
@@ -145,8 +145,8 @@ vector<Particle*> convertLHE::readEvent(ifstream& input_lhe, double& weight){
   string str_in="";
 
   vector<Particle*> collection;
-  vector<int> motherIDs_first;
-  vector<int> motherIDs_second;
+  vectorInt motherIDs_first;
+  vectorInt motherIDs_second;
 
 // Test whether the string read is the beginning of the event for a valid file
   while (str_in.find(event_beginning)==string::npos){

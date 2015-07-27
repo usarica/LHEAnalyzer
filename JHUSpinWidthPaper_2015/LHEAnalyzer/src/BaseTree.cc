@@ -2,6 +2,13 @@
 
 BaseTree::BaseTree(string treename){ initTree(treename, ""); }
 BaseTree::BaseTree(string treename, string treetitle){ initTree(treename, treetitle); }
+BaseTree::BaseTree(string treename, TFile* fin){ getTreeFromFile(treename, fin); }
+
+void BaseTree::getTreeFromFile(string treename, TFile* fin){
+  if (fin!=0 && !fin->IsZombie() && fin->IsOpen()) hvvtree = (TTree*)fin->Get(treename.c_str());
+  else hvvtree=0;
+  if (hvvtree==0) cout << "Failed to extract the tree named " << treename << "!" << endl;
+}
 
 bool BaseTree::bookBranch(string branchname, BaseTree::BranchTypes bType, bool doSetAddress){
   bool success=true;
@@ -25,19 +32,19 @@ bool BaseTree::bookBranch(string branchname, BaseTree::BranchTypes bType, bool d
       else success=false;
     }
     else if (bType==BaseTree::bVectorInt){
-      vector<int>* container = 0;
-      if (!doSetAddress) container = new vector<int>;
+      vectorInt* container = 0;
+      if (!doSetAddress) container = new vectorInt;
       if (!doSetAddress || hvvtree->GetBranchStatus(branchname.c_str())){
-        pair<string, vector<int>*> varPair(branchname, container);
+        pair<string, vectorInt*> varPair(branchname, container);
         vectorIntBranches.push_back(varPair);
       }
       else success=false;
     }
     else if (bType==BaseTree::bVectorDouble){
-      vector<double>* container = 0;
-      if (!doSetAddress) container = new vector<double>;
+      vectorDouble* container = 0;
+      if (!doSetAddress) container = new vectorDouble;
       if (!doSetAddress || hvvtree->GetBranchStatus(branchname.c_str())){
-        pair<string, vector<double>*> varPair(branchname, container);
+        pair<string, vectorDouble*> varPair(branchname, container);
         vectorDoubleBranches.push_back(varPair);
       }
       else success=false;

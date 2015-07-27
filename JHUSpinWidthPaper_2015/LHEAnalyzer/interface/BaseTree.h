@@ -10,18 +10,25 @@
 #include "TString.h"
 #include "TTree.h"
 
+
+typedef std::vector<int> vectorInt;
+typedef std::vector<double> vectorDouble;
+
 using namespace std;
+
 
 class BaseTree{
 public:
   BaseTree(){ hvvtree=0; };
   BaseTree(string treename);
   BaseTree(string treename, string treetitle);
-  virtual ~BaseTree(){ if (hvvtree!=0) delete hvvtree; cleanBranches(); };
+  BaseTree(string treename, TFile* fin);
+  virtual ~BaseTree(){ if (hvvtree!=0) delete hvvtree; cleanBranches(); }
 
   // Innocuous functions
-  void initTree(string treename, string treetitle){ hvvtree = new TTree(treename.c_str(), treetitle.c_str()); hvvtree->SetAutoSave(5000000000); };
-  TTree* getTree(){ return hvvtree; };
+  void initTree(string treename, string treetitle){ hvvtree = new TTree(treename.c_str(), treetitle.c_str()); hvvtree->SetAutoSave(5000000000); }
+  void getTreeFromFile(string treename, TFile* fin);
+  TTree* getTree(){ return hvvtree; }
   void record(){ hvvtree->Fill(); }
   void writeTree(TFile* foutput){ foutput->cd(); foutput->WriteTObject(hvvtree); }
 
@@ -35,7 +42,7 @@ public:
     int varposition=-1;
     BaseTree::BranchTypes varbranchtype = searchArray(branchname, varposition);
     if (varposition==-1 || varbranchtype==BaseTree::nBranchTypes){
-      cerr << "Could not find the branch called " << branchname << "!" << endl;
+      cerr << "BaseTree::setVal -> Could not find the branch called " << branchname << "!" << endl;
     }
     else{
       if (varbranchtype==BaseTree::bInt) *(intBranches.at(varposition).second)=value;
@@ -68,8 +75,8 @@ protected:
 
   vector < pair<string, Int_t*> > intBranches;
   vector < pair<string, Float_t*> > floatBranches;
-  vector < pair<string, vector<int>*> > vectorIntBranches;
-  vector < pair<string, vector<double>*> > vectorDoubleBranches;
+  vector < pair<string, vectorInt*> > vectorIntBranches;
+  vector < pair<string, vectorDouble*> > vectorDoubleBranches;
 };
 
 #endif

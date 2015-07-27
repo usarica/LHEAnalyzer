@@ -4,6 +4,10 @@
 void HVVTree::bookAllBranches(bool doSetAddress){
   bookBranch("MC_weight", BranchTypes::bFloat, doSetAddress);
 
+  if (!options){
+    cerr << "HVVTree::bookAllBranches -> No options are set for the HVVTree!" << endl;
+    return;
+  }
   if (options->processGenInfo()){
     bookBranch("genFinalState", BranchTypes::bInt, doSetAddress);
 
@@ -81,7 +85,6 @@ void HVVTree::bookAllBranches(bool doSetAddress){
     bookBranch("GenLep3Id", BranchTypes::bInt, doSetAddress);
     bookBranch("GenLep4Id", BranchTypes::bInt, doSetAddress);
   }
-
   if (options->processRecoInfo()){
     bookBranch("isSelected", BranchTypes::bInt, doSetAddress);
 
@@ -153,12 +156,11 @@ void HVVTree::bookAllBranches(bool doSetAddress){
     bookBranch("Lep3Id", BranchTypes::bInt, doSetAddress);
     bookBranch("Lep4Id", BranchTypes::bInt, doSetAddress);
   }
-
   actuateBranches(doSetAddress);
 }
 
 void HVVTree::fillMotherInfo(Particle* mother){
-  if (options->processGenInfo() && mother!=0){
+  if (options!=0 && options->processGenInfo() && mother!=0){
     setVal("GenMotherMass", mother->m());
     setVal("GenMotherPt", mother->pt());
     setVal("GenMotherPz", mother->z());
@@ -169,6 +171,7 @@ void HVVTree::fillMotherInfo(Particle* mother){
 
 
 void HVVTree::fillCandidate(ZZCandidate* pH, bool isGen){
+  if (!options) return;
   if ((!options->processGenInfo() && isGen) || (!options->processRecoInfo() && !isGen)) return;
 
   string varname;
@@ -272,8 +275,8 @@ void HVVTree::fillAssociatedInfo(ZZCandidate* pH, bool isGen){
 
   Int_t NAssociatedVs=0;
   vector<Particle*> AssociatedV;
-  vector<int> AssociatedV_Particle1Index;
-  vector<int> AssociatedV_Particle2Index;
+  vectorInt AssociatedV_Particle1Index;
+  vectorInt AssociatedV_Particle2Index;
 
   if (pH!=0){
     for (int aa=0; aa<pH->getNAssociatedJets(); aa++){
@@ -384,6 +387,6 @@ void HVVTree::fillDecayAngles(ZZCandidate* pH, bool isGen){
 
 void HVVTree::fillEventVariables(Float_t weight, Int_t passSelection){
   setVal("MC_weight", weight);
-  if (options->processRecoInfo()) setVal("isSelected", passSelection);
+  if (options!=0 && options->processRecoInfo()) setVal("isSelected", passSelection);
 }
 

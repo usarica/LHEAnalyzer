@@ -17,8 +17,16 @@ void Reader::finalizeRun(){}
 
 template<typename returnType> bool Reader::setVariable(const Event* ev, string& branchname, returnType(*evalVar)(const Event*, string&)){
   returnType result = evalVar(ev, branchname);
-  tree->setVal(branchname, result);
-  return true;
+  returnType* resultPtr = &result;
+  if (dynamic_cast<vectorInt*>(resultPtr)!=0 || dynamic_cast<vectorDouble*>(resultPtr)!=0){
+    for (int el=0; el<result.size(); el++) tree->setVal(branchname, result.at(el));
+    return true;
+  }
+  else if (dynamic_cast<Int_t*>(resultPtr)!=0 || dynamic_cast<Float_t*>(resultPtr)!=0){
+    tree->setVal(branchname, result);
+    return true;
+  }
+  else return false;
 }
 
 void Reader::bindInputBranches(HVVTree* tin){
@@ -50,15 +58,15 @@ void Reader::bindInputBranches(HVVTree* tin){
         floatBranchMap.push_back(refpair);
       }
       else if (iBT == BaseTree::bVectorInt){
-        vector<int>** iBRef = (vector<int>**)iBVRef;
-        vector<int>* oBRef = (vector<int>*)oBVRef;
-        pair<vector<int>**, vector<int>*> refpair(iBRef, oBRef);
+        vectorInt** iBRef = (vectorInt**)iBVRef;
+        vectorInt** oBRef = (vectorInt**)oBVRef;
+        pair<vectorInt**, vectorInt**> refpair(iBRef, oBRef);
         vectorIntBranchMap.push_back(refpair);
       }
       else if (iBT == BaseTree::bVectorDouble){
-        vector<double>** iBRef = (vector<double>**)iBVRef;
-        vector<double>* oBRef = (vector<double>*)oBVRef;
-        pair<vector<double>**, vector<double>*> refpair(iBRef, oBRef);
+        vectorDouble** iBRef = (vectorDouble**)iBVRef;
+        vectorDouble** oBRef = (vectorDouble**)oBVRef;
+        pair<vectorDouble**, vectorDouble**> refpair(iBRef, oBRef);
         vectorDoubleBranchMap.push_back(refpair);
       }
     }
@@ -70,21 +78,19 @@ void Reader::resetBranchBinding(){
   vectorIntBranchMap.clear();
   vectorDoubleBranchMap.clear();
 }
-
-
 void Reader::synchMappedBranches(){
   for (int b=0; b<intBranchMap.size(); b++) *(intBranchMap.at(b).second) = *(intBranchMap.at(b).first);
   for (int b=0; b<floatBranchMap.size(); b++) *(floatBranchMap.at(b).second) = *(floatBranchMap.at(b).first);
   for (int b=0; b<vectorIntBranchMap.size(); b++){
-    vector<int>* inhandle = *(vectorIntBranchMap.at(b).first);
-    vector<int>* outhandle = vectorIntBranchMap.at(b).second;
+    vectorInt* inhandle = *(vectorIntBranchMap.at(b).first);
+    vectorInt* outhandle = *(vectorIntBranchMap.at(b).second);
     for (int el=0; el<inhandle->size(); el++){
       outhandle->push_back(inhandle->at(el));
     }
   }
   for (int b=0; b<vectorDoubleBranchMap.size(); b++){
-    vector<double>* inhandle = *(vectorDoubleBranchMap.at(b).first);
-    vector<double>* outhandle = vectorDoubleBranchMap.at(b).second;
+    vectorDouble* inhandle = *(vectorDoubleBranchMap.at(b).first);
+    vectorDouble* outhandle = *(vectorDoubleBranchMap.at(b).second);
     for (int el=0; el<inhandle->size(); el++){
       outhandle->push_back(inhandle->at(el));
     }
@@ -93,7 +99,7 @@ void Reader::synchMappedBranches(){
 
 
 
-void Reader::run(){/*
+void Reader::run(){
   Float_t MC_weight=0;
   Int_t isSelected=0;
 
@@ -102,8 +108,7 @@ void Reader::run(){/*
   for (int f=0; f<filename.size(); f++){
     string cinput = filename.at(f);
     cout << "Processing " << cinput << "..." << endl;
-    TFile* fin = 0;
-    fin = getIntermediateFile(cinput);
+    TFile* fin = new TFile(cinput.c_str(), "read");
     if (fin!=0 && fin->IsZombie()){
       if (fin->IsOpen()) fin->Close();
       delete fin;
@@ -114,140 +119,97 @@ void Reader::run(){/*
       fin=0;
     }
     else if (fin!=0){
-      TTree* tin = (TTree*)fin->Get("tmpTree");
-      foutput->cd();
+      HVVTree* tin = new HVVTree("SelectedTree", fin);
+      if (tin->getTree()!=0){
+        tin->setOptions(options);
+        tin->bookAllBranches(true);
+        cout << "Input tree branches booked...";
+        bindInputBranches(tin);
+        cout << "bound..." << endl;
+        foutput->cd();
 
-      int nInputEvents = tin->GetEntries();
-      for (int ev=0; ev<nInputEvents; ev++){
-        double weight;
-        bool genSuccess=false, smearedSuccess=false;
+        int nInputEvents = tin->getTree()->GetEntries();
+        cout << "Number of input events to process: " << nInputEvents << endl;
+        for (int ev=0; ev<nInputEvents; ev++){
+          vector<Particle*> genParticleList;
+          vector<Particle*> recoParticleList;
+          vector<ZZCandidate*> genCandList; // Bookkeeping
+          vector<ZZCandidate*> recoCandList; // Bookkeeping
 
-        vector<Particle*> genParticleList;
-        vector<Particle*> smearedParticleList;
-        vector<ZZCandidate*> genCandList; // Bookkeeping
-        vector<ZZCandidate*> smearedCandList; // Bookkeeping
+          tree->initializeBranches();
 
-        tree->initializeBranches();
+          tin->getTree()->GetEntry(ev);
+          synchMappedBranches();
 
-        readEvent(tin, ev, genParticleList, genSuccess, smearedParticleList, smearedSuccess, weight);
+          Event genEvent, recoEvent;
 
-        if (weight!=0){
-          MC_weight = (float)weight;
+          readEvent(genEvent, true);
+          readEvent(recoEvent, false);
 
-          Event genEvent;
-          if (genSuccess){
-            genEvent.setWeight(weight);
-            vector<int> hasGenHiggs;
-            for (int p=0; p<genParticleList.size(); p++){
-              Particle* genPart = genParticleList.at(p); // Has mother info from Pythia reading
-              if (isAHiggs(genPart->id)) hasGenHiggs.push_back(p);
 
-              if (genPart->genStatus==1){
-                if (isALepton(genPart->id)) genEvent.addLepton(genPart);
-                else if (isANeutrino(genPart->id)) genEvent.addNeutrino(genPart);
-                else if (isAGluon(genPart->id) || isAQuark(genPart->id)) genEvent.addJet(genPart);
-              }
-              else if (genPart->genStatus==-1) tree->fillMotherInfo(genPart);
-            }
+          // Do magic
 
-            genEvent.constructVVCandidates(options->doGenHZZdecay(), options->genDecayProducts());
-            genEvent.addVVCandidateAppendages();
-            ZZCandidate* genCand=0;
-            if (hasGenHiggs.size()>0){
-              for (int gk=0; gk<hasGenHiggs.size(); gk++){
-                ZZCandidate* tmpCand = HiggsComparators::matchAHiggsToParticle(genEvent, genParticleList.at(hasGenHiggs.at(gk)));
-                if (tmpCand!=0){
-                  if (genCand==0) genCand=tmpCand;
-                  else genCand = HiggsComparators::candComparator(genCand, tmpCand, options->getHiggsCandidateSelectionScheme(true), options->doGenHZZdecay());
-                }
-              }
-            }
-            else genCand = HiggsComparators::candidateSelector(genEvent, options->getHiggsCandidateSelectionScheme(true), options->doGenHZZdecay());
-            if (genCand!=0) tree->fillCandidate(genCand, true);
-            else cout << cinput << " (" << ev << "): No gen. level Higgs candidate was found!" << endl;
+
+          tree->record();
+
+          for (int p=0; p<recoCandList.size(); p++){ // Bookkeeping
+            ZZCandidate* tmpCand = (ZZCandidate*)recoCandList.at(p);
+            if (tmpCand!=0) delete tmpCand;
+          }
+          for (int p=0; p<recoParticleList.size(); p++){ // Bookkeeping
+            Particle* tmpPart = (Particle*)recoParticleList.at(p);
+            if (tmpPart!=0) delete tmpPart;
           }
 
-          Event smearedEvent;
-          if (smearedSuccess){
-            smearedEvent.setWeight(weight);
-            for (int p=0; p<smearedParticleList.size(); p++){
-              Particle* smearedPart = smearedParticleList.at(p);
-              if (isALepton(smearedPart->id)) smearedEvent.addLepton(smearedPart);
-              else if (isANeutrino(smearedPart->id)) smearedEvent.addNeutrino(smearedPart);
-              else if (smearedPart->id==0) smearedEvent.addJet(smearedPart);
-              else smearedEvent.addParticle(smearedPart);
-            }
-            smearedEvent.constructVVCandidates(options->doRecoHZZdecay(), options->recoDecayProducts());
-            smearedEvent.applyParticleSelection();
-            smearedEvent.addVVCandidateAppendages();
-            ZZCandidate* rCand = HiggsComparators::candidateSelector(smearedEvent, options->getHiggsCandidateSelectionScheme(false), options->doRecoHZZdecay());
-            if (rCand!=0){
-              isSelected=1;
-              tree->fillCandidate(rCand, false);
-            }
-            else isSelected=0;
+          for (int p=0; p<genCandList.size(); p++){ // Bookkeeping
+            ZZCandidate* tmpCand = (ZZCandidate*)genCandList.at(p);
+            if (tmpCand!=0) delete tmpCand;
           }
-        }
+          for (int p=0; p<genParticleList.size(); p++){ // Bookkeeping
+            Particle* tmpPart = (Particle*)genParticleList.at(p);
+            if (tmpPart!=0) delete tmpPart;
+          }
 
-        tree->fillEventVariables(MC_weight, isSelected);
-        if ((genSuccess || smearedSuccess) && weight!=0) tree->record();
-
-        for (int p=0; p<smearedCandList.size(); p++){ // Bookkeeping
-          ZZCandidate* tmpCand = (ZZCandidate*)smearedCandList.at(p);
-          if (tmpCand!=0) delete tmpCand;
+          // Bookkeeping
+          recoCandList.clear();
+          recoParticleList.clear();
+          genCandList.clear();
+          genParticleList.clear();
         }
-        for (int p=0; p<smearedParticleList.size(); p++){ // Bookkeeping
-          Particle* tmpPart = (Particle*)smearedParticleList.at(p);
-          if (tmpPart!=0) delete tmpPart;
-        }
-
-        for (int p=0; p<genCandList.size(); p++){ // Bookkeeping
-          ZZCandidate* tmpCand = (ZZCandidate*)genCandList.at(p);
-          if (tmpCand!=0) delete tmpCand;
-        }
-        for (int p=0; p<genParticleList.size(); p++){ // Bookkeeping
-          Particle* tmpPart = (Particle*)genParticleList.at(p);
-          if (tmpPart!=0) delete tmpPart;
-        }
-
-        // Bookkeeping
-        smearedCandList.clear();
-        smearedParticleList.clear();
-        genCandList.clear();
-        genParticleList.clear();
+        resetBranchBinding();
       }
-
+      delete tin;
       fin->Close();
     }
   }
   finalizeRun();
-*/}
+}
 
 
 
-void Reader::readEvent(TTree* tin, int ev, bool isGen, Event& outEvent){/*
+void Reader::readEvent(Event& outEvent, bool isGen){/*
   int nEvents = tin->GetEntries();
-  vector<double> weights;
+  vectorDouble weights;
   if (ev>=nEvents){
     double weight = 0;
     genSuccess=false;
-    smearedSuccess=false;
+    recoSuccess=false;
     weights.push_back(0);
   }
   else{
-    vector<double>* geneventinfoweights=0;
+    vectorDouble* geneventinfoweights=0;
     TBranch* b_geneventinfoweights=0;
 
-    vector<double>* reco_GenParticle_FV[4]={ 0 };
-    vector<int>* reco_GenParticle_id=0;
-    vector<int>* reco_GenParticle_status=0;
+    vectorDouble* reco_GenParticle_FV[4]={ 0 };
+    vectorInt* reco_GenParticle_id=0;
+    vectorInt* reco_GenParticle_status=0;
     TBranch* b_reco_GenParticle_FV[4]={ 0 };
     TBranch* b_reco_GenParticle_id=0;
     TBranch* b_reco_GenParticle_status=0;
 
-    vector<double>* reco_GenJet_FV[4]={ 0 };
-    vector<int>* reco_GenJet_id=0;
-    vector<int>* reco_GenJet_status=0;
+    vectorDouble* reco_GenJet_FV[4]={ 0 };
+    vectorInt* reco_GenJet_id=0;
+    vectorInt* reco_GenJet_status=0;
     TBranch* b_reco_GenJet_FV[4]={ 0 };
     TBranch* b_reco_GenJet_id=0;
     TBranch* b_reco_GenJet_status=0;
@@ -303,14 +265,14 @@ void Reader::readEvent(TTree* tin, int ev, bool isGen, Event& outEvent){/*
       onePart->setLifetime(0);
       recoCollection.push_back(onePart);
     }
-    smearedSuccess=(recoCollection.size()>0);
+    recoSuccess=(recoCollection.size()>0);
 
     tin->ResetBranchAddresses();
 
     if (geneventinfoweights!=0 && geneventinfoweights->size()>0){
       for (int w=0; w<geneventinfoweights->size(); w++) weights.push_back(geneventinfoweights->at(w));
     }
-    else if (!smearedSuccess && !genSuccess) weights.push_back(0);
+    else if (!recoSuccess && !genSuccess) weights.push_back(0);
     else weights.push_back(1.);
   }
   eventWeight = weights.at(0);

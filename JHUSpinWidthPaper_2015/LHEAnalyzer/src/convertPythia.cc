@@ -68,7 +68,7 @@ void convertPythia::run(){
           Event genEvent;
           if (genSuccess){
             genEvent.setWeight(weight);
-            vector<int> hasGenHiggs;
+            vectorInt hasGenHiggs;
             for (int p=0; p<genParticleList.size(); p++){
               Particle* genPart = genParticleList.at(p); // Has mother info from Pythia reading
               if (isAHiggs(genPart->id)) hasGenHiggs.push_back(p);
@@ -172,7 +172,7 @@ TFile* convertPythia::getIntermediateFile(string cinput){
 
 void convertPythia::readEvent(TTree* tin, int ev, vector<Particle*>& genCollection, bool& genSuccess, vector<Particle*>& recoCollection, bool& smearedSuccess, double& eventWeight){
   int nEvents = tin->GetEntries();
-  vector<double> weights;
+  vectorDouble weights;
   if (ev>=nEvents){
     double weight = 0;
     genSuccess=false;
@@ -180,19 +180,19 @@ void convertPythia::readEvent(TTree* tin, int ev, vector<Particle*>& genCollecti
     weights.push_back(0);
   }
   else{
-    vector<double>* geneventinfoweights=0;
+    vectorDouble* geneventinfoweights=0;
     TBranch* b_geneventinfoweights=0;
 
-    vector<double>* reco_GenParticle_FV[4]={ 0 };
-    vector<int>* reco_GenParticle_id=0;
-    vector<int>* reco_GenParticle_status=0;
+    vectorDouble* reco_GenParticle_FV[4]={ 0 };
+    vectorInt* reco_GenParticle_id=0;
+    vectorInt* reco_GenParticle_status=0;
     TBranch* b_reco_GenParticle_FV[4]={ 0 };
     TBranch* b_reco_GenParticle_id=0;
     TBranch* b_reco_GenParticle_status=0;
 
-    vector<double>* reco_GenJet_FV[4]={ 0 };
-    vector<int>* reco_GenJet_id=0;
-    vector<int>* reco_GenJet_status=0;
+    vectorDouble* reco_GenJet_FV[4]={ 0 };
+    vectorInt* reco_GenJet_id=0;
+    vectorInt* reco_GenJet_status=0;
     TBranch* b_reco_GenJet_FV[4]={ 0 };
     TBranch* b_reco_GenJet_id=0;
     TBranch* b_reco_GenJet_status=0;

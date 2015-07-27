@@ -8,12 +8,14 @@
 
 class HVVTree : public BaseTree{
 public:
-  HVVTree():BaseTree(){};
-  HVVTree(string treename) : BaseTree(treename){};
-  HVVTree(string treename, string treetitle) : BaseTree(treename, treetitle){};
+  HVVTree():BaseTree(), options(0){}
+  HVVTree(string treename) : BaseTree(treename), options(0){}
+  HVVTree(string treename, string treetitle) : BaseTree(treename, treetitle), options(0){}
+  HVVTree(string treename, TFile* fin) : BaseTree(treename, fin), options(0){}
+
+  void setOptions(OptionParser* options_){ options=options_; }
 
   void bookAllBranches(bool doSetAddress);
-  void setOptions(OptionParser* options_){ options=options_; };
 
   void fillEventVariables(Float_t weight, Int_t passSelection);
   void fillMotherInfo(Particle* mother);
