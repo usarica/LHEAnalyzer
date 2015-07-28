@@ -47,6 +47,8 @@ public:
   }
   Int_t genDecayProducts(){ return genDecayMode; }
   Int_t recoDecayProducts(){ return recoDecayMode; }
+  Int_t recoSelectionMode(){ return recoSelBehaviour; }
+  Int_t recoSmearingMode(){ return recoSmearBehaviour; }
   HiggsComparators::CandidateSelection getHiggsCandidateSelectionScheme(bool isGen=false){ if (isGen) return genHiggsCandidateSelectionScheme; else return recoHiggsCandidateSelectionScheme; }
   string inputDir(){ return indir; }
   string outputDir(){ return outdir; }
@@ -68,6 +70,8 @@ protected:
   Int_t isRecoHZZ;
   Int_t genDecayMode;
   Int_t recoDecayMode;
+  Int_t recoSelBehaviour;
+  Int_t recoSmearBehaviour;
   HiggsComparators::CandidateSelection genHiggsCandidateSelectionScheme;
   HiggsComparators::CandidateSelection recoHiggsCandidateSelectionScheme;
   string indir;

@@ -39,7 +39,7 @@ public:
 protected:
   void configure();
   void finalizeRun();
-  void readEvent(Event& outEvent, bool isGen);
+  void readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen);
 
   void bindInputBranches(HVVTree* tin);
   void synchMappedBranches();

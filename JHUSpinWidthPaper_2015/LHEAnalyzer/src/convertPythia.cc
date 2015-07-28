@@ -109,7 +109,7 @@ void convertPythia::run(){
               else smearedEvent.addParticle(smearedPart);
             }
             smearedEvent.constructVVCandidates(options->doRecoHZZdecay(), options->recoDecayProducts());
-            smearedEvent.applyParticleSelection();
+            if (options->recoSelectionMode()==0) smearedEvent.applyParticleSelection();
             smearedEvent.addVVCandidateAppendages();
             ZZCandidate* rCand = HiggsComparators::candidateSelector(smearedEvent, options->getHiggsCandidateSelectionScheme(false), options->doRecoHZZdecay());
             if (rCand!=0){
@@ -244,6 +244,11 @@ void convertPythia::readEvent(TTree* tin, int ev, vector<Particle*>& genCollecti
       TLorentzVector partFourVec(reco_GenJet_FV[0]->at(a), reco_GenJet_FV[1]->at(a), reco_GenJet_FV[2]->at(a), reco_GenJet_FV[3]->at(a));
 
       Particle* onePart = new Particle(idup, partFourVec);
+      if (options->recoSmearingMode()>0){ // Reverse of LHE mode
+        Particle* smearedPart = LHEParticleSmear::smearParticle(onePart);
+        delete onePart;
+        onePart = smearedPart;
+      }
       onePart->setGenStatus(PDGHelpers::convertPythiaStatus(istup));
       onePart->setLifetime(0);
       recoCollection.push_back(onePart);

@@ -61,7 +61,14 @@ void convertLHE::run(){
               else if (isANeutrino(genPart->id)) genEvent.addNeutrino(genPart);
               else if (isAGluon(genPart->id) || isAQuark(genPart->id)) genEvent.addJet(genPart);
 
-              Particle* smearedPart = smearParticle(genPart); // Has no mother info
+              Particle* smearedPart; // Has no mother info
+              if (options->recoSmearingMode()==0) smearedPart = smearParticle(genPart);
+              else{
+                int recoid = genPart->id;
+                TLorentzVector recofv;
+                recofv.SetXYZT(genPart->x(), genPart->y(), genPart->z(), genPart->t());
+                smearedPart = new Particle(recoid, recofv);
+              }
               smearedParticleList.push_back(smearedPart);
               if (isALepton(smearedPart->id)) smearedEvent.addLepton(smearedPart);
               else if (isANeutrino(smearedPart->id)) smearedEvent.addNeutrino(smearedPart);
@@ -93,7 +100,7 @@ void convertLHE::run(){
           else cout << cinput << " (" << nProcessed << "): No gen. level Higgs candidate was found!" << endl;
 
           smearedEvent.constructVVCandidates(options->doRecoHZZdecay(), options->recoDecayProducts());
-          smearedEvent.applyParticleSelection();
+          if (options->recoSelectionMode()==0) smearedEvent.applyParticleSelection();
           smearedEvent.addVVCandidateAppendages();
           ZZCandidate* rCand = HiggsComparators::candidateSelector(smearedEvent, options->getHiggsCandidateSelectionScheme(false), options->doRecoHZZdecay());
           if (rCand!=0){

@@ -67,6 +67,33 @@ void Event::applyZZSelection(){
   }
 }
 
+void Event::addZZCandidate(ZZCandidate* myParticle){
+  bool isIdentical = (getNZZCandidates()>0);
+  for (int cc=0; cc<getNZZCandidates(); cc++){
+    ZZCandidate* testCand = ZZcandidates.at(cc);
+
+    for (int i=0; i<2; i++){
+      Particle* testV = testCand->getSortedV(i);
+      Particle* partV = myParticle->getSortedV(i);
+      if (partV==0 || testV==0){
+        if (partV==0 && testV==0) continue; // Check the next intermediate V if there is any.
+        else { isIdentical=false; break; } // They are definitely not the same.
+      }
+      if (testV->getNDaughters() != partV->getNDaughters()) { isIdentical=false;  break; }; // Again, they cannot be the same.
+      for (int j=0; j<testV->getNDaughters(); j++){
+        Particle* testD = testV->getDaughter(j);
+        Particle* partD = partV->getDaughter(j);
+        isIdentical = isIdentical && (testD==partD);
+        if (!isIdentical) break;
+      }
+      if (!isIdentical) break;
+    }
+    if (!isIdentical) break;
+  }
+  if (!isIdentical) ZZcandidates.push_back(myParticle);
+  else { delete myParticle; myParticle=0; }
+}
+
 void Event::constructVVCandidates(bool isZZ, int fstype){
   /*
   ZZ / WW

@@ -143,8 +143,8 @@ void Reader::run(){
 
           Event genEvent, recoEvent;
 
-          readEvent(genEvent, true);
-          readEvent(recoEvent, false);
+          readEvent(genEvent, genParticleList, true);
+          readEvent(recoEvent, recoParticleList, false);
 
 
           // Do magic
@@ -187,94 +187,155 @@ void Reader::run(){
 
 
 
-void Reader::readEvent(Event& outEvent, bool isGen){/*
-  int nEvents = tin->GetEntries();
-  vectorDouble weights;
-  if (ev>=nEvents){
-    double weight = 0;
-    genSuccess=false;
-    recoSuccess=false;
-    weights.push_back(0);
+void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen){
+  string varname;
+
+  string isSelected = "isSelected";
+
+  string strId = "Id";
+  vector<string> strMassPtEtaPhi; strMassPtEtaPhi.push_back("Pt"); strMassPtEtaPhi.push_back("Eta"); strMassPtEtaPhi.push_back("Phi"); strMassPtEtaPhi.push_back("Mass");
+  vector<string> strMassPtPzPhi; strMassPtPzPhi.push_back("Pt"); strMassPtPzPhi.push_back("Eta"); strMassPtPzPhi.push_back("Phi"); strMassPtPzPhi.push_back("Mass");
+
+  string strLepCore = "Lep";
+  if (isGen) strLepCore.insert(0, "Gen");
+
+  // Search the tree for the Higgs daughters
+  vector<Particle*> candFinalDaughters;
+  for (int v=0; v<2; v++){
+    for (int d=0; d<2; d++){
+      int iPart = 2*v+d+1;
+      char cIPart[2];
+      sprintf(cIPart, "%i", iPart);
+      string strIPart = string(cIPart);
+
+      bool success=true;
+      Float_t* ref_partFV[4]={ 0 };
+      // Get Lep1-4 PtEtaPhiM
+      for (int fv=0; fv<4; fv++){
+        varname = strLepCore + strIPart + strMassPtEtaPhi.at(fv);
+        ref_partFV[fv] = (Float_t*)tree->getBranchHandleRef(varname);
+        if (ref_partFV[fv]==0){ success=false; break; }
+      }
+      varname = strLepCore + strIPart + strId;
+      Int_t* ref_partId = (Int_t*)tree->getBranchHandleRef(varname);
+      if (ref_partId==0) success=false;
+      if (!success) continue;
+
+      Int_t partId = *ref_partId;
+      TLorentzVector partFV; partFV.SetPtEtaPhiM(*(ref_partFV[0]), *(ref_partFV[1]), *(ref_partFV[2]), *(ref_partFV[3]));
+      Particle* part = new Particle((int)partId, partFV);
+      particles.push_back(part);
+      candFinalDaughters.push_back(part);
+    }
+  }
+
+  // Search the tree for the associated particles
+  vector<Particle*> associatedParticles;
+  string strAPCore = "AssociatedParticle";
+  if (isGen) strAPCore.insert(0, "Gen");
+  vectorDouble** ref_apartFV[4];
+  bool apart_success=true;
+  for (int fv=0; fv<4; fv++){
+    varname = strAPCore + strMassPtEtaPhi.at(fv);
+    ref_apartFV[fv] = (vectorDouble**)tree->getBranchHandleRef(varname);
+    if (ref_apartFV[fv]==0) { apart_success=false; break; }
+    else if ((*ref_apartFV[fv])==0) { apart_success=false; break; }
+  }
+  varname = strAPCore + strId;
+  vectorInt** ref_apartId = (vectorInt**)tree->getBranchHandleRef(varname);
+  if (ref_apartId==0) apart_success=false;
+  if ((*ref_apartId)==0) apart_success=false;
+  if (apart_success){
+    vectorInt* idhandle = *ref_apartId;
+    vectorDouble* fvhandle[4];
+
+    for (int fv=0; fv<4; fv++){
+      fvhandle[fv]=*(ref_apartFV[fv]);
+      if (fvhandle[fv]->size()!=idhandle->size()) { apart_success=false; break; }
+    }
+    for (int el=0; el<idhandle->size(); el++){
+      Int_t partId = idhandle->at(el);
+      TLorentzVector partFV; partFV.SetPtEtaPhiM(fvhandle[0]->at(el), fvhandle[1]->at(el), fvhandle[2]->at(el), fvhandle[3]->at(el));
+      Particle* part = new Particle((int)partId, partFV);
+      particles.push_back(part);
+      associatedParticles.push_back(part);
+    }
+  }
+
+  // Reconstruct the gen and reco candidates
+  if (isGen){
+    for (int d=0; d<candFinalDaughters.size(); d++){
+      Particle* part = candFinalDaughters.at(d);
+      if (isALepton(part->id)) outEvent.addLepton(part);
+      else if (isANeutrino(part->id)) outEvent.addNeutrino(part);
+      else if (isAGluon(part->id) || isAQuark(part->id)) outEvent.addJet(part);
+      else if (part->id==0) outEvent.addJet(part);
+      else outEvent.addParticle(part);
+    }
+    outEvent.constructVVCandidates(options->doGenHZZdecay(), options->genDecayProducts());
+    for (int d=0; d<associatedParticles.size(); d++){
+      Particle* part = associatedParticles.at(d);
+      if (isALepton(part->id)) outEvent.addLepton(part);
+      else if (isANeutrino(part->id)) outEvent.addNeutrino(part);
+      else if (isAGluon(part->id) || isAQuark(part->id)) outEvent.addJet(part);
+      else if (part->id==0) outEvent.addJet(part);
+      else outEvent.addParticle(part);
+    }
   }
   else{
-    vectorDouble* geneventinfoweights=0;
-    TBranch* b_geneventinfoweights=0;
+    for (int d=0; d<candFinalDaughters.size(); d++){
+      Particle* part = candFinalDaughters.at(d);
+      if (isALepton(part->id)) outEvent.addLepton(part);
+      else if (isANeutrino(part->id)) outEvent.addNeutrino(part);
+      else if (isAGluon(part->id) || isAQuark(part->id)) outEvent.addJet(part);
+      else if (part->id==0) outEvent.addJet(part);
+      else outEvent.addParticle(part);
+    }
 
-    vectorDouble* reco_GenParticle_FV[4]={ 0 };
-    vectorInt* reco_GenParticle_id=0;
-    vectorInt* reco_GenParticle_status=0;
-    TBranch* b_reco_GenParticle_FV[4]={ 0 };
-    TBranch* b_reco_GenParticle_id=0;
-    TBranch* b_reco_GenParticle_status=0;
-
-    vectorDouble* reco_GenJet_FV[4]={ 0 };
-    vectorInt* reco_GenJet_id=0;
-    vectorInt* reco_GenJet_status=0;
-    TBranch* b_reco_GenJet_FV[4]={ 0 };
-    TBranch* b_reco_GenJet_id=0;
-    TBranch* b_reco_GenJet_status=0;
-
-    tin->SetBranchAddress("genWeights", &geneventinfoweights, &b_geneventinfoweights);
-
-    tin->SetBranchAddress("reco_GenParticle_X", reco_GenParticle_FV, b_reco_GenParticle_FV);
-    tin->SetBranchAddress("reco_GenParticle_Y", reco_GenParticle_FV+1, b_reco_GenParticle_FV+1);
-    tin->SetBranchAddress("reco_GenParticle_Z", reco_GenParticle_FV+2, b_reco_GenParticle_FV+2);
-    tin->SetBranchAddress("reco_GenParticle_E", reco_GenParticle_FV+3, b_reco_GenParticle_FV+3);
-    tin->SetBranchAddress("reco_GenParticle_id", &reco_GenParticle_id, &b_reco_GenParticle_id);
-    tin->SetBranchAddress("reco_GenParticle_status", &reco_GenParticle_status, &b_reco_GenParticle_status);
-
-    tin->SetBranchAddress("reco_GenJet_X", reco_GenJet_FV, b_reco_GenJet_FV);
-    tin->SetBranchAddress("reco_GenJet_Y", reco_GenJet_FV+1, b_reco_GenJet_FV+1);
-    tin->SetBranchAddress("reco_GenJet_Z", reco_GenJet_FV+2, b_reco_GenJet_FV+2);
-    tin->SetBranchAddress("reco_GenJet_E", reco_GenJet_FV+3, b_reco_GenJet_FV+3);
-    tin->SetBranchAddress("reco_GenJet_id", &reco_GenJet_id, &b_reco_GenJet_id);
-    tin->SetBranchAddress("reco_GenJet_status", &reco_GenJet_status, &b_reco_GenJet_status);
-
-    tin->GetEntry(ev);
-
-    // Gen. particles
-    int motherID[2];
-    int mctr=0;
-    for (int a = 0; a < reco_GenParticle_id->size(); a++){
-      int istup = reco_GenParticle_status->at(a);
-      if (istup==21 && mctr<2){
-        motherID[mctr] = a;
-        mctr++;
+    if (options->recoSelectionMode()==0){
+      outEvent.constructVVCandidates(options->doRecoHZZdecay(), options->recoDecayProducts());
+      for (int d=0; d<associatedParticles.size(); d++){
+        Particle* part = associatedParticles.at(d);
+        if (isALepton(part->id)) outEvent.addLepton(part);
+        else if (isANeutrino(part->id)) outEvent.addNeutrino(part);
+        else if (isAGluon(part->id) || isAQuark(part->id)) outEvent.addJet(part);
+        else if (part->id==0) outEvent.addJet(part);
+        else outEvent.addParticle(part);
       }
-      int idup = reco_GenParticle_id->at(a);
-      TLorentzVector partFourVec(reco_GenParticle_FV[0]->at(a), reco_GenParticle_FV[1]->at(a), reco_GenParticle_FV[2]->at(a), reco_GenParticle_FV[3]->at(a));
-
-      Particle* onePart = new Particle(idup, partFourVec);
-      onePart->setGenStatus(PDGHelpers::ReaderStatus(istup));
-      onePart->setLifetime(0);
-      genCollection.push_back(onePart);
     }
-    // Assign the mothers
-    for (int a = 0; a < genCollection.size(); a++){
-      for(int m=0;m<2;m++) genCollection.at(a)->addMother(genCollection.at(motherID[m]));
+    else{
+      for (int d=0; d<associatedParticles.size(); d++){
+        Particle* part = associatedParticles.at(d);
+        if (isALepton(part->id)) outEvent.addLepton(part);
+        else if (isANeutrino(part->id)) outEvent.addNeutrino(part);
+        else if (isAGluon(part->id) || isAQuark(part->id)) outEvent.addJet(part);
+        else if (part->id==0) outEvent.addJet(part);
+        else outEvent.addParticle(part);
+      }
+      outEvent.constructVVCandidates(options->doRecoHZZdecay(), options->recoDecayProducts());
+      outEvent.applyParticleSelection();
     }
-    genSuccess=(genCollection.size()>0);
-    // Reco. particles
-    for (int a = 0; a < reco_GenJet_id->size(); a++){
-      int istup = reco_GenJet_status->at(a);
-      int idup = reco_GenJet_id->at(a);
-      TLorentzVector partFourVec(reco_GenJet_FV[0]->at(a), reco_GenJet_FV[1]->at(a), reco_GenJet_FV[2]->at(a), reco_GenJet_FV[3]->at(a));
-
-      Particle* onePart = new Particle(idup, partFourVec);
-      onePart->setGenStatus(PDGHelpers::ReaderStatus(istup));
-      onePart->setLifetime(0);
-      recoCollection.push_back(onePart);
-    }
-    recoSuccess=(recoCollection.size()>0);
-
-    tin->ResetBranchAddresses();
-
-    if (geneventinfoweights!=0 && geneventinfoweights->size()>0){
-      for (int w=0; w<geneventinfoweights->size(); w++) weights.push_back(geneventinfoweights->at(w));
-    }
-    else if (!recoSuccess && !genSuccess) weights.push_back(0);
-    else weights.push_back(1.);
   }
-  eventWeight = weights.at(0);
-*/}
+  outEvent.addVVCandidateAppendages();
+
+/*
+  if (isGen) cout << "NGenCandidates: " << outEvent.getNZZCandidates() << endl;
+  else cout << "NRecoCandidates: " << outEvent.getNZZCandidates() << endl;
+  for (int cc=0; cc<outEvent.getNZZCandidates(); cc++){
+  cout << outEvent.getZZCandidate(cc)->m()
+  << " ("
+  << outEvent.getZZCandidate(cc)->getSortedV(0)->m()
+  << " -> "
+  << "pT = " << outEvent.getZZCandidate(cc)->getSortedV(0)->getDaughter(0)->pt() << " + " << outEvent.getZZCandidate(cc)->getSortedV(0)->getDaughter(1)->pt()
+  << ", "
+  << outEvent.getZZCandidate(cc)->getSortedV(1)->m()
+  << " -> "
+  << "pT = " << outEvent.getZZCandidate(cc)->getSortedV(1)->getDaughter(0)->pt() << " + " << outEvent.getZZCandidate(cc)->getSortedV(1)->getDaughter(1)->pt()
+  << ")\n";
+  }
+  if (isGen) cout << "Recorded (m1, m2): (" << *((Float_t*)tree->getBranchHandleRef("GenZ1Mass")) << ", " << *((Float_t*)tree->getBranchHandleRef("GenZ2Mass")) << ")\n";
+  else cout << "Recorded (m1, m2): (" << *((Float_t*)tree->getBranchHandleRef("Z1Mass")) << ", " << *((Float_t*)tree->getBranchHandleRef("Z2Mass")) << ")\n";
+  cout << endl;
+*/
+}
 

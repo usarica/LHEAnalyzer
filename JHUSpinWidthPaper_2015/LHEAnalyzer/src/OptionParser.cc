@@ -13,6 +13,8 @@ isGenHZZ(1), // H->ZZ or H->WW
 isRecoHZZ(1), // H->ZZ or H->WW
 genDecayMode(0), // 4l with HZZ, 2l2nu with HWW, see Event::constructVVCandidates(bool isZZ, int fstype)
 recoDecayMode(0), // 4l with HZZ, 2l2nu with HWW, see Event::constructVVCandidates(bool isZZ, int fstype)
+recoSelBehaviour(0),
+recoSmearBehaviour(0),
 genHiggsCandidateSelectionScheme(HiggsComparators::BestZ1ThenZ2ScSumPt),
 recoHiggsCandidateSelectionScheme(HiggsComparators::BestZ1ThenZ2ScSumPt),
 indir("./"),
@@ -110,6 +112,8 @@ void OptionParser::interpretOption(string wish, string value){
   else if (wish=="isRecoHZZ") isRecoHZZ = (int)atoi(value.c_str());
   else if (wish=="genDecayMode") genDecayMode = (int)atoi(value.c_str());
   else if (wish=="recoDecayMode") recoDecayMode = (int)atoi(value.c_str());
+  else if (wish=="recoSelBehaviour" || wish=="recoSelBehavior") recoSelBehaviour = (int)atoi(value.c_str());
+  else if (wish=="recoSmearBehaviour" || wish=="recoSmearBehavior") recoSmearBehaviour = (int)atoi(value.c_str());
   else if (wish=="genCandidateSelection" || wish=="genCandSel"){
     if (value=="BestZ1ThenZ2" || value=="BestZ1ThenZ2ScSumPt") genHiggsCandidateSelectionScheme = HiggsComparators::BestZ1ThenZ2ScSumPt;
   }
@@ -130,7 +134,7 @@ void OptionParser::printOptionsHelp(){
 
   cout << "- No option specifier: Input files with extension .lhe or .root. Multiple input files can be passed as different arguments.\n\n";
   cout << "- indir: Location of input files. Default=\"./\"\n\n";
-  cout << "- fileLevel: -1: ReadMode, 0==LHE, 1==Pythia8. \".lhe\" extension only allowed for 0, and \".root\" is the only format for the others. Default=0\n\n";
+  cout << "- fileLevel: -1==ReadMode, 0==LHE, 1==Pythia8. \".lhe\" extension only allowed for 0, and \".root\" is the only format for the others. Default=0\n\n";
   cout << "- outfile: Output file name. Default=\"tmp.root\"\n\n";
   cout << "- outdir: Location of the output file. Default=\"./\"\n\n";
   cout << "- tmpDir: Location of temporary files. Default=\"./tmpStore/\"\n\n";
@@ -142,6 +146,8 @@ void OptionParser::printOptionsHelp(){
   cout << "- removeDaughterMasses: Flag to control the removal of lepton masses in the angle computation. Default=1\n\n";
   cout << "- isGenHZZ, isRecoHZZ: Gen. or reco. H->VV decay. 0==H->ZZ decay, 1==H->WW decay. isGenHZZ also (re)sets the default V mass in H->VV decay. Defaults=(0, 0)\n\n";
   cout << "- genDecayMode, recoDecayMode: Gen. or reco. H->VV->final states. Defaults=(0, 0)\n\tIf H->ZZ decay is specified, 0-5==4l, 4q, 2l2q, 2l2nu, 2q2nu, 4nu.\n\tIf H->WW decay is specified, 0-2==2l2nu, 4nu, lnu2q.\n\n";
+  cout << "- recoSelBehavior / recoSelBehaviour: Selection behaviour on all reco. final states. Default=0.\n\t0==Apply selection in LHE and Pythia modes, apply no re-selection in ReadMode.\n\t1==!0.\n\n";
+  cout << "- recoSmearBehavior / recoSmearBehaviour: Smearing behaviour on all reco. final states. Does not apply to ReadMode. Default=0.\n\t0==Apply smearing in LHE mode, no smearing in Pythia mode\n\t1==!0 \n\n";
 
   cout << "- genCandidateSelection, recoCandidateSelection: Higgs candidate selection algorithm. Values accepted are\n\t->BestZ1ThenZ2 (=BestZ1ThenZ2ScSumPt).\n\tDefaults==(BestZ1ThenZ2, BestZ1ThenZ2)\n\n";
 
