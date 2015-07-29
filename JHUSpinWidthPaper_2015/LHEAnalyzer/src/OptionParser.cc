@@ -46,7 +46,7 @@ void OptionParser::analyze(){
   else{
     for (int f=0; f<filename.size(); f++){
       if ((filename.at(f).find(".lhe")!=string::npos && fileLevel!=0) || (filename.at(f).find(".root")!=string::npos && fileLevel==0)){
-        cerr << "Inconsistent fila name " << filename.at(f) << " and fileLevel option " << fileLevel << "!" << endl;
+        cerr << "Inconsistent file name " << filename.at(f) << " and fileLevel option " << fileLevel << "!" << endl;
         if(!hasInvalidOption) hasInvalidOption=true;
       }
     }
@@ -129,13 +129,30 @@ void OptionParser::extractMelaGenProdId(string rawoption){
     else tmpProd = TVar::ZZGG;
 
     if (prod_me_pair.at(1) == "MCFM") tmpME = TVar::MCFM;
-    else if (prod_me_pair.at(1) == "Analytical") tmpME = TVar::ANALYTICAL;
     else tmpME = TVar::JHUGen;
 
     pair<TVar::Production, TVar::MatrixElement> tmpPair(tmpProd, tmpME);
     sampleProductionId = tmpPair;
     cout << sampleProductionId.first << '\t' << sampleProductionId.second << endl;
   }
+}
+Bool_t OptionParser::checkListVariable(vector<string>& list, string var){
+  for (int v=0; v<list.size(); v++){
+    if (list.at(v)==var) return true; // Look for exact match
+  }
+  return false;
+}
+Bool_t OptionParser::hasGenDecayME(string str){
+  return (checkListVariable(includeGenDecayProb, str) && processGenInfo());
+}
+Bool_t OptionParser::hasRecoDecayME(string str){
+  return (checkListVariable(includeRecoDecayProb, str) && processRecoInfo());
+}
+Bool_t OptionParser::hasRecoProdME(string str){
+  return (checkListVariable(includeRecoProdProb, str) && processRecoInfo());
+}
+Bool_t OptionParser::hasGenProdME(string str){ // This one is a little bit trickier to avoid unneeded gen. prod. MEs
+  return (checkListVariable(includeGenProdProb, str) && processGenInfo());
 }
 
 

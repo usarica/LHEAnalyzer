@@ -28,16 +28,8 @@ public:
   void printOptionsHelp();
   void printOptionSummary();
 
-  Double_t mH(){ return mPOLE; }
-  Double_t GammaH(){ return wPOLE; }
-  Int_t sqrts(){ return erg_tev; }
-//  Int_t addGenDecayME(){ return includeGenDecayProb; }
-//  Int_t addRecoDecayME(){ return includeRecoDecayProb; }
-//  Int_t addGenProdME(){ return includeGenProdProb; }
-//  Int_t addRecoProdME(){ return includeRecoProdProb; }
   Bool_t processGenInfo(){ bool doProcess=true; if (includeGenInfo==0) doProcess=false; return doProcess; }
   Bool_t processRecoInfo(){ bool doProcess=true; if (includeRecoInfo==0) doProcess=false; return doProcess; }
-  Bool_t doRemoveLepMasses(){ bool doProcess=true; if (removeDaughterMasses==0) doProcess=false; return doProcess; }
   Bool_t isAnExcludedBranch(string branchname);
   Int_t analysisLevel(){ return fileLevel; }
   Bool_t doGenHZZdecay(){
@@ -61,10 +53,25 @@ public:
   string outputFilename(){ return coutput; }
   vector<string> inputfiles(){ return filename; }
 
+  // MELA-related options
+  Double_t mH(){ return mPOLE; }
+  Double_t GammaH(){ return wPOLE; }
+  Int_t sqrts(){ return erg_tev; }
+  Bool_t initializeMELA(){ return (includeGenDecayProb.size()>0 || includeRecoDecayProb.size()>0 || includeGenProdProb.size()>0 || includeRecoProdProb.size()>0); }
+  Bool_t doRemoveLepMasses(){ bool doProcess=true; if (removeDaughterMasses==0) doProcess=false; return doProcess; }
+  Bool_t hasGenDecayME(string str);
+  Bool_t hasRecoDecayME(string str);
+  Bool_t hasGenProdME(string str);
+  Bool_t hasRecoProdME(string str);
+  pair<TVar::Production, TVar::MatrixElement> getSampleProductionId(){ return sampleProductionId; }
+
+
 protected:
   void configureMela();
   void deconfigureMela();
   void extractMelaGenProdId(string rawoption);
+
+  Bool_t checkListVariable(vector<string>& list, string var);
 
   vector<string> rawOptions;
 
@@ -92,7 +99,7 @@ protected:
   vector<string> filename;
   vector<string> excludedBranch;
 
-  // Mela probabilities to include, in abbreviated form
+  // Mela probabilities to include, has to be in abbreviated form (eg. "All", "None", "p0plus", "g1", "g1_prime2" etc.)
   pair<TVar::Production, TVar::MatrixElement> sampleProductionId;
   vector<string> includeGenDecayProb;
   vector<string> includeRecoDecayProb;

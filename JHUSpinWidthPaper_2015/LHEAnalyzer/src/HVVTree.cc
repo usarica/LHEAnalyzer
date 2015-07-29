@@ -166,8 +166,274 @@ void HVVTree::bookAllBranches(bool doSetAddress){
     reserveBranch("Lep3Id", BranchTypes::bInt, doSetAddress);
     reserveBranch("Lep4Id", BranchTypes::bInt, doSetAddress);
   }
+  if (options->initializeMELA()) setMELABranches(doSetAddress);
   actuateBranches(doSetAddress);
 }
+
+void HVVTree::constructMELABranchList(){
+  vector<string> blist;
+
+  // Add gen. prod. MEs
+  TVar::Production prod = options->getSampleProductionId().first;
+  TVar::MatrixElement me = options->getSampleProductionId().second;
+  setupMELASignalMECases(blist, prod, me, true, true);
+
+  cout << "constructMELABranchList: Gen prod MES done" << endl;
+
+  // Reco. prod. MEs
+  me = TVar::JHUGen;
+  prod = TVar::ZZGG; setupMELASignalMECases(blist, prod, me, false, true);
+  prod = TVar::JJGG; setupMELASignalMECases(blist, prod, me, false, true);
+  prod = TVar::JJVBF; setupMELASignalMECases(blist, prod, me, false, true);
+  prod = TVar::ZH; setupMELASignalMECases(blist, prod, me, false, true);
+  prod = TVar::WH; setupMELASignalMECases(blist, prod, me, false, true);
+  prod = TVar::JH; setupMELASignalMECases(blist, prod, me, false, true);
+  //prod = TVar::ttH; setupMELASignalMECases(blist, prod, me, false, true);
+  //prod = TVar::bbH; setupMELASignalMECases(blist, prod, me, false, true);
+
+  cout << "constructMELABranchList: Reco prod MES done" << endl;
+
+  // Gen. decay MEs
+  me = TVar::JHUGen;
+  prod = TVar::ZZGG; setupMELASignalMECases(blist, prod, me, true, false);
+  me = TVar::MCFM;
+  prod = TVar::ZZGG; setupMELASignalMECases(blist, prod, me, true, false);
+
+  cout << "constructMELABranchList: Gen dec MES done" << endl;
+
+  // Reco. decay MEs
+  me = TVar::JHUGen;
+  prod = TVar::ZZGG; setupMELASignalMECases(blist, prod, me, false, false);
+  me = TVar::MCFM;
+  prod = TVar::ZZGG; setupMELASignalMECases(blist, prod, me, false, false);
+
+  cout << "constructMELABranchList: Reco dec MES done" << endl;
+
+  // ggzz_VAMCFM
+  blist.push_back("ggzz_VAMCFM");
+  // VVzz_VAMCFM
+  //blist.push_back("VVzz_VAMCFM");
+  // bkg_VAMCFM
+  blist.push_back("bkg_VAMCFM");
+  // ggzz_VAMCFM
+  blist.push_back("Gen_ggzz_VAMCFM");
+  // VVzz_VAMCFM
+  //blist.push_back("Gen_VVzz_VAMCFM");
+  // bkg_VAMCFM
+  blist.push_back("Gen_bkg_VAMCFM");
+
+  cout << "constructMELABranchList: ggZZ MES done" << endl;
+
+  // P(m4l)
+  vector<string> ME_m4l;
+  ME_m4l.push_back("p0plus_m4l");
+  ME_m4l.push_back("p0plus_m4l_ScaleUp");
+  ME_m4l.push_back("p0plus_m4l_ScaleDown");
+  ME_m4l.push_back("p0plus_m4l_ResUp");
+  ME_m4l.push_back("p0plus_m4l_ResDown");
+  ME_m4l.push_back("bkg_m4l");
+  ME_m4l.push_back("bkg_m4l_ScaleUp");
+  ME_m4l.push_back("bkg_m4l_ScaleDown");
+  ME_m4l.push_back("bkg_m4l_ResUp");
+  ME_m4l.push_back("bkg_m4l_ResDown");
+  string chvar = "m4l";
+  if (options->hasRecoDecayME(chvar) || options->hasRecoDecayME("All") || options->hasRecoDecayME("all")){
+    for (int b=0; b<ME_m4l.size(); b++) blist.push_back(ME_m4l.at(b));
+  }
+  cout << "constructMELABranchList: m4l MES done" << endl;
+
+  for (int b=0; b<blist.size(); b++) melaProbBranches.push_back(blist.at(b));
+}
+void HVVTree::setupMELASignalMECases(vector<string>& accumulatedlist, TVar::Production prod, TVar::MatrixElement me, bool isGen, bool isProdME){
+  vector<string> gList;
+  gList.push_back("g1");
+  gList.push_back("g2");
+  gList.push_back("g4");
+  if (!isProdME || prod==TVar::ZH || prod==TVar::WH) gList.push_back("g1_prime2");
+  int sgList = gList.size();
+  int** gCount = new int*[sgList];
+  for (int gg=0; gg<sgList; gg++){
+    gCount[gg] = new int[2];
+    for (int im=0; im<2; im++) gCount[gg][im] = 0;
+  }
+  vector<int> v_gCount[2];
+
+  // Check for any invalid productions
+  bool invalidProduction = false;
+  if (me==TVar::MCFM && !(prod==TVar::ZZGG/* || prod==TVar::JJVBF || prod==TVar::WH || prod==TVar::ZH*/)) invalidProduction=true;
+  if (isProdME && me==TVar::MCFM && prod==TVar::ZZGG) invalidProduction=true;
+  bool overridden = false;
+  if (
+    ((options->hasGenProdME("None") || options->hasGenProdME("none")) && isGen && isProdME)
+    ||
+    ((options->hasRecoProdME("None") || options->hasRecoProdME("none")) && !isGen && isProdME)
+    ||
+    ((options->hasGenDecayME("None") || options->hasGenDecayME("none")) && isGen && !isProdME)
+    ||
+    ((options->hasRecoDecayME("None") || options->hasRecoDecayME("none")) && !isGen && !isProdME)
+    ) overridden=true;
+
+  // Count number of gi occurences
+  bool noInstance=true;
+  for (int gg=0; gg<sgList; gg++){
+    for (int im=0; im<2; im++){
+      if (invalidProduction || overridden) break; // Overriding options and the invalid MEs
+      if ((prod==TVar::JJGG || prod==TVar::JH || prod==TVar::ttH || prod==TVar::bbH) && gg==0) continue; // Unphysical ME, g1 does not exist for these
+      if (prod==TVar::JH && gg!=0 && im!=0) continue; // Unimplemented ME
+      string chvar = gList.at(gg);
+      if (im==1) chvar.append("_pi2");
+      if (
+        ((options->hasGenProdME(chvar) || options->hasGenProdME("All") || options->hasGenProdME("all")) && isGen && isProdME)
+        ||
+        ((options->hasRecoProdME(chvar) || options->hasRecoProdME("All") || options->hasRecoProdME("all")) && !isGen && isProdME)
+        ||
+        ((options->hasGenDecayME(chvar) || options->hasGenDecayME("All") || options->hasGenDecayME("all")) && isGen && !isProdME)
+        ||
+        ((options->hasRecoDecayME(chvar) || options->hasRecoDecayME("All") || options->hasRecoDecayME("all")) && !isGen && !isProdME)
+        ){
+        gCount[gg][im]++;
+        if (noInstance) noInstance=false;
+      }
+    }
+  }
+  for (int gg=0; gg<sgList; gg++){
+    for (int im=0; im<2; im++) v_gCount[im].push_back(gCount[gg][im]);
+  }
+  if (!noInstance){
+    vector<string> blist = getMELASignalMEBranches(prod, me, gList, v_gCount[0], v_gCount[1], isGen, isProdME);
+    for (int b=0; b<blist.size(); b++) accumulatedlist.push_back(blist.at(b));
+  }
+
+  for (int gg=0; gg<sgList; gg++) delete[] gCount[gg];
+  delete[] gCount;
+}
+vector<string> HVVTree::getMELASignalMEBranches(TVar::Production prod, TVar::MatrixElement me, vector<string> gList, vector<int> gCountRe, vector<int> gCountIm, bool isGen, bool isProdME){
+  vector<string> blist;
+  string strcore = "";
+
+  if (prod==TVar::JJGG) strcore = "hjj_";
+  else if (prod==TVar::JH) strcore = "hj_";
+  else if (prod==TVar::ttH) strcore = "tth_";
+  else if (prod==TVar::bbH) strcore = "bbh_";
+  else if (prod==TVar::JJVBF) strcore = "vbf_";
+  else if (prod==TVar::ZH) strcore = "zh_";
+  else if (prod==TVar::WH) strcore = "wh_";
+  if (isProdME && prod==TVar::ZZGG) strcore.insert(0, "prod_");
+  if (isGen) strcore.insert(0, "Gen_");
+
+  int sgList = gList.size();
+  int** gCount = new int*[sgList];
+  for (int gg=0; gg<sgList; gg++){
+    gCount[gg] = new int[2];
+    for (int im=0; im<2; im++) gCount[gg][im] = 0;
+  }
+
+  bool invalidProduction = false;
+  if (me==TVar::MCFM && !(prod==TVar::ZZGG/* || prod==TVar::JJVBF || prod==TVar::WH || prod==TVar::ZH*/)) invalidProduction=true;
+  if (isProdME && me==TVar::MCFM && prod==TVar::ZZGG) invalidProduction=true;
+
+  // Count number of gi occurences
+  for (int gg=0; gg<sgList; gg++){
+    for (int im=0; im<2; im++){
+      if (invalidProduction) break;
+      if ((prod==TVar::JJGG || prod==TVar::JH || prod==TVar::ttH || prod==TVar::bbH) && gList.at(gg)=="g1") continue; // Unphysical ME, g1 does not exist for these
+      if (prod==TVar::JH && !(gList.at(gg)=="g2" && im==0)) continue; // Unimplemented ME
+
+      if (im==0) gCount[gg][im]=gCountRe.at(gg);
+      else gCount[gg][im]=gCountIm.at(gg);
+    }
+  }
+  for (int ai1=0; ai1<sgList; ai1++){
+    if (gCount[ai1][0]==0 && gCount[ai1][1]==0) continue;
+    for (int ai2=ai1; ai2<sgList; ai2++){
+      if (gCount[ai2][0]==0 && gCount[ai2][1]==0) continue;
+      if (ai1==ai2){ // ai1 MEs
+        string tmpVarType;
+        if (
+          gList.at(ai1)=="g1"
+          ||
+          ((prod==TVar::JJGG || prod==TVar::JH || prod==TVar::ttH || prod==TVar::bbH) && gList.at(ai1)=="g2")
+          ) tmpVarType = "0plus";
+        else if (gList.at(ai1)=="g2") tmpVarType = "0hplus";
+        else if (gList.at(ai1)=="g4") tmpVarType = "0minus";
+        else if (gList.at(ai1)=="g1_prime2") tmpVarType = "0_p1prime2";
+        tmpVarType.insert(0, "p");
+
+        string strlist;
+
+        strlist = tmpVarType;
+        if (me==TVar::MCFM) strlist.append("_VAMCFM");
+        else strlist.append("_VAJHU");
+        strlist.insert(0, strcore);
+        blist.push_back(strlist); // Sig
+
+        if (me==TVar::MCFM){
+          if (gCount[ai1][0]>0){
+            strlist = tmpVarType;
+            if (prod==TVar::ZZGG) strlist.insert(0, "ggzz_");
+            else strlist.insert(0, "VVzz_");
+            strlist.insert(0, strcore);
+            strlist.append("_VAMCFM");
+            blist.push_back(strlist); // BSI, re Sig component
+          }
+          if (gCount[ai1][1]>0){
+            strlist = tmpVarType;
+            if (prod==TVar::ZZGG) strlist.insert(0, "ggzz_");
+            else strlist.insert(0, "VVzz_");
+            strlist.insert(0, strcore);
+            strlist.append("_pi2");
+            strlist.append("_VAMCFM");
+            blist.push_back(strlist); // BSI, im Sig component
+          }
+        }
+      }
+      else{ // ai1 - ai2 MEs
+        string tmpVar[2] ={ gList.at(ai1), gList.at(ai2) };
+        string strlist;
+        for (int im1=0; im1<2; im1++){
+          for (int im2=0; im2<2; im2++){
+            if (gCount[ai1][im1]==0 || gCount[ai2][im2]==0) continue;
+            string tmpVarType[2] ={ tmpVar[0], tmpVar[1] };
+
+            if (im1==1) tmpVarType[0].append("_pi2_");
+            if (im2==1) tmpVarType[1].append("_pi2");
+
+            strlist = tmpVarType[0]+tmpVarType[1];
+            if (me==TVar::MCFM) strlist.append("_VAMCFM");
+            else strlist.append("_VAJHU");
+            strlist.insert(0, "p");
+            strlist.insert(0, strcore);
+            if (
+              !(im1==im2 && im1==1) // g2_pi2_g4_pi2 == g2g4 when no bkg is involved.
+              &&
+              !(im1>im2 && gCount[ai1][1-im1]==1 && gCount[ai2][1-im2]==1) // Take the form g2g4_pi2 etc., not g2_pi2_g4
+              ) blist.push_back(strlist); // Sig, only
+
+            if (me==TVar::MCFM){
+              if (prod==TVar::ZZGG) strlist.insert(0, "ggzz_");
+              else strlist.insert(0, "VVzz_");
+              blist.push_back(strlist); // BSI, take all forms since bkg. sets the absolite phase.
+            }
+          }
+        }
+      }
+    }
+  }
+
+  for (int gg=0; gg<sgList; gg++) delete[] gCount[gg];
+  delete[] gCount;
+  return blist;
+}
+void HVVTree::setMELABranches(bool doSetAddress){
+  cout << "Starting MELA branches" << endl;
+  constructMELABranchList();
+  cout << "SConstructed..." << endl;
+  for (int b=0; b<melaProbBranches.size(); b++){
+    cout << melaProbBranches.at(b) << endl;
+    reserveBranch(melaProbBranches.at(b), BranchTypes::bFloat, doSetAddress);
+  }
+}
+
 
 void HVVTree::fillMotherInfo(Particle* mother){
   if (options!=0 && options->processGenInfo() && mother!=0){

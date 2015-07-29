@@ -12,6 +12,7 @@ public:
   HVVTree(string treename, TFile* fin) : BaseTree(treename, fin), options(0){}
 
   void setOptions(OptionParser* options_){ options=options_; }
+  vector<string> getMELABranchList()const;
 
   bool reserveBranch(string branchname, BaseTree::BranchTypes branchtype, bool doSetAddress);
   void bookAllBranches(bool doSetAddress);
@@ -29,7 +30,15 @@ public:
 //  void fillProductionAngles(ZZCandidate* pH, bool isGen=false);
 
 protected:
+  void constructMELABranchList();
+  void setupMELASignalMECases(vector<string>& accumulatedlist, TVar::Production prod, TVar::MatrixElement me, bool isGen, bool isProdME);
+  vector<string> getMELASignalMEBranches(TVar::Production prod, TVar::MatrixElement me, vector<string> gList, vector<int> gCountRe, vector<int> gCountIm, bool isGen, bool isProdME);
+  void setMELABranches(bool doSetAddress);
+
+
   OptionParser* options;
+  vector<string> melaProbBranches;
+
 };
 
 #endif
