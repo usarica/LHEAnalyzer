@@ -10,6 +10,7 @@
 #include <cassert>
 #include "TString.h"
 #include "PDGHelpers.h"
+#include "melaHelpers.h"
 #include "ParticleComparators.h"
 #include "HiggsComparators.h"
 
@@ -18,7 +19,7 @@ using namespace std;
 class OptionParser{
 public:
   OptionParser(int argc, char** argv);
-  ~OptionParser(){};
+  ~OptionParser(){ deconfigureMela(); };
 
   void analyze();
   void splitOption(string rawoption, string& wish, string& value, char delimiter='=');
@@ -30,6 +31,10 @@ public:
   Double_t mH(){ return mPOLE; }
   Double_t GammaH(){ return wPOLE; }
   Int_t sqrts(){ return erg_tev; }
+//  Int_t addGenDecayME(){ return includeGenDecayProb; }
+//  Int_t addRecoDecayME(){ return includeRecoDecayProb; }
+//  Int_t addGenProdME(){ return includeGenProdProb; }
+//  Int_t addRecoProdME(){ return includeRecoProdProb; }
   Bool_t processGenInfo(){ bool doProcess=true; if (includeGenInfo==0) doProcess=false; return doProcess; }
   Bool_t processRecoInfo(){ bool doProcess=true; if (includeRecoInfo==0) doProcess=false; return doProcess; }
   Bool_t doRemoveLepMasses(){ bool doProcess=true; if (removeDaughterMasses==0) doProcess=false; return doProcess; }
@@ -57,10 +62,15 @@ public:
   vector<string> inputfiles(){ return filename; }
 
 protected:
+  void configureMela();
+  void deconfigureMela();
+  void extractMelaGenProdId(string rawoption);
+
   vector<string> rawOptions;
 
   Double_t mPOLE;
   Double_t wPOLE;
+  Double_t wPOLEStandard;
   Int_t erg_tev;
   Int_t includeGenInfo;
   Int_t includeRecoInfo;
@@ -81,6 +91,13 @@ protected:
 
   vector<string> filename;
   vector<string> excludedBranch;
+
+  // Mela probabilities to include, in abbreviated form
+  pair<TVar::Production, TVar::MatrixElement> sampleProductionId;
+  vector<string> includeGenDecayProb;
+  vector<string> includeRecoDecayProb;
+  vector<string> includeGenProdProb;
+  vector<string> includeRecoProdProb;
 };
 
 #endif

@@ -59,12 +59,17 @@ $(OUTLIB)Event.o: $(INCLUDEDIR)Event.cc $(OUTLIB)ZZCandidate.o $(OUTLIB)Particle
 	@mkdir -p $(OUTLIB)
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)Event.o $(GLIBS) $<
 
+$(OUTLIB)melaHelpers.o: $(INCLUDEDIR)melaHelpers.cc $(OUTLIB)Event.o
+	@mkdir -p $(OUTLIB)
+	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)melaHelpers.o $(GLIBS) $<
+
+
 
 $(OUTLIB)HiggsComparators.o: $(INCLUDEDIR)HiggsComparators.cc $(OUTLIB)Event.o
 	@mkdir -p $(OUTLIB)
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)HiggsComparators.o $(GLIBS) $<
 
-$(OUTLIB)OptionParser.o: $(INCLUDEDIR)OptionParser.cc $(OUTLIB)ParticleComparators.o $(OUTLIB)HiggsComparators.o 
+$(OUTLIB)OptionParser.o: $(INCLUDEDIR)OptionParser.cc $(OUTLIB)ParticleComparators.o $(OUTLIB)HiggsComparators.o $(OUTLIB)melaHelpers.o
 	@mkdir -p $(OUTLIB)
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)OptionParser.o $(GLIBS) $<
 
@@ -109,6 +114,11 @@ all: analyzer dolinks
 
 clean:
 	rm -rf $(OUTLIB)
+	rm -rf $(RUNDIR)Pdfdata
+	rm -f $(RUNDIR)input.DAT
+	rm -f $(RUNDIR)process.DAT
+	rm -f $(RUNDIR)ffwarn.dat
+	rm -f $(RUNDIR)br.sm*
 	rm -f $(RUNDIR)*.cc
 	rm -f $(RUNDIR)analyze*
 	rm -f $(COMPILEPATH)*.o

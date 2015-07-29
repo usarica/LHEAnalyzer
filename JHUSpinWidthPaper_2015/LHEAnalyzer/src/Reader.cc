@@ -12,7 +12,9 @@ Reader::Reader(OptionParser* options_) : converter(options_){
   run();
 }
 
-void Reader::configure(){}
+void Reader::configure(){
+
+}
 void Reader::finalizeRun(){}
 
 template<typename returnType> bool Reader::setVariable(const Event* ev, string& branchname, returnType(*evalVar)(const Event*, string&)){

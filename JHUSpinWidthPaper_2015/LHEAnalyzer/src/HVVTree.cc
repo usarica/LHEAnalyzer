@@ -371,7 +371,6 @@ void HVVTree::fillAssociatedInfo(ZZCandidate* pH, bool isGen){
 void HVVTree::fillDecayAngles(ZZCandidate* pH, bool isGen){
   Float_t helcosthetaZ1=0, helcosthetaZ2=0, helphi=0, costhetastar=0, phistarZ1=0;
 
-  mela::applyLeptonMassCorrection(options->doRemoveLepMasses());
   if (pH!=0) mela::computeAngles(
     pH->getSortedV(0)->getDaughter(0)->p4, pH->getSortedV(0)->getDaughter(0)->id,
     pH->getSortedV(0)->getDaughter(1)->p4, pH->getSortedV(0)->getDaughter(1)->id,

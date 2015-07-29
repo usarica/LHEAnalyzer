@@ -3,8 +3,6 @@
 
 #include "BaseTree.h"
 #include "OptionParser.h"
-#include <ZZMatrixElement/MELA/interface/Mela.h>
-#include <ZZMatrixElement/MELA/src/computeAngles.h>
 
 class HVVTree : public BaseTree{
 public:
