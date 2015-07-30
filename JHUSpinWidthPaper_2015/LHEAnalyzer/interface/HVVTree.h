@@ -29,11 +29,13 @@ public:
   void fillDecayAngles(ZZCandidate* pH, bool isGen=false);
 //  void fillProductionAngles(ZZCandidate* pH, bool isGen=false);
 
+  void fillMELAProbabilities(ZZCandidate* pH, bool isGen);
+
 protected:
-  void constructMELABranchList();
-  void setupMELASignalMECases(vector<string>& accumulatedlist, TVar::Production prod, TVar::MatrixElement me, bool isGen, bool isProdME);
-  vector<string> getMELASignalMEBranches(TVar::Production prod, TVar::MatrixElement me, vector<string> gList, vector<int> gCountRe, vector<int> gCountIm, bool isGen, bool isProdME);
   void setMELABranches(bool doSetAddress);
+  vector<string> constructMELABranchList(bool doSetAddress);
+  void setupMELASignalMECases(vector<string>& accumulatedlist, TVar::Production prod, TVar::MatrixElement me, bool isGen, bool isProdME, bool doSetAddress);
+  vector<string> getMELASignalMEBranches(TVar::Production prod, TVar::MatrixElement me, vector<string> gList, vector<int> gCountRe, vector<int> gCountIm, bool isGen, bool isProdME, bool doSetAddress);
 
 
   OptionParser* options;

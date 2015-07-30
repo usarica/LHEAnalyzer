@@ -7,7 +7,11 @@ bool HVVTree::reserveBranch(string branchname, BaseTree::BranchTypes branchtype,
     isAvailable=false;
     if (doSetAddress && hvvtree->GetBranchStatus(branchname.c_str())) hvvtree->SetBranchStatus(branchname.c_str(), 0);
   }
-  else if (doSetAddress && !hvvtree->GetBranchStatus(branchname.c_str())) isAvailable=false;
+  else if (
+    (doSetAddress && !hvvtree->GetBranchStatus(branchname.c_str()))
+    ||
+    (!doSetAddress && hvvtree->GetBranchStatus(branchname.c_str()))
+    ) isAvailable=false; // If setAddress to a non-existing branch or branch to an existing address
   if (isAvailable) bookBranch(branchname, branchtype, doSetAddress);
   return isAvailable;
 }
@@ -166,63 +170,89 @@ void HVVTree::bookAllBranches(bool doSetAddress){
     reserveBranch("Lep3Id", BranchTypes::bInt, doSetAddress);
     reserveBranch("Lep4Id", BranchTypes::bInt, doSetAddress);
   }
-  if (options->initializeMELA()) setMELABranches(doSetAddress);
+  if (options->initializeMELA() || doSetAddress) setMELABranches(doSetAddress);
   actuateBranches(doSetAddress);
 }
 
-void HVVTree::constructMELABranchList(){
+void HVVTree::setMELABranches(bool doSetAddress){
+  vector<string> tmpBranchList = constructMELABranchList(doSetAddress);
+  for (int b=0; b<tmpBranchList.size(); b++){
+    bool isReserved = reserveBranch(tmpBranchList.at(b), BranchTypes::bFloat, doSetAddress);
+    if (isReserved){
+      melaProbBranches.push_back(tmpBranchList.at(b));
+    }
+  }
+}
+vector<string> HVVTree::constructMELABranchList(bool doSetAddress){
   vector<string> blist;
 
   // Add gen. prod. MEs
-  TVar::Production prod = options->getSampleProductionId().first;
-  TVar::MatrixElement me = options->getSampleProductionId().second;
-  setupMELASignalMECases(blist, prod, me, true, true);
-
-  cout << "constructMELABranchList: Gen prod MES done" << endl;
+  TVar::Production prod;
+  TVar::MatrixElement me;
+  if (!doSetAddress){
+    prod = options->getSampleProductionId().first;
+    me = options->getSampleProductionId().second;
+    setupMELASignalMECases(blist, prod, me, true, true, doSetAddress);
+  }
+  else{
+    vector<TVar::Production> prods;
+    vector<TVar::MatrixElement> mes;
+    mes.push_back(TVar::JHUGen);
+    mes.push_back(TVar::MCFM);
+    prods.push_back(TVar::JJGG);
+    prods.push_back(TVar::JJVBF);
+    prods.push_back(TVar::JH);
+    prods.push_back(TVar::ZH);
+    prods.push_back(TVar::WH);
+    prods.push_back(TVar::ttH);
+    prods.push_back(TVar::bbH);
+    prods.push_back(TVar::ZZGG);
+    for (int pp=0; pp<prods.size(); pp++){
+      for (int mm=0; mm<mes.size(); mm++) setupMELASignalMECases(blist, prods.at(pp), mes.at(mm), true, true, doSetAddress);
+    }
+  }
 
   // Reco. prod. MEs
   me = TVar::JHUGen;
-  prod = TVar::ZZGG; setupMELASignalMECases(blist, prod, me, false, true);
-  prod = TVar::JJGG; setupMELASignalMECases(blist, prod, me, false, true);
-  prod = TVar::JJVBF; setupMELASignalMECases(blist, prod, me, false, true);
-  prod = TVar::ZH; setupMELASignalMECases(blist, prod, me, false, true);
-  prod = TVar::WH; setupMELASignalMECases(blist, prod, me, false, true);
-  prod = TVar::JH; setupMELASignalMECases(blist, prod, me, false, true);
+  prod = TVar::ZZGG; setupMELASignalMECases(blist, prod, me, false, true, doSetAddress);
+  prod = TVar::JJGG; setupMELASignalMECases(blist, prod, me, false, true, doSetAddress);
+  prod = TVar::JJVBF; setupMELASignalMECases(blist, prod, me, false, true, doSetAddress);
+  prod = TVar::ZH; setupMELASignalMECases(blist, prod, me, false, true, doSetAddress);
+  prod = TVar::WH; setupMELASignalMECases(blist, prod, me, false, true, doSetAddress);
+  prod = TVar::JH; setupMELASignalMECases(blist, prod, me, false, true, doSetAddress);
   //prod = TVar::ttH; setupMELASignalMECases(blist, prod, me, false, true);
   //prod = TVar::bbH; setupMELASignalMECases(blist, prod, me, false, true);
 
-  cout << "constructMELABranchList: Reco prod MES done" << endl;
-
   // Gen. decay MEs
   me = TVar::JHUGen;
-  prod = TVar::ZZGG; setupMELASignalMECases(blist, prod, me, true, false);
+  prod = TVar::ZZGG; setupMELASignalMECases(blist, prod, me, true, false, doSetAddress);
   me = TVar::MCFM;
-  prod = TVar::ZZGG; setupMELASignalMECases(blist, prod, me, true, false);
-
-  cout << "constructMELABranchList: Gen dec MES done" << endl;
+  prod = TVar::ZZGG; setupMELASignalMECases(blist, prod, me, true, false, doSetAddress);
 
   // Reco. decay MEs
   me = TVar::JHUGen;
-  prod = TVar::ZZGG; setupMELASignalMECases(blist, prod, me, false, false);
+  prod = TVar::ZZGG; setupMELASignalMECases(blist, prod, me, false, false, doSetAddress);
   me = TVar::MCFM;
-  prod = TVar::ZZGG; setupMELASignalMECases(blist, prod, me, false, false);
+  prod = TVar::ZZGG; setupMELASignalMECases(blist, prod, me, false, false, doSetAddress);
 
-  cout << "constructMELABranchList: Reco dec MES done" << endl;
-
+  // Bkg MEs
+  vector<string> ME_bkg;
   // ggzz_VAMCFM
-  blist.push_back("ggzz_VAMCFM");
+  ME_bkg.push_back("ggzz_VAMCFM");
   // VVzz_VAMCFM
-  //blist.push_back("VVzz_VAMCFM");
+  //ME_bkg.push_back("VVzz_VAMCFM");
   // bkg_VAMCFM
-  blist.push_back("bkg_VAMCFM");
+  ME_bkg.push_back("bkg_VAMCFM");
+  ME_bkg.push_back("bkg_VAMCFM_wconst");
   // ggzz_VAMCFM
-  blist.push_back("Gen_ggzz_VAMCFM");
+  ME_bkg.push_back("Gen_ggzz_VAMCFM");
   // VVzz_VAMCFM
-  //blist.push_back("Gen_VVzz_VAMCFM");
+  //ME_bkg.push_back("Gen_VVzz_VAMCFM");
   // bkg_VAMCFM
-  blist.push_back("Gen_bkg_VAMCFM");
-
-  cout << "constructMELABranchList: ggZZ MES done" << endl;
+  ME_bkg.push_back("Gen_bkg_VAMCFM");
+  if (options->hasRecoDecayME("*") || doSetAddress){
+    for (int b=0; b<ME_bkg.size(); b++) blist.push_back(ME_bkg.at(b));
+  }
 
   // P(m4l)
   vector<string> ME_m4l;
@@ -237,14 +267,12 @@ void HVVTree::constructMELABranchList(){
   ME_m4l.push_back("bkg_m4l_ResUp");
   ME_m4l.push_back("bkg_m4l_ResDown");
   string chvar = "m4l";
-  if (options->hasRecoDecayME(chvar) || options->hasRecoDecayME("All") || options->hasRecoDecayME("all")){
+  if (options->hasRecoDecayME(chvar) || options->hasRecoDecayME("All") || options->hasRecoDecayME("all") || doSetAddress){
     for (int b=0; b<ME_m4l.size(); b++) blist.push_back(ME_m4l.at(b));
   }
-  cout << "constructMELABranchList: m4l MES done" << endl;
-
-  for (int b=0; b<blist.size(); b++) melaProbBranches.push_back(blist.at(b));
+  return blist;
 }
-void HVVTree::setupMELASignalMECases(vector<string>& accumulatedlist, TVar::Production prod, TVar::MatrixElement me, bool isGen, bool isProdME){
+void HVVTree::setupMELASignalMECases(vector<string>& accumulatedlist, TVar::Production prod, TVar::MatrixElement me, bool isGen, bool isProdME, bool doSetAddress){
   vector<string> gList;
   gList.push_back("g1");
   gList.push_back("g2");
@@ -264,6 +292,7 @@ void HVVTree::setupMELASignalMECases(vector<string>& accumulatedlist, TVar::Prod
   if (isProdME && me==TVar::MCFM && prod==TVar::ZZGG) invalidProduction=true;
   bool overridden = false;
   if (
+    (
     ((options->hasGenProdME("None") || options->hasGenProdME("none")) && isGen && isProdME)
     ||
     ((options->hasRecoProdME("None") || options->hasRecoProdME("none")) && !isGen && isProdME)
@@ -271,6 +300,7 @@ void HVVTree::setupMELASignalMECases(vector<string>& accumulatedlist, TVar::Prod
     ((options->hasGenDecayME("None") || options->hasGenDecayME("none")) && isGen && !isProdME)
     ||
     ((options->hasRecoDecayME("None") || options->hasRecoDecayME("none")) && !isGen && !isProdME)
+    ) && !doSetAddress // Override "None" options if reading a tree
     ) overridden=true;
 
   // Count number of gi occurences
@@ -283,6 +313,7 @@ void HVVTree::setupMELASignalMECases(vector<string>& accumulatedlist, TVar::Prod
       string chvar = gList.at(gg);
       if (im==1) chvar.append("_pi2");
       if (
+        (
         ((options->hasGenProdME(chvar) || options->hasGenProdME("All") || options->hasGenProdME("all")) && isGen && isProdME)
         ||
         ((options->hasRecoProdME(chvar) || options->hasRecoProdME("All") || options->hasRecoProdME("all")) && !isGen && isProdME)
@@ -290,6 +321,7 @@ void HVVTree::setupMELASignalMECases(vector<string>& accumulatedlist, TVar::Prod
         ((options->hasGenDecayME(chvar) || options->hasGenDecayME("All") || options->hasGenDecayME("all")) && isGen && !isProdME)
         ||
         ((options->hasRecoDecayME(chvar) || options->hasRecoDecayME("All") || options->hasRecoDecayME("all")) && !isGen && !isProdME)
+        ) || doSetAddress
         ){
         gCount[gg][im]++;
         if (noInstance) noInstance=false;
@@ -300,14 +332,14 @@ void HVVTree::setupMELASignalMECases(vector<string>& accumulatedlist, TVar::Prod
     for (int im=0; im<2; im++) v_gCount[im].push_back(gCount[gg][im]);
   }
   if (!noInstance){
-    vector<string> blist = getMELASignalMEBranches(prod, me, gList, v_gCount[0], v_gCount[1], isGen, isProdME);
+    vector<string> blist = getMELASignalMEBranches(prod, me, gList, v_gCount[0], v_gCount[1], isGen, isProdME, doSetAddress);
     for (int b=0; b<blist.size(); b++) accumulatedlist.push_back(blist.at(b));
   }
 
   for (int gg=0; gg<sgList; gg++) delete[] gCount[gg];
   delete[] gCount;
 }
-vector<string> HVVTree::getMELASignalMEBranches(TVar::Production prod, TVar::MatrixElement me, vector<string> gList, vector<int> gCountRe, vector<int> gCountIm, bool isGen, bool isProdME){
+vector<string> HVVTree::getMELASignalMEBranches(TVar::Production prod, TVar::MatrixElement me, vector<string> gList, vector<int> gCountRe, vector<int> gCountIm, bool isGen, bool isProdME, bool doSetAddress){
   vector<string> blist;
   string strcore = "";
 
@@ -356,7 +388,7 @@ vector<string> HVVTree::getMELASignalMEBranches(TVar::Production prod, TVar::Mat
           ) tmpVarType = "0plus";
         else if (gList.at(ai1)=="g2") tmpVarType = "0hplus";
         else if (gList.at(ai1)=="g4") tmpVarType = "0minus";
-        else if (gList.at(ai1)=="g1_prime2") tmpVarType = "0_p1prime2";
+        else if (gList.at(ai1)=="g1_prime2") tmpVarType = "0_g1prime2";
         tmpVarType.insert(0, "p");
 
         string strlist;
@@ -364,8 +396,20 @@ vector<string> HVVTree::getMELASignalMEBranches(TVar::Production prod, TVar::Mat
         strlist = tmpVarType;
         if (me==TVar::MCFM) strlist.append("_VAMCFM");
         else strlist.append("_VAJHU");
-        strlist.insert(0, strcore);
-        blist.push_back(strlist); // Sig
+        if ((prod==TVar::WH || prod==TVar::ZH) && me!=TVar::MCFM){
+          string strlist1 = strlist;
+          string strlist2 = strlist;
+          strlist1.insert(0, "hadronic_");
+          strlist1.insert(0, strcore);
+          blist.push_back(strlist1); // Sig
+          strlist2.insert(0, "leptonic_");
+          strlist2.insert(0, strcore);
+          blist.push_back(strlist2); // Sig
+        }
+        else{
+          strlist.insert(0, strcore);
+          blist.push_back(strlist); // Sig
+        }
 
         if (me==TVar::MCFM){
           if (gCount[ai1][0]>0){
@@ -402,16 +446,38 @@ vector<string> HVVTree::getMELASignalMEBranches(TVar::Production prod, TVar::Mat
             if (me==TVar::MCFM) strlist.append("_VAMCFM");
             else strlist.append("_VAJHU");
             strlist.insert(0, "p");
-            strlist.insert(0, strcore);
-            if (
-              !(im1==im2 && im1==1) // g2_pi2_g4_pi2 == g2g4 when no bkg is involved.
-              &&
-              !(im1>im2 && gCount[ai1][1-im1]==1 && gCount[ai2][1-im2]==1) // Take the form g2g4_pi2 etc., not g2_pi2_g4
-              ) blist.push_back(strlist); // Sig, only
+
+            if ((prod==TVar::WH || prod==TVar::ZH) && me!=TVar::MCFM){
+              string strlist1 = strlist;
+              string strlist2 = strlist;
+              strlist1.insert(0, "hadronic_");
+              strlist1.insert(0, strcore);
+              strlist2.insert(0, "leptonic_");
+              strlist2.insert(0, strcore);
+              if (
+                !(im1==im2 && im1==1) // g2_pi2_g4_pi2 == g2g4 when no bkg is involved.
+                &&
+                (!(im1>im2 && gCount[ai1][1-im1]==1 && gCount[ai2][1-im2]==1) || doSetAddress) // Take the form g2g4_pi2 etc., not g2_pi2_g4
+                ){
+                blist.push_back(strlist1); // Sig, only
+                blist.push_back(strlist2); // Sig, only
+              }
+            }
+            else{
+              strlist.insert(0, strcore);
+              if (
+                !(im1==im2 && im1==1) // g2_pi2_g4_pi2 == g2g4 when no bkg is involved.
+                &&
+                (!(im1>im2 && gCount[ai1][1-im1]==1 && gCount[ai2][1-im2]==1) || doSetAddress) // Take the form g2g4_pi2 etc., not g2_pi2_g4
+                ) blist.push_back(strlist); // Sig, only
+            }
 
             if (me==TVar::MCFM){
-              if (prod==TVar::ZZGG) strlist.insert(0, "ggzz_");
-              else strlist.insert(0, "VVzz_");
+              int insertPos = strlist.find("Gen_");
+              if (insertPos==string::npos) insertPos=0;
+              else insertPos+=4;
+              if (prod==TVar::ZZGG) strlist.insert(insertPos, "ggzz_");
+              else strlist.insert(insertPos, "VVzz_");
               blist.push_back(strlist); // BSI, take all forms since bkg. sets the absolite phase.
             }
           }
@@ -423,15 +489,6 @@ vector<string> HVVTree::getMELASignalMEBranches(TVar::Production prod, TVar::Mat
   for (int gg=0; gg<sgList; gg++) delete[] gCount[gg];
   delete[] gCount;
   return blist;
-}
-void HVVTree::setMELABranches(bool doSetAddress){
-  cout << "Starting MELA branches" << endl;
-  constructMELABranchList();
-  cout << "SConstructed..." << endl;
-  for (int b=0; b<melaProbBranches.size(); b++){
-    cout << melaProbBranches.at(b) << endl;
-    reserveBranch(melaProbBranches.at(b), BranchTypes::bFloat, doSetAddress);
-  }
 }
 
 
@@ -464,6 +521,8 @@ void HVVTree::fillCandidate(ZZCandidate* pH, bool isGen){
   fillAssociatedInfo(pH, isGen);
   fillDecayAngles(pH, isGen);
 //  fillProductionAngles(pH, isGen);
+
+  if (melaProbBranches.size()>0) fillMELAProbabilities(pH, isGen); // Do it at the last step
 }
 void HVVTree::fillCandidateDaughters(ZZCandidate* pH, bool isGen){
   string varname;
@@ -659,6 +718,19 @@ void HVVTree::fillDecayAngles(ZZCandidate* pH, bool isGen){
   varname = "phistarZ1"; if (isGen) varname.insert(0, "Gen"); setVal(varname, phistarZ1);
 }
 //  void HVVTree::fillProductionAngles(Particle* pH, bool isGen=false);
+
+
+void HVVTree::fillMELAProbabilities(ZZCandidate* pH, bool isGen){
+  if (pH==0) return;
+
+  for (int b=0; b<melaProbBranches.size(); b++){
+    string branchname = melaProbBranches.at(b);
+    if ((isGen && branchname.find("Gen")==string::npos) || (!isGen && branchname.find("Gen")!=string::npos)) continue;
+    Float_t prob = melaHelpers::melaBranchMEInterpreter(pH, branchname);
+    if (prob!=0) setVal(branchname, prob);
+  }
+}
+
 
 void HVVTree::fillEventVariables(Float_t weight, Int_t passSelection){
   setVal("MC_weight", weight);

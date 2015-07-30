@@ -59,10 +59,22 @@ bool BaseTree::actuateBranches(bool doSetAddress){
   bool success=true;
   if (hvvtree!=0){
     if (!doSetAddress){
-      for (int el=0; el<intBranches.size(); el++) hvvtree->Branch(intBranches.at(el).first.c_str(), intBranches.at(el).second);
-      for (int el=0; el<floatBranches.size(); el++) hvvtree->Branch(floatBranches.at(el).first.c_str(), floatBranches.at(el).second);
-      for (int el=0; el<vectorIntBranches.size(); el++) hvvtree->Branch(vectorIntBranches.at(el).first.c_str(), vectorIntBranches.at(el).second);
-      for (int el=0; el<vectorDoubleBranches.size(); el++) hvvtree->Branch(vectorDoubleBranches.at(el).first.c_str(), vectorDoubleBranches.at(el).second);
+      for (int el=0; el<intBranches.size(); el++){
+        if (!hvvtree->GetBranchStatus(intBranches.at(el).first.c_str()))
+          hvvtree->Branch(intBranches.at(el).first.c_str(), intBranches.at(el).second);
+      }
+      for (int el=0; el<floatBranches.size(); el++){
+        if (!hvvtree->GetBranchStatus(floatBranches.at(el).first.c_str()))
+          hvvtree->Branch(floatBranches.at(el).first.c_str(), floatBranches.at(el).second);
+      }
+      for (int el=0; el<vectorIntBranches.size(); el++){
+        if (!hvvtree->GetBranchStatus(vectorIntBranches.at(el).first.c_str()))
+          hvvtree->Branch(vectorIntBranches.at(el).first.c_str(), vectorIntBranches.at(el).second);
+      }
+      for (int el=0; el<vectorDoubleBranches.size(); el++){
+        if (!hvvtree->GetBranchStatus(vectorDoubleBranches.at(el).first.c_str()))
+          hvvtree->Branch(vectorDoubleBranches.at(el).first.c_str(), vectorDoubleBranches.at(el).second);
+      }
     }
     else{
       for (int el=0; el<intBranches.size(); el++) hvvtree->SetBranchAddress(intBranches.at(el).first.c_str(), intBranches.at(el).second); // Already a pointer

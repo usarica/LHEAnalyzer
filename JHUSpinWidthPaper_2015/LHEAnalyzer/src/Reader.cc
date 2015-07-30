@@ -33,16 +33,31 @@ template<typename returnType> bool Reader::setVariable(const Event* ev, string& 
 
 void Reader::bindInputBranches(HVVTree* tin){
   vector<string> inputBranches = tin->getBranchList();
+  vector<pair<string, BaseTree::BranchTypes>> unreservedBranches;
   for (int br=0; br<inputBranches.size(); br++){
     int pos=-1;
     string branchname = inputBranches.at(br);
-    bool outfound=false;
-    BaseTree::BranchTypes oBT = tree->searchArray(branchname, pos);
-    if (!(pos==-1 || oBT==BaseTree::nBranchTypes)) outfound = true;
-    pos=-1;
+
     BaseTree::BranchTypes iBT = tin->searchArray(branchname, pos);
-    if (iBT!=oBT) outfound = false;
-    if (!outfound) continue;
+    pos=-1;
+    BaseTree::BranchTypes oBT = tree->searchArray(branchname, pos);
+    bool outfound = !(pos==-1 || oBT==BaseTree::nBranchTypes || iBT!=oBT);
+    if (!outfound && tree->getBranchList().size()==0) unreservedBranches.push_back(pair<string, BaseTree::BranchTypes>(branchname, iBT));
+  }
+  if (unreservedBranches.size()>0){
+    for (int b=0; b<unreservedBranches.size(); b++) tree->reserveBranch(unreservedBranches.at(b).first, unreservedBranches.at(b).second, false);
+    tree->actuateBranches(false);
+  }
+
+  for (int br=0; br<inputBranches.size(); br++){
+    int pos=-1;
+    string branchname = inputBranches.at(br);
+
+    BaseTree::BranchTypes iBT = tin->searchArray(branchname, pos);
+    pos=-1;
+    BaseTree::BranchTypes oBT = tree->searchArray(branchname, pos);
+    bool outfound = !(pos==-1 || oBT==BaseTree::nBranchTypes || iBT!=oBT);
+    if (!outfound) continue; // If still not found, forget it!
     else{
       void* iBVRef = tin->getBranchHandleRef(branchname);
       void* oBVRef = tree->getBranchHandleRef(branchname);
@@ -105,7 +120,7 @@ void Reader::run(){
   Float_t MC_weight=0;
   Int_t isSelected=0;
 
-  tree->bookAllBranches(false);
+  bool firstFile = true;
 
   for (int f=0; f<filename.size(); f++){
     string cinput = filename.at(f);
@@ -129,6 +144,10 @@ void Reader::run(){
         bindInputBranches(tin);
         cout << "bound..." << endl;
         foutput->cd();
+        if (firstFile){
+          tree->bookAllBranches(false);
+          firstFile=false;
+        }
 
         int nInputEvents = tin->getTree()->GetEntries();
         cout << "Number of input events to process: " << nInputEvents << endl;
@@ -144,13 +163,22 @@ void Reader::run(){
           synchMappedBranches();
 
           Event genEvent, recoEvent;
-
           readEvent(genEvent, genParticleList, true);
           readEvent(recoEvent, recoParticleList, false);
+          ZZCandidate* genCand=0;
+          ZZCandidate* recoCand=0;
+          if (genEvent.getNZZCandidates()<=1) genCand = genEvent.getZZCandidate(0);
+          else genCand = HiggsComparators::candidateSelector(genEvent, options->getHiggsCandidateSelectionScheme(true), options->doGenHZZdecay());
+          if (recoEvent.getNZZCandidates()<=1) recoCand = recoEvent.getZZCandidate(0);
+          else recoCand = HiggsComparators::candidateSelector(recoEvent, options->getHiggsCandidateSelectionScheme(false), options->doRecoHZZdecay());
 
-
-          // Do magic
-
+          if (genCand!=0){
+            if (options->initializeMELA()) tree->fillMELAProbabilities(genCand, true);
+          }
+          if (recoCand!=0){
+            if (options->initializeMELA()) tree->fillMELAProbabilities(recoCand, false);
+          }
+          else if (options->recoSelectionMode()!=0) tree->fillEventVariables(*((Float_t*)tree->getBranchHandleRef("MC_weight")), 0 /*isSelected*/);
 
           tree->record();
 
@@ -265,7 +293,7 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
   }
 
   // Reconstruct the gen and reco candidates
-  if (isGen){
+  if (isGen){ // Do not find the best combination, leave it to the input tree
     for (int d=0; d<candFinalDaughters.size(); d++){
       Particle* part = candFinalDaughters.at(d);
       if (isALepton(part->id)) outEvent.addLepton(part);
@@ -294,7 +322,7 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
       else outEvent.addParticle(part);
     }
 
-    if (options->recoSelectionMode()==0){
+    if (options->recoSelectionMode()==0){ // Do not find the best combination, leave it to the input tree
       outEvent.constructVVCandidates(options->doRecoHZZdecay(), options->recoDecayProducts());
       for (int d=0; d<associatedParticles.size(); d++){
         Particle* part = associatedParticles.at(d);
@@ -305,7 +333,7 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
         else outEvent.addParticle(part);
       }
     }
-    else{
+    else{ // Find the best combination
       for (int d=0; d<associatedParticles.size(); d++){
         Particle* part = associatedParticles.at(d);
         if (isALepton(part->id)) outEvent.addLepton(part);

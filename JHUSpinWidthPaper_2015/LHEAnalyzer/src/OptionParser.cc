@@ -133,7 +133,6 @@ void OptionParser::extractMelaGenProdId(string rawoption){
 
     pair<TVar::Production, TVar::MatrixElement> tmpPair(tmpProd, tmpME);
     sampleProductionId = tmpPair;
-    cout << sampleProductionId.first << '\t' << sampleProductionId.second << endl;
   }
 }
 Bool_t OptionParser::checkListVariable(vector<string>& list, string var){
@@ -143,15 +142,27 @@ Bool_t OptionParser::checkListVariable(vector<string>& list, string var){
   return false;
 }
 Bool_t OptionParser::hasGenDecayME(string str){
+  if (str=="" || str=="*"){
+    return (includeGenDecayProb.size()>0 && processGenInfo());
+  }
   return (checkListVariable(includeGenDecayProb, str) && processGenInfo());
 }
 Bool_t OptionParser::hasRecoDecayME(string str){
+  if (str=="" || str=="*"){
+    return (includeRecoDecayProb.size()>0 && processGenInfo());
+  }
   return (checkListVariable(includeRecoDecayProb, str) && processRecoInfo());
 }
 Bool_t OptionParser::hasRecoProdME(string str){
+  if (str=="" || str=="*"){
+    return (includeRecoProdProb.size()>0 && processGenInfo());
+  }
   return (checkListVariable(includeRecoProdProb, str) && processRecoInfo());
 }
 Bool_t OptionParser::hasGenProdME(string str){ // This one is a little bit trickier to avoid unneeded gen. prod. MEs
+  if (str=="" || str=="*"){
+    return (includeGenProdProb.size()>0 && processGenInfo());
+  }
   return (checkListVariable(includeGenProdProb, str) && processGenInfo());
 }
 
