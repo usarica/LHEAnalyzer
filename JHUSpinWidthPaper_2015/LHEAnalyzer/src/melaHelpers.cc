@@ -384,7 +384,7 @@ Float_t melaHelpers::melaBranchMEInterpreter(const ZZCandidate* cand, string& br
 }
 
 
-void melaHelpers::computeVHAngles(TLorentzVector thep4Z1, TLorentzVector thep4Z2, TLorentzVector thep4H, double& costheta1, double& costheta2, double& Phi, double& costhetastar, double& Phi1){
+void melaHelpers::computeVHAngles(TLorentzVector thep4Z1, TLorentzVector thep4Z2, TLorentzVector thep4H, Float_t& costheta1, Float_t& costheta2, Float_t& Phi, Float_t& costhetastar, Float_t& Phi1){
 
   TLorentzVector p4H, p4Z1, p4M11, p4M12, p4Z2, p4M21, p4M22;
 

@@ -23,7 +23,7 @@ namespace melaHelpers{
 
   void computeVHAngles(
     TLorentzVector thep4Z1, TLorentzVector thep4Z2, TLorentzVector thep4H,
-    double& costheta1, double& costheta2, double& Phi, double& costhetastar, double& Phi1
+    Float_t& costheta1, Float_t& costheta2, Float_t& Phi, Float_t& costhetastar, Float_t& Phi1
     );
 }
 
