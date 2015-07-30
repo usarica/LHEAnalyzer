@@ -20,6 +20,11 @@ namespace melaHelpers{
   void setStandardPoleWidth(Float_t width_);
 
   Float_t melaBranchMEInterpreter(const ZZCandidate* cand, string& branchname);
+
+  void computeVHAngles(
+    TLorentzVector thep4Z1, TLorentzVector thep4Z2, TLorentzVector thep4H,
+    double& costheta1, double& costheta2, double& Phi, double& costhetastar, double& Phi1
+    );
 }
 
 #endif

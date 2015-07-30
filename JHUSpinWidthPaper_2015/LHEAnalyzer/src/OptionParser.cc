@@ -97,6 +97,7 @@ Bool_t OptionParser::isAnExcludedBranch(string branchname){
   }
   return isExcluded;
 }
+
 void OptionParser::configureMela(){
   Int_t needMela = includeGenDecayProb.size()+includeRecoDecayProb.size()+includeGenProdProb.size()+includeRecoProdProb.size();
   if (needMela>0){
@@ -165,10 +166,6 @@ Bool_t OptionParser::hasGenProdME(string str){ // This one is a little bit trick
   }
   return (checkListVariable(includeGenProdProb, str) && processGenInfo());
 }
-
-
-
-
 
 void OptionParser::interpretOption(string wish, string value){
   if (wish.empty()){
