@@ -9,7 +9,10 @@ erg_tev(13), // C.o.M. energy in TeV
 includeGenInfo(1), // Record gen. level quantities
 includeRecoInfo(1), // Record reco. level quantities
 removeDaughterMasses(1), // Force lepton masses to 0 in MELA
-sampleProductionId(TVar::ZZGG, TVar::JHUGen),
+computeDecayAngles(1), // Decay angles
+computeVBFAngles(0), // VBF production angles
+computeVHAngles(0), // VH production angles
+sampleProductionId(TVar::ZZGG, TVar::JHUGen), // Sample gen. production mode
 fileLevel(0), // -1: ReadMode, 0: LHE, 1: Pythia, 
 isGenHZZ(1), // H->ZZ or H->WW
 isRecoHZZ(1), // H->ZZ or H->WW
@@ -34,12 +37,14 @@ coutput("tmp.root")
 void OptionParser::analyze(){
   bool hasInvalidOption=false;
   bool redefinedOutputFile=false;
+  bool hasDecayAngles=false;
   char rawdelimiter = '=';
   for (int opt=1; opt<rawOptions.size(); opt++){
     string wish, value;
     splitOption(rawOptions.at(opt), wish, value, rawdelimiter);
     interpretOption(wish, value);
     if (wish=="outfile") redefinedOutputFile=true;
+    if (wish=="computeDecayAngles") hasDecayAngles=true;
   }
 
   if (filename.size()==0){ cerr << "You have to specify the input files." << endl; if(!hasInvalidOption) hasInvalidOption=true; }
@@ -58,6 +63,7 @@ void OptionParser::analyze(){
   if (genHiggsCandidateSelectionScheme>=HiggsComparators::nCandidateSelections){ cerr << "Gen. H selection scheme is invalid!" << endl; if(!hasInvalidOption) hasInvalidOption=true; }
   if (recoHiggsCandidateSelectionScheme>=HiggsComparators::nCandidateSelections){ cerr << "Reco. H selection scheme is invalid!" << endl; if(!hasInvalidOption) hasInvalidOption=true; }
   if (!redefinedOutputFile) cout << "WARNING: No output file specified. Defaulting to " << coutput << "." << endl;
+  if (!hasDecayAngles && fileLevel<0) { cout << "Disabling the re-calculation of decay angles in ReadMode by default since no option is specified." << endl; computeDecayAngles=0; }
 
   // Print help if needed and abort at this point, nowhere later
   if (hasInvalidOption) printOptionsHelp();
@@ -203,6 +209,9 @@ void OptionParser::interpretOption(string wish, string value){
   else if (wish=="GHSM" || wish=="GaHSM" || wish=="GammaHSM" || wish=="wPOLEStandard") wPOLEStandard = (double)atof(value.c_str());
   else if (wish=="sqrts") erg_tev = (int)atoi(value.c_str());
   else if (wish=="removeDaughterMasses") removeDaughterMasses = (int)atoi(value.c_str());
+  else if (wish=="computeDecayAngles") computeDecayAngles = (int)atoi(value.c_str());
+  else if (wish=="computeVBFProdAngles") computeVBFAngles = (int)atoi(value.c_str());
+  else if (wish=="computeVHProdAngles") computeVHAngles = (int)atoi(value.c_str());
 
   else if (wish=="includeRecoDecayProb") splitOptionRecursive(value, includeRecoDecayProb, ',');
   else if (wish=="includeRecoProdProb") splitOptionRecursive(value, includeRecoProdProb, ',');
@@ -239,6 +248,9 @@ void OptionParser::printOptionsHelp(){
 
   cout << "- sqrts: pp collision c.o.m. energy. Default=13 (TeV)\n\n";
   cout << "- removeDaughterMasses: Switch to control the removal of lepton masses in the angle computation. Default=1\n\n";
+  cout << "- computeDecayAngles: Switch to control the decay angles computation. Default=1 in LHE or Pythia modes, 0 in ReadMode.\n\n";
+  cout << "- computeVBFProdAngles: Switch to control the VBF production angles computation. Default=0\n\n";
+  cout << "- computeVHProdAngles: Switch to control the VH production angles computation. Default=0\n\n";
   cout << "- includeGenDecayProb, includeGenProdProb, includeRecoDecayProb, includeRecoProdProb: Comma-separated list of spin-0 gen. or reco. decay or production MEs. Default=Empty (==None).\n\tThe explicit values tested are g1, g2, g4, g1_prime2; g1_pi2, g2_pi2, g4_pi2, g1_prime2_pi2, None, All.\n\t Gen. MEs are present for the purpose of reweighting. The appropriate target and origin combinations are left to the user at an analysis step.\n\n";
   cout << "- sampleProductionId: Production mechanism used in the computation of includeGenProdProb. Follows the format (TVar::Production, TVar::MatrixElement). Default=(ZZGG, JHUGen)\n\n";
 

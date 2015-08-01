@@ -59,6 +59,9 @@ public:
   Int_t sqrts(){ return erg_tev; }
   Bool_t initializeMELA(){ return (includeGenDecayProb.size()>0 || includeRecoDecayProb.size()>0 || includeGenProdProb.size()>0 || includeRecoProdProb.size()>0); }
   Bool_t doRemoveLepMasses(){ bool doProcess=true; if (removeDaughterMasses==0) doProcess=false; return doProcess; }
+  Bool_t doComputeDecayAngles(){ bool doProcess=true; if (computeDecayAngles==0) doProcess=false; return doProcess; }
+  Bool_t doComputeVBFAngles(){ bool doProcess=true; if (computeVBFAngles==0) doProcess=false; return doProcess; }
+  Bool_t doComputeVHAngles(){ bool doProcess=true; if (computeVHAngles==0) doProcess=false; return doProcess; }
   Bool_t hasGenDecayME(string str);
   Bool_t hasRecoDecayME(string str);
   Bool_t hasGenProdME(string str);
@@ -82,6 +85,9 @@ protected:
   Int_t includeGenInfo;
   Int_t includeRecoInfo;
   Int_t removeDaughterMasses;
+  Int_t computeDecayAngles;
+  Int_t computeVBFAngles;
+  Int_t computeVHAngles;
   Int_t fileLevel;
   Int_t isGenHZZ;
   Int_t isRecoHZZ;

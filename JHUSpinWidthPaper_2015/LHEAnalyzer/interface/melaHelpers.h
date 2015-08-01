@@ -21,10 +21,12 @@ namespace melaHelpers{
 
   Float_t melaBranchMEInterpreter(const ZZCandidate* cand, string& branchname);
 
+/*
   void computeVHAngles(
     TLorentzVector thep4Z1, TLorentzVector thep4Z2, TLorentzVector thep4H,
     Float_t& costheta1, Float_t& costheta2, Float_t& Phi, Float_t& costhetastar, Float_t& Phi1
     );
+*/
 }
 
 #endif

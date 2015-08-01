@@ -173,10 +173,22 @@ void Reader::run(){
           else recoCand = HiggsComparators::candidateSelector(recoEvent, options->getHiggsCandidateSelectionScheme(false), options->doRecoHZZdecay());
 
           if (genCand!=0){
+            if (options->doComputeDecayAngles()) tree->fillDecayAngles(genCand, true);
+            //if (options->doComputeVBFAngles()) tree->fillVBFAngles(genCand, true);
+            //if (options->doComputeVHAngles()) tree->fillVHAngles(genCand, true);
             if (options->initializeMELA()) tree->fillMELAProbabilities(genCand, true);
           }
           if (recoCand!=0){
-            if (options->initializeMELA()) tree->fillMELAProbabilities(recoCand, false);
+            if (options->recoSelectionMode()!=0){
+              tree->fillCandidate(recoCand, false);
+              tree->fillEventVariables(*((Float_t*)tree->getBranchHandleRef("MC_weight")), 0 /*isSelected*/);
+            }
+            else{
+              if (options->doComputeDecayAngles()) tree->fillDecayAngles(recoCand, false);
+              //if (options->doComputeVBFAngles()) tree->fillVBFAngles(recoCand, false);
+              //if (options->doComputeVHAngles()) tree->fillVHAngles(recoCand, false);
+              if (options->initializeMELA()) tree->fillMELAProbabilities(recoCand, false);
+            }
           }
           else if (options->recoSelectionMode()!=0) tree->fillEventVariables(*((Float_t*)tree->getBranchHandleRef("MC_weight")), 0 /*isSelected*/);
 

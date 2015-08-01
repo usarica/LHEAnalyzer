@@ -48,13 +48,17 @@ void trimPythia(TString cinput, TString outdir="./"){
   TFile f(cinput, "read");
   if (!f.IsZombie()){
     TTree* events = (TTree*)f.Get("Events");
+    events->SetBranchStatus("*", 0);
 
     edm::Wrapper< vector<reco::GenJet> >* jetWrapper;
     edm::Wrapper< vector<reco::GenParticle> >* genparticleWrapper;
     edm::Wrapper< GenEventInfoProduct >* geneventinfoWrapper;
 
+    events->SetBranchStatus("recoGenJets_ak5GenJets__SIM*", 1);
     events->SetBranchAddress("recoGenJets_ak5GenJets__SIM.", &jetWrapper);
+    events->SetBranchStatus("recoGenParticles_genParticles__SIM*", 1);
     events->SetBranchAddress("recoGenParticles_genParticles__SIM.", &genparticleWrapper);
+    events->SetBranchStatus("GenEventInfoProduct_generator__SIM*", 1);
     events->SetBranchAddress("GenEventInfoProduct_generator__SIM.", &geneventinfoWrapper);
 
     for (int ev=0; ev<events->GetEntries(); ev++){
