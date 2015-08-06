@@ -31,8 +31,8 @@ public:
   void setGenStatus(int status_){ genStatus=status_; }
   void setLifetime(int life_){ lifetime=life_; }
 
-  void addMother(Particle* myParticle){ mothers.push_back(myParticle); };
-  void addDaughter(Particle* myParticle){ daughters.push_back(myParticle); };
+  void addMother(Particle* myParticle);
+  void addDaughter(Particle* myParticle);
 
   int getNMothers() const{ return mothers.size(); };
   int getNDaughters() const{ return daughters.size(); };
@@ -56,6 +56,8 @@ public:
 protected:
   std::vector<Particle*> mothers;
   std::vector<Particle*> daughters;
+
+  bool checkParticleExists(Particle* myParticle, std::vector<Particle*>& particleArray);
 };
 
 

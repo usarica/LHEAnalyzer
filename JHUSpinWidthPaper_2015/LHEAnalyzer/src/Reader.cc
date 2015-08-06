@@ -236,7 +236,7 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
 
   string strId = "Id";
   vector<string> strMassPtEtaPhi; strMassPtEtaPhi.push_back("Pt"); strMassPtEtaPhi.push_back("Eta"); strMassPtEtaPhi.push_back("Phi"); strMassPtEtaPhi.push_back("Mass");
-  vector<string> strMassPtPzPhi; strMassPtPzPhi.push_back("Pt"); strMassPtPzPhi.push_back("Eta"); strMassPtPzPhi.push_back("Phi"); strMassPtPzPhi.push_back("Mass");
+  vector<string> strMassPtPzPhi; strMassPtPzPhi.push_back("Pt"); strMassPtPzPhi.push_back("Pz"); strMassPtPzPhi.push_back("Phi"); strMassPtPzPhi.push_back("Mass");
 
   string strLepCore = "Lep";
   if (isGen) strLepCore.insert(0, "Gen");
@@ -266,6 +266,7 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
       Int_t partId = *ref_partId;
       TLorentzVector partFV; partFV.SetPtEtaPhiM(*(ref_partFV[0]), *(ref_partFV[1]), *(ref_partFV[2]), *(ref_partFV[3]));
       Particle* part = new Particle((int)partId, partFV);
+      if(isGen) part->setGenStatus(1);
       particles.push_back(part);
       candFinalDaughters.push_back(part);
     }
@@ -299,6 +300,7 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
       Int_t partId = idhandle->at(el);
       TLorentzVector partFV; partFV.SetPtEtaPhiM(fvhandle[0]->at(el), fvhandle[1]->at(el), fvhandle[2]->at(el), fvhandle[3]->at(el));
       Particle* part = new Particle((int)partId, partFV);
+      if (isGen) part->setGenStatus(1);
       particles.push_back(part);
       associatedParticles.push_back(part);
     }
@@ -306,6 +308,41 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
 
   // Reconstruct the gen and reco candidates
   if (isGen){ // Do not find the best combination, leave it to the input tree
+
+    // First search the tree for the mothers
+    vector<Particle*> motherParticles;
+    string strMPCore = "Mother";
+    strMPCore.insert(0, "Gen");
+    vectorDouble** ref_mpartFV[4];
+    bool mpart_success=true;
+    for (int fv=0; fv<4; fv++){
+      varname = strMPCore + strMassPtPzPhi.at(fv);
+      ref_mpartFV[fv] = (vectorDouble**)tree->getBranchHandleRef(varname);
+      if (ref_mpartFV[fv]==0) { mpart_success=false; break; }
+      else if ((*ref_mpartFV[fv])==0) { mpart_success=false; break; }
+    }
+    varname = strMPCore + strId;
+    vectorInt** ref_mpartId = (vectorInt**)tree->getBranchHandleRef(varname);
+    if (ref_mpartId==0) mpart_success=false;
+    if ((*ref_mpartId)==0) mpart_success=false;
+    if (mpart_success){
+      vectorInt* idhandle = *ref_mpartId;
+      vectorDouble* fvhandle[4];
+
+      for (int fv=0; fv<4; fv++){
+        fvhandle[fv]=*(ref_mpartFV[fv]);
+        if (fvhandle[fv]->size()!=idhandle->size()) { mpart_success=false; break; }
+      }
+      for (int el=0; el<idhandle->size(); el++){
+        Int_t partId = idhandle->at(el);
+        TLorentzVector partFV; partFV.SetXYZM(fvhandle[0]->at(el)*cos(fvhandle[2]->at(el)), fvhandle[0]->at(el)*sin(fvhandle[2]->at(el)), fvhandle[1]->at(el), fvhandle[3]->at(el));
+        Particle* part = new Particle((int)partId, partFV);
+        part->setGenStatus(-1);
+        particles.push_back(part);
+        motherParticles.push_back(part);
+      }
+    }
+
     for (int d=0; d<candFinalDaughters.size(); d++){
       Particle* part = candFinalDaughters.at(d);
       if (isALepton(part->id)) outEvent.addLepton(part);
@@ -315,6 +352,10 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
       else outEvent.addParticle(part);
     }
     outEvent.constructVVCandidates(options->doGenHZZdecay(), options->genDecayProducts());
+    for (int p=0; p<motherParticles.size(); p++){
+      Particle* part = motherParticles.at(p);
+      outEvent.addVVCandidateMother(part);
+    }
     for (int d=0; d<associatedParticles.size(); d++){
       Particle* part = associatedParticles.at(d);
       if (isALepton(part->id)) outEvent.addLepton(part);

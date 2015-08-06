@@ -315,6 +315,9 @@ TLorentzVector Event::missingP() const{
   return totalP;
 }
 
+void Event::addVVCandidateMother(Particle* mother){
+  for (std::vector<ZZCandidate*>::iterator it = ZZcandidates.begin(); it<ZZcandidates.end(); it++) (*it)->addMother(mother);
+}
 void Event::addVVCandidateAppendages(){
   for (std::vector<ZZCandidate*>::iterator it = ZZcandidates.begin(); it<ZZcandidates.end(); it++){
     for (std::vector<Particle*>::iterator iL = leptons.begin(); iL<leptons.end(); iL++){ if ((*iL)->passSelection) (*it)->addAssociatedLeptons(*iL); }

@@ -37,6 +37,7 @@ void convertLHE::run(){
     fin.open(cinput.c_str());
     if (fin.good()){
       int nProcessed = 0;
+      int ev = 0;
       while (!fin.eof()){
         vector<Particle*> particleList = readEvent(fin, weight);
         vector<Particle*> smearedParticleList; // Bookkeeping
@@ -84,6 +85,10 @@ void convertLHE::run(){
           //for (int p=0; p<genEvent.getNLeptons(); p++) cout << "Lepton " << p << " (x, y, z, t): " << genEvent.getLepton(p)->x() << '\t' << genEvent.getLepton(p)->y() << '\t' << genEvent.getLepton(p)->z() << '\t' << genEvent.getLepton(p)->t() << endl;
 
           genEvent.constructVVCandidates(options->doGenHZZdecay(), options->genDecayProducts());
+          for (int p=0; p<particleList.size(); p++){
+            Particle* genPart = particleList.at(p);
+            if (genPart->genStatus==-1) genEvent.addVVCandidateMother(genPart);
+          }
           genEvent.addVVCandidateAppendages();
           ZZCandidate* genCand=0;
           if (hasGenHiggs.size()>0){
@@ -97,7 +102,7 @@ void convertLHE::run(){
           }
           else genCand = HiggsComparators::candidateSelector(genEvent, options->getHiggsCandidateSelectionScheme(true), options->doGenHZZdecay());
           if (genCand!=0) tree->fillCandidate(genCand, true);
-          else cout << cinput << " (" << nProcessed << "): No gen. level Higgs candidate was found!" << endl;
+          else cout << cinput << " (" << ev << "): No gen. level Higgs candidate was found!" << endl;
 
           smearedEvent.constructVVCandidates(options->doRecoHZZdecay(), options->recoDecayProducts());
           if (options->recoSelectionMode()==0) smearedEvent.applyParticleSelection();
@@ -111,9 +116,12 @@ void convertLHE::run(){
           MC_weight = (float)weight;
           tree->fillEventVariables(MC_weight, isSelected);
 
-          tree->record();
-          nProcessed++;
+          if ((rCand!=0 && options->processRecoInfo()) || (genCand!=0 && options->processGenInfo())){
+            tree->record();
+            nProcessed++;
+          }
         }
+        ev++;
 
         for (int p=0; p<smearedCandList.size(); p++){ // Bookkeeping
           ZZCandidate* tmpCand = (ZZCandidate*)smearedCandList.at(p);
@@ -140,6 +148,7 @@ void convertLHE::run(){
         particleList.clear();
       }
       fin.close();
+      cout << "Processed number of events from the input file: " << nProcessed << " / " << ev << endl;
     }
   }
   finalizeRun();

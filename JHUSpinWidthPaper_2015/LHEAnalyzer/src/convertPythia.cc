@@ -49,6 +49,7 @@ void convertPythia::run(){
       foutput->cd();
 
       int nInputEvents = tin->GetEntries();
+      int nProcessed = 0;
       for (int ev=0; ev<nInputEvents; ev++){
         double weight;
         bool genSuccess=false, smearedSuccess=false;
@@ -82,6 +83,10 @@ void convertPythia::run(){
             }
 
             genEvent.constructVVCandidates(options->doGenHZZdecay(), options->genDecayProducts());
+            for (int p=0; p<genParticleList.size(); p++){
+              Particle* genPart = genParticleList.at(p);
+              if (genPart->genStatus==-1) genEvent.addVVCandidateMother(genPart);
+            }
             genEvent.addVVCandidateAppendages();
             ZZCandidate* genCand=0;
             if (hasGenHiggs.size()>0){
@@ -95,7 +100,10 @@ void convertPythia::run(){
             }
             else genCand = HiggsComparators::candidateSelector(genEvent, options->getHiggsCandidateSelectionScheme(true), options->doGenHZZdecay());
             if (genCand!=0) tree->fillCandidate(genCand, true);
-            else cout << cinput << " (" << ev << "): No gen. level Higgs candidate was found!" << endl;
+            else{
+              cout << cinput << " (" << ev << "): No gen. level Higgs candidate was found!" << endl;
+              genSuccess=false;
+            }
           }
 
           Event smearedEvent;
@@ -116,12 +124,18 @@ void convertPythia::run(){
               isSelected=1;
               tree->fillCandidate(rCand, false);
             }
-            else isSelected=0;
+            else{
+              isSelected=0;
+              smearedSuccess=false;
+            }
+          }
+
+          tree->fillEventVariables(MC_weight, isSelected);
+          if ((smearedSuccess && options->processRecoInfo()) || (genSuccess && options->processGenInfo())){
+            tree->record();
+            nProcessed++;
           }
         }
-
-        tree->fillEventVariables(MC_weight, isSelected);
-        if ((genSuccess || smearedSuccess) && weight!=0) tree->record();
 
         for (int p=0; p<smearedCandList.size(); p++){ // Bookkeeping
           ZZCandidate* tmpCand = (ZZCandidate*)smearedCandList.at(p);
@@ -149,6 +163,7 @@ void convertPythia::run(){
       }
 
       fin->Close();
+      cout << "Processed number of events from the input file: " << nProcessed << " / " << nInputEvents << endl;
     }
   }
   finalizeRun();

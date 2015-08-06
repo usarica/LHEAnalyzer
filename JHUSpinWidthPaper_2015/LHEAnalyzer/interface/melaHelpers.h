@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <ZZMatrixElement/MELA/interface/Mela.h>
 #include <ZZMatrixElement/MELA/src/computeAngles.h>
+#include "TLorentzRotation.h"
 #include "Event.h"
 
 namespace melaHelpers{
@@ -21,12 +22,48 @@ namespace melaHelpers{
 
   Float_t melaBranchMEInterpreter(const ZZCandidate* cand, string& branchname);
 
-/*
-  void computeVHAngles(
-    TLorentzVector thep4Z1, TLorentzVector thep4Z2, TLorentzVector thep4H,
-    Float_t& costheta1, Float_t& costheta2, Float_t& Phi, Float_t& costhetastar, Float_t& Phi1
-    );
-*/
+
+  void computeAngles(
+    TLorentzVector p4M11, int Z1_lept1Id,
+    TLorentzVector p4M12, int Z1_lept2Id,
+    TLorentzVector p4M21, int Z2_lept1Id,
+    TLorentzVector p4M22, int Z2_lept2Id,
+    float& costhetastar,
+    float& costheta1,
+    float& costheta2,
+    float& Phi,
+    float& Phi1);
+
+  void computeVBFangles(
+    float& costhetastar,
+    float& costheta1,
+    float& costheta2,
+    float& Phi,
+    float& Phi1,
+    float& Q2V1,
+    float& Q2V2,
+    TLorentzVector p4M11, int Z1_lept1Id,
+    TLorentzVector p4M12, int Z1_lept2Id,
+    TLorentzVector p4M21, int Z2_lept1Id,
+    TLorentzVector p4M22, int Z2_lept2Id,
+    TLorentzVector jet1, int jet1Id,
+    TLorentzVector jet2, int jet2Id,
+    TLorentzVector* injet1=0, int injet1Id=0,
+    TLorentzVector* injet2=0, int injet2Id=0);
+  void computeVHangles(
+    float& costhetastar,
+    float& costheta1,
+    float& costheta2,
+    float& Phi,
+    float& Phi1,
+    TLorentzVector p4M11, int Z1_lept1Id,
+    TLorentzVector p4M12, int Z1_lept2Id,
+    TLorentzVector p4M21, int Z2_lept1Id,
+    TLorentzVector p4M22, int Z2_lept2Id,
+    TLorentzVector jet1, int jet1Id,
+    TLorentzVector jet2, int jet2Id,
+    TLorentzVector* injet1=0, int injet1Id=0,
+    TLorentzVector* injet2=0, int injet2Id=0);
 }
 
 #endif

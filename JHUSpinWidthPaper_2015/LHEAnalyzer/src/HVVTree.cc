@@ -34,8 +34,11 @@ void HVVTree::bookAllBranches(bool doSetAddress){
 
     bookPtEtaPhiMassIdBranches("AssociatedParticle", BranchTypes::bVectorDouble, doSetAddress, true, false, true);
     reserveBranch("GenDijetMass", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenDileptonMass", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenDRjet", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenDRlepton", BranchTypes::bFloat, doSetAddress);
 
-    reserveBranch("GenNAssociatedVs", BranchTypes::bInt, doSetAddress);
+    reserveBranch("NGenAssociatedVs", BranchTypes::bInt, doSetAddress);
     bookPtEtaPhiMassIdBranches("AssociatedV", BranchTypes::bVectorDouble, doSetAddress, true, false, true);
     reserveBranch("GenAssociatedV_Particle1Index", BranchTypes::bVectorInt, doSetAddress);
     reserveBranch("GenAssociatedV_Particle2Index", BranchTypes::bVectorInt, doSetAddress);
@@ -56,6 +59,9 @@ void HVVTree::bookAllBranches(bool doSetAddress){
 
     bookPtEtaPhiMassIdBranches("AssociatedParticle", BranchTypes::bVectorDouble, doSetAddress, true, false, false);
     reserveBranch("DijetMass", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("DileptonMass", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("DRjet", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("DRlepton", BranchTypes::bFloat, doSetAddress);
 
     reserveBranch("NAssociatedVs", BranchTypes::bInt, doSetAddress);
     bookPtEtaPhiMassIdBranches("AssociatedV", BranchTypes::bVectorDouble, doSetAddress, true, false, false);
@@ -109,12 +115,24 @@ void HVVTree::bookAngularBranches(bool doSetAddress){
   if (options->processGenInfo()){
     if (options->doComputeDecayAngles() || doSetAddress) getAngularBranches(tmpBranchList, 0, true);
     if (options->doComputeVBFAngles() || doSetAddress) getAngularBranches(tmpBranchList, 1, true);
-    if (options->doComputeVHAngles() || doSetAddress) getAngularBranches(tmpBranchList, 2, true);
+    if (options->doComputeVHAngles() || doSetAddress){
+      if (options->computeVHAnglesOrder()!=3) getAngularBranches(tmpBranchList, 2, true);
+      else{
+        getAngularBranches(tmpBranchList, 3, true);
+        getAngularBranches(tmpBranchList, 4, true);
+      }
+    }
   }
   if (options->processRecoInfo()){
     if (options->doComputeDecayAngles() || doSetAddress) getAngularBranches(tmpBranchList, 0, false);
     if (options->doComputeVBFAngles() || doSetAddress) getAngularBranches(tmpBranchList, 1, false);
-    if (options->doComputeVHAngles() || doSetAddress) getAngularBranches(tmpBranchList, 2, false);
+    if (options->doComputeVHAngles() || doSetAddress){
+      if (options->computeVHAnglesOrder()!=3) getAngularBranches(tmpBranchList, 2, false);
+      else{
+        getAngularBranches(tmpBranchList, 3, false);
+        getAngularBranches(tmpBranchList, 4, false);
+      }
+    }
   }
   for (int b=0; b<tmpBranchList.size(); b++){
     reserveBranch(tmpBranchList.at(b), BranchTypes::bFloat, doSetAddress);
@@ -136,12 +154,18 @@ void HVVTree::getAngularBranches(vector<string>& blist, Int_t prodFlag /* 0: Dec
     strtmp.push_back("helcosthetaV2");
     strtmp.push_back("helphi");
     strtmp.push_back("phistarV1");
+    if (prodFlag==1){
+      strtmp.push_back("Q_V1");
+      strtmp.push_back("Q_V2");
+    }
   }
   for (int b=0; b<strtmp.size(); b++){
     string varname = strtmp.at(b);
     if (isGen) varname.insert(0, strGen);
-    if (prodFlag==1) varname.append("_VBF");
+    if (prodFlag==1 && varname.find("Q_V")==string::npos) varname.append("_VBF");
     else if (prodFlag==2) varname.append("_VH");
+    else if (prodFlag==3) varname.append("_VHhadronic");
+    else if (prodFlag==4) varname.append("_VHleptonic");
     blist.push_back(varname);
   }
 }
@@ -494,7 +518,8 @@ void HVVTree::fillCandidate(ZZCandidate* pH, bool isGen){
   fillDaughterProducts(pH, isGen);
   fillAssociatedInfo(pH, isGen);
   if (options->doComputeDecayAngles()) fillDecayAngles(pH, isGen);
-//  fillProductionAngles(pH, isGen);
+  if (options->doComputeVBFAngles()) fillVBFProductionAngles(pH, isGen);
+  if (options->doComputeVHAngles()) fillVHProductionAngles(pH, isGen);
 
   if (melaProbBranches.size()>0) fillMELAProbabilities(pH, isGen); // Do it at the last step
 }
@@ -581,6 +606,9 @@ void HVVTree::fillAssociatedInfo(ZZCandidate* pH, bool isGen){
   vector<Particle*> AssociatedParticle;
   vector<Particle*> tmpAssociatedParticle;
   Float_t DijetMass=-1;
+  Float_t DileptonMass=-1;
+  Float_t dRjet=0;
+  Float_t dRlep=0;
 
   Int_t NAssociatedVs=0;
   vector<Particle*> AssociatedV;
@@ -638,10 +666,24 @@ void HVVTree::fillAssociatedInfo(ZZCandidate* pH, bool isGen){
     varname = "DijetMass";
     if (isGen) varname.insert(0, "Gen");
     setVal(varname, DijetMass);
+    dRjet = pH->getAssociatedJet(0)->deltaR(pH->getAssociatedJet(1)->p4);
+    varname = "DRjet";
+    if (isGen) varname.insert(0, "Gen");
+    setVal(varname, dRjet);
+  }
+  if (pH->getNAssociatedLeptons()>1){
+    DileptonMass = (pH->getAssociatedLepton(0)->p4+pH->getAssociatedLepton(1)->p4).M();
+    varname = "DileptonMass";
+    if (isGen) varname.insert(0, "Gen");
+    setVal(varname, DileptonMass);
+    dRlep = pH->getAssociatedLepton(0)->deltaR(pH->getAssociatedLepton(1)->p4);
+    varname = "DRlepton";
+    if (isGen) varname.insert(0, "Gen");
+    setVal(varname, dRlep);
   }
 
   varname = "NAssociatedVs";
-  if (isGen) varname.insert(0, "Gen");
+  if (isGen) varname.insert(1, "Gen");
   setVal(varname, NAssociatedVs);
 
   strcore = "AssociatedParticle";
@@ -670,7 +712,7 @@ void HVVTree::fillAssociatedInfo(ZZCandidate* pH, bool isGen){
 void HVVTree::fillDecayAngles(ZZCandidate* pH, bool isGen){
   Float_t helcosthetaZ1=0, helcosthetaZ2=0, helphi=0, costhetastar=0, phistarZ1=0;
 
-  if (pH!=0) mela::computeAngles(
+  if (pH!=0) melaHelpers::computeAngles(
     pH->getSortedV(0)->getDaughter(0)->p4, pH->getSortedV(0)->getDaughter(0)->id,
     pH->getSortedV(0)->getDaughter(1)->p4, pH->getSortedV(0)->getDaughter(1)->id,
     pH->getSortedV(1)->getDaughter(0)->p4, pH->getSortedV(1)->getDaughter(0)->id,
@@ -696,7 +738,225 @@ void HVVTree::fillDecayAngles(ZZCandidate* pH, bool isGen){
     else cerr << "HVVTree::fillDecayAngles -> ERROR: Branch " << varname << " is invalid!" << endl;
   }
 }
-//  void HVVTree::fillProductionAngles(Particle* pH, bool isGen=false);
+void HVVTree::fillVBFProductionAngles(ZZCandidate* pH, bool isGen){
+  Float_t helcosthetaV1=0, helcosthetaV2=0, helphi=0, costhetastar=0, phistarV1=0;
+  Float_t q1sq, q2sq;
+
+  if (pH!=0){
+    if (pH->getNAssociatedJets()>=1){
+      TLorentzVector jet1, jet2;
+      int jet1Id, jet2Id;
+
+      TLorentzVector mother1;
+      TLorentzVector mother2;
+      int mother1Id=0;
+      int mother2Id=0;
+      TLorentzVector* mother1ref=0;
+      TLorentzVector* mother2ref=0;
+
+      jet1 = pH->getAssociatedJet(0)->p4;
+      jet1Id = pH->getAssociatedJet(0)->id;
+      if (pH->getNAssociatedJets()>=2){
+        jet2 = pH->getAssociatedJet(1)->p4;
+        jet2Id = pH->getAssociatedJet(1)->id;
+      }
+      else{
+        TLorentzVector others(0, 0, 0, 0);
+        for (int v=0; v<2; v++){
+          for (int d=0; d<2; d++){
+            Particle* lepton = (pH!=0 ? pH->getSortedV(v)->getDaughter(d) : 0);
+            if (lepton!=0) others = others + lepton->p4;
+          }
+        }
+        mela::computeFakeJet(jet1, others, jet2);
+        jet2Id=0;
+      }
+      if (isGen && pH->getNMothers()>=2){
+        mother1 = pH->getMother(0)->p4;
+        mother2 = pH->getMother(1)->p4;
+        mother1Id = pH->getMother(0)->id;
+        mother2Id = pH->getMother(1)->id;
+        mother1ref = &mother1;
+        mother2ref = &mother2;
+      }
+      melaHelpers::computeVBFangles(
+        costhetastar, helcosthetaV1, helcosthetaV2, helphi, phistarV1, q1sq, q2sq,
+        pH->getSortedV(0)->getDaughter(0)->p4, pH->getSortedV(0)->getDaughter(0)->id,
+        pH->getSortedV(0)->getDaughter(1)->p4, pH->getSortedV(0)->getDaughter(1)->id,
+        pH->getSortedV(1)->getDaughter(0)->p4, pH->getSortedV(1)->getDaughter(0)->id,
+        pH->getSortedV(1)->getDaughter(1)->p4, pH->getSortedV(1)->getDaughter(1)->id,
+        jet1, jet1Id,
+        jet2, jet2Id,
+        mother1ref, mother1Id,
+        mother2ref, mother2Id
+        );
+    }
+  }
+  // Protect against NaN
+  if (!(costhetastar==costhetastar)) costhetastar=0;
+  if (!(helcosthetaV1==helcosthetaV1)) helcosthetaV1=0;
+  if (!(helcosthetaV2==helcosthetaV2)) helcosthetaV2=0;
+  if (!(helphi==helphi)) helphi=0;
+  if (!(phistarV1==phistarV1)) phistarV1=0;
+  if (!(q1sq==q1sq)) q1sq=0;
+  if (!(q2sq==q2sq)) q2sq=0;
+  q1sq = (q1sq>=0 ? sqrt(q1sq) : -sqrt(-q1sq));
+  q2sq = (q2sq>=0 ? sqrt(q2sq) : -sqrt(-q2sq));
+
+  vector<string> varlist;
+  getAngularBranches(varlist, 1, isGen);
+  for (int b=0; b<varlist.size(); b++){
+    string varname = varlist.at(b);
+    if (varname.find("costhetastar_VBF")!=string::npos) setVal(varname, costhetastar);
+    else if (varname.find("helcosthetaV1_VBF")!=string::npos) setVal(varname, helcosthetaV1);
+    else if (varname.find("helcosthetaV2_VBF")!=string::npos) setVal(varname, helcosthetaV2);
+    else if (varname.find("helphi_VBF")!=string::npos) setVal(varname, helphi);
+    else if (varname.find("phistarV1_VBF")!=string::npos) setVal(varname, phistarV1);
+    else if (varname.find("Q_V1")!=string::npos) setVal(varname, q1sq);
+    else if (varname.find("Q_V2")!=string::npos) setVal(varname, q2sq);
+    else cerr << "HVVTree::fillVBFProductionAngles -> ERROR: Branch " << varname << " is invalid!" << endl;
+  }
+}
+void HVVTree::fillVHProductionAngles(ZZCandidate* pH, bool isGen){
+  Float_t helcosthetaV1_hadronic=0, helcosthetaV2_hadronic=0, helphi_hadronic=0, costhetastar_hadronic=0, phistarV1_hadronic=0;
+  Float_t helcosthetaV1_leptonic=0, helcosthetaV2_leptonic=0, helphi_leptonic=0, costhetastar_leptonic=0, phistarV1_leptonic=0;
+
+  if (pH!=0){
+    TLorentzVector mother1;
+    TLorentzVector mother2;
+    int mother1Id=0;
+    int mother2Id=0;
+    TLorentzVector* mother1ref=0;
+    TLorentzVector* mother2ref=0;
+    if (isGen && pH->getNMothers()>=2){
+      mother1 = pH->getMother(0)->p4;
+      mother2 = pH->getMother(1)->p4;
+      mother1Id = pH->getMother(0)->id;
+      mother2Id = pH->getMother(1)->id;
+      mother1ref = &mother1;
+      mother2ref = &mother2;
+    }
+
+    if (pH->getNAssociatedJets()>=1 && options->computeVHAnglesOrder()!=2){
+      TLorentzVector jet1, jet2;
+      int jet1Id, jet2Id;
+
+      jet1 = pH->getAssociatedJet(0)->p4;
+      jet1Id = pH->getAssociatedJet(0)->id;
+      if (pH->getNAssociatedJets()>=2){
+        jet2 = pH->getAssociatedJet(1)->p4;
+        jet2Id = pH->getAssociatedJet(1)->id;
+      }
+      else{
+        TLorentzVector others(0, 0, 0, 0);
+        for (int v=0; v<2; v++){
+          for (int d=0; d<2; d++){
+            Particle* lepton = (pH!=0 ? pH->getSortedV(v)->getDaughter(d) : 0);
+            if (lepton!=0) others = others + lepton->p4;
+          }
+        }
+        mela::computeFakeJet(jet1, others, jet2);
+        jet2Id=0;
+      }
+
+      melaHelpers::computeVHangles(
+        costhetastar_hadronic, helcosthetaV1_hadronic, helcosthetaV2_hadronic, helphi_hadronic, phistarV1_hadronic,
+        pH->getSortedV(0)->getDaughter(0)->p4, pH->getSortedV(0)->getDaughter(0)->id,
+        pH->getSortedV(0)->getDaughter(1)->p4, pH->getSortedV(0)->getDaughter(1)->id,
+        pH->getSortedV(1)->getDaughter(0)->p4, pH->getSortedV(1)->getDaughter(0)->id,
+        pH->getSortedV(1)->getDaughter(1)->p4, pH->getSortedV(1)->getDaughter(1)->id,
+        jet1, jet1Id,
+        jet2, jet2Id,
+        mother1ref, mother1Id,
+        mother2ref, mother2Id
+        );
+    }
+    if (pH->getNAssociatedLeptons()>=1 && options->computeVHAnglesOrder()!=1){
+      TLorentzVector jet1, jet2;
+      int jet1Id, jet2Id;
+
+      jet1 = pH->getAssociatedLepton(0)->p4;
+      jet1Id = pH->getAssociatedLepton(0)->id;
+      if (pH->getNAssociatedLeptons()>=2){
+        jet2 = pH->getAssociatedLepton(1)->p4;
+        jet2Id = pH->getAssociatedLepton(1)->id;
+      }
+      else{
+        TLorentzVector others(0, 0, 0, 0);
+        for (int v=0; v<2; v++){
+          for (int d=0; d<2; d++){
+            Particle* lepton = (pH!=0 ? pH->getSortedV(v)->getDaughter(d) : 0);
+            if (lepton!=0) others = others + lepton->p4;
+          }
+        }
+        mela::computeFakeJet(jet1, others, jet2);
+        jet2Id=0;
+      }
+
+      melaHelpers::computeVHangles(
+        costhetastar_leptonic, helcosthetaV1_leptonic, helcosthetaV2_leptonic, helphi_leptonic, phistarV1_leptonic,
+        pH->getSortedV(0)->getDaughter(0)->p4, pH->getSortedV(0)->getDaughter(0)->id,
+        pH->getSortedV(0)->getDaughter(1)->p4, pH->getSortedV(0)->getDaughter(1)->id,
+        pH->getSortedV(1)->getDaughter(0)->p4, pH->getSortedV(1)->getDaughter(0)->id,
+        pH->getSortedV(1)->getDaughter(1)->p4, pH->getSortedV(1)->getDaughter(1)->id,
+        jet1, jet1Id,
+        jet2, jet2Id,
+        mother1ref, mother1Id,
+        mother2ref, mother2Id
+        );
+    }
+  }
+  // Protect against NaN
+  if (!(costhetastar_hadronic==costhetastar_hadronic)) costhetastar_hadronic=0;
+  if (!(helcosthetaV1_hadronic==helcosthetaV1_hadronic)) helcosthetaV1_hadronic=0;
+  if (!(helcosthetaV2_hadronic==helcosthetaV2_hadronic)) helcosthetaV2_hadronic=0;
+  if (!(helphi_hadronic==helphi_hadronic)) helphi_hadronic=0;
+  if (!(phistarV1_hadronic==phistarV1_hadronic)) phistarV1_hadronic=0;
+  if (!(costhetastar_leptonic==costhetastar_leptonic)) costhetastar_leptonic=0;
+  if (!(helcosthetaV1_leptonic==helcosthetaV1_leptonic)) helcosthetaV1_leptonic=0;
+  if (!(helcosthetaV2_leptonic==helcosthetaV2_leptonic)) helcosthetaV2_leptonic=0;
+  if (!(helphi_leptonic==helphi_leptonic)) helphi_leptonic=0;
+  if (!(phistarV1_leptonic==phistarV1_leptonic)) phistarV1_leptonic=0;
+
+  vector<string> varlist;
+  if (options->computeVHAnglesOrder()!=3) getAngularBranches(varlist, 2, isGen);
+  else{
+    getAngularBranches(varlist, 3, isGen);
+    getAngularBranches(varlist, 4, isGen);
+  }
+  for (int b=0; b<varlist.size(); b++){
+    string varname = varlist.at(b);
+    if (options->computeVHAnglesOrder()==1){
+      if (varname.find("costhetastar_VH")!=string::npos) setVal(varname, costhetastar_hadronic);
+      else if (varname.find("helcosthetaV1_VH")!=string::npos) setVal(varname, helcosthetaV1_hadronic);
+      else if (varname.find("helcosthetaV2_VH")!=string::npos) setVal(varname, helcosthetaV2_hadronic);
+      else if (varname.find("helphi_VH")!=string::npos) setVal(varname, helphi_hadronic);
+      else if (varname.find("phistarV1_VH")!=string::npos) setVal(varname, phistarV1_hadronic);
+      else cerr << "HVVTree::fillVHProductionAngles -> ERROR: Branch " << varname << " is invalid!" << endl;
+    }
+    if (options->computeVHAnglesOrder()==2){
+      if (varname.find("costhetastar_VH")!=string::npos) setVal(varname, costhetastar_leptonic);
+      else if (varname.find("helcosthetaV1_VH")!=string::npos) setVal(varname, helcosthetaV1_leptonic);
+      else if (varname.find("helcosthetaV2_VH")!=string::npos) setVal(varname, helcosthetaV2_leptonic);
+      else if (varname.find("helphi_VH")!=string::npos) setVal(varname, helphi_leptonic);
+      else if (varname.find("phistarV1_VH")!=string::npos) setVal(varname, phistarV1_leptonic);
+      else cerr << "HVVTree::fillVHProductionAngles -> ERROR: Branch " << varname << " is invalid!" << endl;
+    }
+    if (options->computeVHAnglesOrder()==3){
+      if (varname.find("costhetastar_VHhadronic")!=string::npos) setVal(varname, costhetastar_hadronic);
+      else if (varname.find("helcosthetaV1_VHhadronic")!=string::npos) setVal(varname, helcosthetaV1_hadronic);
+      else if (varname.find("helcosthetaV2_VHhadronic")!=string::npos) setVal(varname, helcosthetaV2_hadronic);
+      else if (varname.find("helphi_VHhadronic")!=string::npos) setVal(varname, helphi_hadronic);
+      else if (varname.find("phistarV1_VHhadronic")!=string::npos) setVal(varname, phistarV1_hadronic);
+      else if (varname.find("costhetastar_VHleptonic")!=string::npos) setVal(varname, costhetastar_leptonic);
+      else if (varname.find("helcosthetaV1_VHleptonic")!=string::npos) setVal(varname, helcosthetaV1_leptonic);
+      else if (varname.find("helcosthetaV2_VHleptonic")!=string::npos) setVal(varname, helcosthetaV2_leptonic);
+      else if (varname.find("helphi_VHleptonic")!=string::npos) setVal(varname, helphi_leptonic);
+      else if (varname.find("phistarV1_VHleptonic")!=string::npos) setVal(varname, phistarV1_leptonic);
+      else cerr << "HVVTree::fillVHProductionAngles -> ERROR: Branch " << varname << " is invalid!" << endl;
+    }
+  }
+}
 
 
 void HVVTree::fillMELAProbabilities(ZZCandidate* pH, bool isGen){

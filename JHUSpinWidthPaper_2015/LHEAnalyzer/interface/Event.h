@@ -28,6 +28,7 @@ public:
 
   void constructVVCandidates(bool isZZ=true, int fstype=0);
   void applyParticleSelection();
+  void addVVCandidateMother(Particle* mother);
   void addVVCandidateAppendages();
 
 

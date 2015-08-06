@@ -153,16 +153,17 @@ void ZZCandidate::addAssociatedJets(Particle* myParticle){
   if (!checkDaughtership(myParticle)) addByHighestPt(myParticle, associatedJets);
 }
 void ZZCandidate::addByHighestPt(Particle* myParticle, std::vector<Particle*>& particleArray){
-  bool inserted=false;
-  for (std::vector<Particle*>::iterator it = particleArray.begin(); it<particleArray.end(); it++){
-    if ((*it)->pt()<myParticle->pt()){
-      inserted=true;
-      particleArray.insert(it, myParticle);
-      break;
+  bool inserted = checkParticleExists(myParticle, particleArray); // Test if the particle is already in the vector
+  if (!inserted){
+    for (std::vector<Particle*>::iterator it = particleArray.begin(); it<particleArray.end(); it++){
+      if ((*it)->pt()<myParticle->pt()){
+        inserted=true;
+        particleArray.insert(it, myParticle);
+        break;
+      }
     }
-    else if ((*it)==myParticle){ inserted=true; break; } // Test if particle already exists
+    if (!inserted) particleArray.push_back(myParticle);
   }
-  if (!inserted) particleArray.push_back(myParticle);
 }
 void ZZCandidate::addAssociatedVs(){
   createAssociatedVs(associatedJets);

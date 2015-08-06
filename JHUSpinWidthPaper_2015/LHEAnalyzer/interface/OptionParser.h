@@ -62,6 +62,7 @@ public:
   Bool_t doComputeDecayAngles(){ bool doProcess=true; if (computeDecayAngles==0) doProcess=false; return doProcess; }
   Bool_t doComputeVBFAngles(){ bool doProcess=true; if (computeVBFAngles==0) doProcess=false; return doProcess; }
   Bool_t doComputeVHAngles(){ bool doProcess=true; if (computeVHAngles==0) doProcess=false; return doProcess; }
+  Int_t computeVHAnglesOrder(){ return computeVHAngles; }
   Bool_t hasGenDecayME(string str);
   Bool_t hasRecoDecayME(string str);
   Bool_t hasGenProdME(string str);

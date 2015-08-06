@@ -40,7 +40,14 @@ Particle& Particle::operator=(const Particle& particle_){
 }
 
 
-
+bool Particle::checkParticleExists(Particle* myParticle, std::vector<Particle*>& particleArray){
+  for (std::vector<Particle*>::iterator it = particleArray.begin(); it<particleArray.end(); it++){
+    if ((*it)==myParticle) return true;
+  }
+  return false;
+}
+void Particle::addMother(Particle* myParticle){ if (!checkParticleExists(myParticle, mothers)) mothers.push_back(myParticle); }
+void Particle::addDaughter(Particle* myParticle){ if (!checkParticleExists(myParticle, daughters)) daughters.push_back(myParticle); }
 Particle* Particle::getMother(int index)const{
   if ((int)mothers.size()>index) return mothers.at(index);
   else return 0;
