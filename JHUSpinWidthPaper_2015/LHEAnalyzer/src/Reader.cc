@@ -176,8 +176,8 @@ void Reader::run(){
 
           if (genCand!=0){
             if (options->doComputeDecayAngles()) tree->fillDecayAngles(genCand, true);
-            if (options->doComputeVBFAngles()) tree->fillVBFAngles(genCand, true);
-            if (options->doComputeVHAngles()) tree->fillVHAngles(genCand, true);
+            if (options->doComputeVBFAngles()) tree->fillVBFProductionAngles(genCand, true);
+            if (options->doComputeVHAngles()) tree->fillVHProductionAngles(genCand, true);
             if (options->initializeMELA()) tree->fillMELAProbabilities(genCand, true);
           }
           if (recoCand!=0){
@@ -187,14 +187,14 @@ void Reader::run(){
             }
             else{
               if (options->doComputeDecayAngles()) tree->fillDecayAngles(recoCand, false);
-              if (options->doComputeVBFAngles()) tree->fillVBFAngles(recoCand, false);
-              if (options->doComputeVHAngles()) tree->fillVHAngles(recoCand, false);
+              if (options->doComputeVBFAngles()) tree->fillVBFProductionAngles(recoCand, false);
+              if (options->doComputeVHAngles()) tree->fillVHProductionAngles(recoCand, false);
               if (options->initializeMELA()) tree->fillMELAProbabilities(recoCand, false);
             }
           }
           else if (options->recoSelectionMode()!=0) tree->fillEventVariables(*((Float_t*)tree->getBranchHandleRef("MC_weight")), 0 /*isSelected*/);
 
-          if ((rCand!=0 && options->processRecoInfo()) || (genCand!=0 && options->processGenInfo())){
+          if ((recoCand!=0 && options->processRecoInfo()) || (genCand!=0 && options->processGenInfo())){
             tree->record();
             nProcessed++;
           }
@@ -224,11 +224,10 @@ void Reader::run(){
           genParticleList.clear();
         }
         resetBranchBinding();
+        cout << "Processed number of events from the input file: " << nProcessed << " / " << nInputEvents << endl;
       }
       delete tin;
       fin->Close();
-
-      cout << "Processed number of events from the input file: " << nProcessed << " / " << nInputEvents << endl;
     }
   }
   finalizeRun();
