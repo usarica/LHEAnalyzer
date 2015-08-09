@@ -165,6 +165,31 @@ void BaseTree::initializeBranches(){
     if (vectorDoubleBranches.at(el).second!=0) vectorDoubleBranches.at(el).second->clear();
   }
 }
+void BaseTree::printEntry(int ev){
+  initializeBranches();
+  hvvtree->GetEntry(ev);
+  for (int el=0; el<intBranches.size(); el++){
+    if (intBranches.at(el).second!=0) cout << intBranches.at(el).first << ":\t" << *(intBranches.at(el).second) << endl;
+  }
+  for (int el=0; el<floatBranches.size(); el++){
+    if (floatBranches.at(el).second!=0) cout << floatBranches.at(el).first << ":\t" << *(floatBranches.at(el).second) << endl;
+  }
+  for (int el=0; el<vectorIntBranches.size(); el++){
+    if (vectorIntBranches.at(el).second!=0){
+      cout << vectorIntBranches.at(el).first << ":\t";
+      for (int v=0; v<vectorIntBranches.at(el).second->size(); v++) cout << vectorIntBranches.at(el).second->at(v) << '\t';
+      cout << endl;
+    }
+  }
+  for (int el=0; el<vectorDoubleBranches.size(); el++){
+    if (vectorDoubleBranches.at(el).second!=0){
+      cout << vectorDoubleBranches.at(el).first << ":\t";
+      for (int v=0; v<vectorDoubleBranches.at(el).second->size(); v++) cout << vectorDoubleBranches.at(el).second->at(v) << '\t';
+      cout << endl;
+    }
+  }
+  initializeBranches();
+}
 
 
 

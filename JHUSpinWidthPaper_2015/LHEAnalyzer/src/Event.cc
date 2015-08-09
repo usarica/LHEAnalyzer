@@ -103,6 +103,7 @@ void Event::constructVVCandidates(bool isZZ, int fstype){
   fstype=3: 2l2nu / -
   fstype=4: 2q2nu / -
   fstype=5: 4nu / -
+  fstype=-1: Any / Any
   */
 
   if (!isZZ && fstype>2){
@@ -147,7 +148,7 @@ void Event::constructVVCandidates(bool isZZ, int fstype){
 
   if (isZZ){ // ZZ
 
-    if (fstype==0 || fstype==2 || fstype==3){
+    if (fstype==-1 || fstype==0 || fstype==2 || fstype==3){ // Z->2l
       for (int c=0; c<3; c++){
         for (int i=0; i<lepPlusMinus[c][0].size(); i++){
           for (int j=0; j<lepPlusMinus[c][1].size(); j++){
@@ -160,7 +161,7 @@ void Event::constructVVCandidates(bool isZZ, int fstype){
         }
       }
     }
-    if (fstype==3 || fstype==4 || fstype==5){
+    if (fstype==-1 || fstype==3 || fstype==4 || fstype==5){ // Z->2nu
       for (int c=0; c<3; c++){
         for (int i=0; i<lepNu[c][0].size(); i++){
           for (int j=0; j<lepNu[c][1].size(); j++){
@@ -173,7 +174,7 @@ void Event::constructVVCandidates(bool isZZ, int fstype){
         }
       }
     }
-    if (fstype==1 || fstype==2 || fstype==5){
+    if (fstype==-1 || fstype==1 || fstype==2 || fstype==4){ // Z->2q
       for (int c=1; c<7; c++){
         for (int i=0; i<quarkPlusMinus[c][0].size(); i++){
           for (int j=0; j<quarkPlusMinus[c][1].size(); j++){
@@ -189,7 +190,8 @@ void Event::constructVVCandidates(bool isZZ, int fstype){
 
   }
   else{ // WW
-    if (fstype==0 || fstype==2){
+
+    if (fstype==-1 || fstype==0 || fstype==2){ // W->lnu
       for (int c=0; c<3; c++){
         for (int i=0; i<lepPlusMinus[c][0].size(); i++){
           for (int j=0; j<lepNu[c][1].size(); j++){
@@ -213,7 +215,7 @@ void Event::constructVVCandidates(bool isZZ, int fstype){
         }
       }
     }
-    if (fstype==1 || fstype==2){
+    if (fstype==-1 || fstype==1 || fstype==2){ // W->2q
       for (int c=1; c<7; c++){
         for (int d=1; d<7; d++){
           if (d==c) continue;
@@ -234,9 +236,11 @@ void Event::constructVVCandidates(bool isZZ, int fstype){
     }
 
   }
-  if (fstype==1 || fstype==2 || fstype==5){
+  if (fstype==-1 || fstype==1 || fstype==2 || fstype==4){ // Z/W->2j reco.-level
     for (int i=0; i<quarkPlusMinus[0][0].size(); i++){
+      if (quarkPlusMinus[0][0].at(i)->id!=0) continue;
       for (int j=i+1; j<quarkPlusMinus[0][0].size(); j++){
+        if (quarkPlusMinus[0][0].at(j)->id!=0) continue;
         TLorentzVector pV = quarkPlusMinus[0][0].at(i)->p4+quarkPlusMinus[0][0].at(j)->p4;
         Particle* V = new Particle(0, pV);
         V->addDaughter(quarkPlusMinus[0][0].at(i));

@@ -238,7 +238,7 @@ void OptionParser::printOptionsHelp(){
   cout << "- removeDaughterMasses: Switch to control the removal of lepton masses in the angle computation. Default=1\n\n";
   cout << "- computeDecayAngles: Switch to control the decay angles computation. Default=1 in LHE or Pythia modes, 0 in ReadMode.\n\n";
   cout << "- computeVBFProdAngles: Switch to control the VBF production angles computation. Default=0\n\n";
-  cout << "- computeVHProdAngles: Switch to control the VH production angles computation. Default=0.\n\tPossible values are 0 (==disable), 1 (==compute from jets only), 2 (==compute from leptons only), 3 (==compute from jets first, if they don't exist, leptons).\n\n";
+  cout << "- computeVHProdAngles: Switch to control the VH production angles computation. Default=0.\n\tPossible values are 0 (==disable), 1 (==compute from jets only), 2 (==compute from leptons only), 3 (==compute from jets and leptons, with separate variable suffixes \"*_VHhadronic\" and \"*_VHleptonic\".).\n\n";
   cout << "- includeGenDecayProb, includeGenProdProb, includeRecoDecayProb, includeRecoProdProb: Comma-separated list of spin-0 gen. or reco. decay or production MEs. Default=Empty (==None).\n\tThe explicit values tested are g1, g2, g4, g1_prime2; g1_pi2, g2_pi2, g4_pi2, g1_prime2_pi2, None, All.\n\t Gen. MEs are present for the purpose of reweighting. The appropriate target and origin combinations are left to the user at an analysis step.\n\n";
   cout << "- sampleProductionId: Production mechanism used in the computation of includeGenProdProb. Follows the format (TVar::Production, TVar::MatrixElement). Default=(ZZGG, JHUGen)\n\n";
 
@@ -247,7 +247,7 @@ void OptionParser::printOptionsHelp(){
   cout << "- GHSM / GaHSM / GammaHSM / wPOLEStandard: Standard SM width. Used in scaling Mela probabilities properly. Default=4.07 (MeV).\n\n";
   cout << "- includeGenInfo, includeRecoInfo: Flags to control the writing of gen. and reco. info., respectively. Cannot be both false (0). Default=(1, 1)\n\n";
   cout << "- isGenHZZ, isRecoHZZ: Gen. or reco. H->VV decay. 0==H->ZZ decay, 1==H->WW decay. isGenHZZ also (re)sets the default V mass in H->VV decay. Defaults=(0, 0)\n\n";
-  cout << "- genDecayMode, recoDecayMode: Gen. or reco. H->VV->final states. Defaults=(0, 0)\n\tIf H->ZZ decay is specified, 0-5==4l, 4q, 2l2q, 2l2nu, 2q2nu, 4nu.\n\tIf H->WW decay is specified, 0-2==2l2nu, 4nu, lnu2q.\n\n";
+  cout << "- genDecayMode, recoDecayMode: Gen. or reco. H->VV->final states. Defaults=(0, 0)\n\tIf H->ZZ decay is specified, -1 - 5==Any, 4l, 4q, 2l2q, 2l2nu, 2q2nu, 4nu.\n\tIf H->WW decay is specified, -1 - 2==Any, 2l2nu, 4nu, lnu2q.\n\n";
   cout << "- recoSelBehavior / recoSelBehaviour: Selection behaviour on all reco. final states. Default=0.\n\t0==Apply selection in LHE and Pythia modes, apply no re-selection in ReadMode.\n\t1==Opposite of 0. Also enables the computation of all angles in ReadMode, overriding the relevant command line options.\n\n";
   cout << "- recoSmearBehavior / recoSmearBehaviour: Smearing behaviour on all reco. final states. Does not apply to ReadMode. Default=0.\n\t0==Apply smearing in LHE mode, no smearing in Pythia mode\n\t1==Opposite of 0\n\n";
   cout << "- genCandidateSelection, recoCandidateSelection: Higgs candidate selection algorithm. Values accepted are\n\t->BestZ1ThenZ2 (=BestZ1ThenZ2ScSumPt).\n\tDefaults==(BestZ1ThenZ2, BestZ1ThenZ2)\n\n";

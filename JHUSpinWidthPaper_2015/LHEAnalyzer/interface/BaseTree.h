@@ -68,6 +68,7 @@ public:
   }
   void initializeBranches();
   void cleanBranches();
+  void printEntry(int ev); // Mainly for debugging
 
 
 protected:

@@ -165,14 +165,18 @@ void Reader::run(){
           synchMappedBranches();
 
           Event genEvent, recoEvent;
-          readEvent(genEvent, genParticleList, true);
-          readEvent(recoEvent, recoParticleList, false);
           ZZCandidate* genCand=0;
           ZZCandidate* recoCand=0;
-          if (genEvent.getNZZCandidates()<=1) genCand = genEvent.getZZCandidate(0);
-          else genCand = HiggsComparators::candidateSelector(genEvent, options->getHiggsCandidateSelectionScheme(true), options->doGenHZZdecay());
-          if (recoEvent.getNZZCandidates()<=1) recoCand = recoEvent.getZZCandidate(0);
-          else recoCand = HiggsComparators::candidateSelector(recoEvent, options->getHiggsCandidateSelectionScheme(false), options->doRecoHZZdecay());
+          if (options->processGenInfo()){
+            readEvent(genEvent, genParticleList, true);
+            if (genEvent.getNZZCandidates()<=1) genCand = genEvent.getZZCandidate(0);
+            else genCand = HiggsComparators::candidateSelector(genEvent, options->getHiggsCandidateSelectionScheme(true), options->doGenHZZdecay());
+          }
+          if (options->processRecoInfo()){
+            readEvent(recoEvent, recoParticleList, false);
+            if (recoEvent.getNZZCandidates()<=1) recoCand = recoEvent.getZZCandidate(0);
+            else recoCand = HiggsComparators::candidateSelector(recoEvent, options->getHiggsCandidateSelectionScheme(false), options->doRecoHZZdecay());
+          }
 
           if (genCand!=0){
             if (options->doComputeDecayAngles()) tree->fillDecayAngles(genCand, true);

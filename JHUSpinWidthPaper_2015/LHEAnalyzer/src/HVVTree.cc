@@ -622,7 +622,7 @@ void HVVTree::fillAssociatedInfo(ZZCandidate* pH, bool isGen){
     }
     for (int aa=0; aa<pH->getNAssociatedLeptons(); aa++){
       Particle* apart = pH->getAssociatedLepton(aa);
-      tmpAssociatedParticle.push_back(apart);
+      if(!PDGHelpers::isANeutrino(apart->id)) tmpAssociatedParticle.push_back(apart);
     }
     for (int aa=0; aa<pH->getNAssociatedNeutrinos(); aa++){
       Particle* apart = pH->getAssociatedNeutrino(aa);

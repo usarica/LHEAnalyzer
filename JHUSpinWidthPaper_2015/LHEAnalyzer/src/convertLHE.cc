@@ -82,8 +82,6 @@ void convertLHE::run(){
             else if (genPart->genStatus==-1) tree->fillMotherInfo(genPart);
           }
 
-          //for (int p=0; p<genEvent.getNLeptons(); p++) cout << "Lepton " << p << " (x, y, z, t): " << genEvent.getLepton(p)->x() << '\t' << genEvent.getLepton(p)->y() << '\t' << genEvent.getLepton(p)->z() << '\t' << genEvent.getLepton(p)->t() << endl;
-
           genEvent.constructVVCandidates(options->doGenHZZdecay(), options->genDecayProducts());
           for (int p=0; p<particleList.size(); p++){
             Particle* genPart = particleList.at(p);
@@ -121,6 +119,7 @@ void convertLHE::run(){
             nProcessed++;
           }
         }
+        else cerr << "Weight=0 at event " << ev << endl;
         ev++;
 
         for (int p=0; p<smearedCandList.size(); p++){ // Bookkeeping
