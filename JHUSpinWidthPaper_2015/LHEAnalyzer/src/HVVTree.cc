@@ -35,6 +35,8 @@ void HVVTree::bookAllBranches(bool doSetAddress){
     bookPtEtaPhiMassIdBranches("AssociatedParticle", BranchTypes::bVectorDouble, doSetAddress, true, false, true);
     reserveBranch("GenDijetMass", BranchTypes::bFloat, doSetAddress);
     reserveBranch("GenDileptonMass", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenDijetVVMass", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("GenDileptonVVMass", BranchTypes::bFloat, doSetAddress);
     reserveBranch("GenDRjet", BranchTypes::bFloat, doSetAddress);
     reserveBranch("GenDRlepton", BranchTypes::bFloat, doSetAddress);
 
@@ -60,6 +62,8 @@ void HVVTree::bookAllBranches(bool doSetAddress){
     bookPtEtaPhiMassIdBranches("AssociatedParticle", BranchTypes::bVectorDouble, doSetAddress, true, false, false);
     reserveBranch("DijetMass", BranchTypes::bFloat, doSetAddress);
     reserveBranch("DileptonMass", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("DijetVVMass", BranchTypes::bFloat, doSetAddress);
+    reserveBranch("DileptonVVMass", BranchTypes::bFloat, doSetAddress);
     reserveBranch("DRjet", BranchTypes::bFloat, doSetAddress);
     reserveBranch("DRlepton", BranchTypes::bFloat, doSetAddress);
 
@@ -607,6 +611,8 @@ void HVVTree::fillAssociatedInfo(ZZCandidate* pH, bool isGen){
   vector<Particle*> tmpAssociatedParticle;
   Float_t DijetMass=-1;
   Float_t DileptonMass=-1;
+  Float_t DijetVVMass=-1;
+  Float_t DileptonVVMass=-1;
   Float_t dRjet=0;
   Float_t dRlep=0;
 
@@ -666,6 +672,10 @@ void HVVTree::fillAssociatedInfo(ZZCandidate* pH, bool isGen){
     varname = "DijetMass";
     if (isGen) varname.insert(0, "Gen");
     setVal(varname, DijetMass);
+    DijetVVMass = (pH->p4+pH->getAssociatedJet(0)->p4+pH->getAssociatedJet(1)->p4).M();
+    varname = "DijetVVMass";
+    if (isGen) varname.insert(0, "Gen");
+    setVal(varname, DijetVVMass);
     dRjet = pH->getAssociatedJet(0)->deltaR(pH->getAssociatedJet(1)->p4);
     varname = "DRjet";
     if (isGen) varname.insert(0, "Gen");
@@ -676,6 +686,10 @@ void HVVTree::fillAssociatedInfo(ZZCandidate* pH, bool isGen){
     varname = "DileptonMass";
     if (isGen) varname.insert(0, "Gen");
     setVal(varname, DileptonMass);
+    DileptonVVMass = (pH->p4+pH->getAssociatedLepton(0)->p4+pH->getAssociatedLepton(1)->p4).M();
+    varname = "DileptonVVMass";
+    if (isGen) varname.insert(0, "Gen");
+    setVal(varname, DileptonVVMass);
     dRlep = pH->getAssociatedLepton(0)->deltaR(pH->getAssociatedLepton(1)->p4);
     varname = "DRlepton";
     if (isGen) varname.insert(0, "Gen");
