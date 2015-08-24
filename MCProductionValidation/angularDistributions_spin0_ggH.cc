@@ -21,13 +21,12 @@
 #include "TGaxis.h"
 #include "TString.h"
 #include "TChain.h"
-#include "src/ScalarPdfFactory_ggH.cc"
-
+#include "include/ScalarPdfFactory_ggH.h"
 
 using namespace RooFit;
 using namespace std;
 
-void angularDistributions_spin0_ggH(TString INPUT_NAME, double g1Re=0, double g2Re=0, double g4Re=0, double vfL1=0, double g2Im=0, double g4Im=0, int nbins=80){
+void angularDistributions_spin0_ggH(TString INPUT_NAME, double g1Re=0, double g2Re=0, double g4Re=0, double g1L1Re=0, double g2Im=0, double g4Im=0, double g1L1Im=0, int nbins=80){
   RooRealVar* mzz = new RooRealVar("GenHMass", "M_{ZZ} (GeV)", 125, 125.-0.02, 125.+0.02);
   RooRealVar* z1mass = new RooRealVar("GenZ1Mass", "m_{Z1} (GeV)", 0.0, 120);
   RooRealVar* z2mass = new RooRealVar("GenZ2Mass", "m_{Z2} (GeV)", 0.0, 70);
@@ -36,6 +35,16 @@ void angularDistributions_spin0_ggH(TString INPUT_NAME, double g1Re=0, double g2
   RooRealVar* h2 = new RooRealVar("GenhelcosthetaZ2", "cos#theta_{Z2}", -1, 1);
   RooRealVar* Phi = new RooRealVar("Genhelphi", "#Phi", -TMath::Pi(), TMath::Pi());
   RooRealVar* Phi1 = new RooRealVar("GenphistarZ1", "#Phi_{Z1}", -TMath::Pi(), TMath::Pi());
+
+  RooSpinZero::modelMeasurables measurables_;
+  measurables_.h1 = h1;
+  measurables_.h2 = h2;
+  measurables_.Phi = Phi;
+  measurables_.m1 = z1mass;
+  measurables_.m2 = z2mass;
+  measurables_.m12 = mzz;
+  measurables_.hs = hs;
+  measurables_.Phi1 = Phi1;
 
   RooArgSet treeargs(*mzz, *z1mass, *z2mass, *hs, *h1, *h2, *Phi, *Phi1);
   RooRealVar* measurables[8]={ z1mass, z2mass, h1, h2, hs, Phi, Phi1, mzz };
@@ -50,14 +59,28 @@ void angularDistributions_spin0_ggH(TString INPUT_NAME, double g1Re=0, double g2
   int genFinalState=2;
   int GenLepId[2]={ 0 };
 
-  ScalarPdfFactory_ggH* someHiggs = new ScalarPdfFactory_ggH(z1mass, z2mass, hs, h1, h2, Phi, Phi1, mzz, 1, false, true);
-  someHiggs->_modelParams.fL1->setVal(vfL1);
-  someHiggs->_modelParams.g1Val->setVal(g1Re);
-  someHiggs->_modelParams.g2Val->setVal(g2Re);
-  someHiggs->_modelParams.g3Val->setVal(0);
-  someHiggs->_modelParams.g4Val->setVal(g4Re);
-  someHiggs->_modelParams.g2ValIm->setVal(g2Im);
-  someHiggs->_modelParams.g4ValIm->setVal(g4Im);
+  ScalarPdfFactory_ggH* someHiggs = new ScalarPdfFactory_ggH(measurables_);
+  someHiggs->makeParamsConst(false);
+  RooRealVar* g1List[8][2];
+  RooRealVar* g2List[8][2];
+  //RooRealVar* g3List[8][2];
+  RooRealVar* g4List[8][2];
+  for (int gg=0; gg<8; gg++){
+    for (int im=0; im<2; im++){
+      g1List[gg][im] = (RooRealVar*)someHiggs->parameters.g1List[gg][im];
+      g2List[gg][im] = (RooRealVar*)someHiggs->parameters.g2List[gg][im];
+      //g3List[gg][im] = (RooRealVar*)someHiggs->parameters.g3List[gg][im];
+      g4List[gg][im] = (RooRealVar*)someHiggs->parameters.g4List[gg][im];
+    }
+  }
+  g1List[0][0]->setVal(g1Re);
+  g1List[2][0]->setVal(g1L1Re);
+  g2List[0][0]->setVal(g2Re);
+  g4List[0][0]->setVal(g4Re);
+  g1List[0][1]->setVal(0);
+  g1List[2][1]->setVal(g1L1Im);
+  g2List[0][1]->setVal(g2Im);
+  g4List[0][1]->setVal(g4Im);
   someHiggs->makeParamsConst(true);
 
   string coutput_common = "/scratch0/hep/usarical/SpinWidthPaper_2015/CMSSW_6_1_1/src/Analysis/Validation/Plots/";
@@ -108,7 +131,8 @@ void angularDistributions_spin0_ggH(TString INPUT_NAME, double g1Re=0, double g2
     plot->SetTitle(m_name.c_str());
 
     dataSM->plotOn(plot, MarkerColor(kRed), MarkerStyle(3), MarkerSize(1.2), LineWidth(0), XErrorSize(0), DataError(RooAbsData::Poisson));
-    someHiggs->PDF->plotOn(plot, LineColor(kRed), LineWidth(2));
+    RooSpinZero_7DComplex_withAccep_ggH* pdf = (RooSpinZero_7DComplex_withAccep_ggH*)someHiggs->getPDF();
+    pdf->plotOn(plot, LineColor(kRed), LineWidth(2));
 
     TGaxis::SetMaxDigits(3);
 

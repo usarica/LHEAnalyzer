@@ -16,7 +16,7 @@ RooSpinZero_3D_withAccep_VH::RooSpinZero_3D_withAccep_VH(const char *name, const
   RooAbsReal& _Phi,
   RooAbsReal& _sqrts,
   RooAbsReal& _mX,
-  RooAbsReal& _mZ,
+  RooAbsReal& _mV,
   RooAbsReal& _R1Val,
   RooAbsReal& _R2Val,
   int _parameterization,
@@ -41,78 +41,33 @@ RooSpinZero_3D_withAccep_VH::RooSpinZero_3D_withAccep_VH(const char *name, const
   RooAbsReal& _b2,
   RooAbsReal& _cgaus,
   RooAbsReal& _sgaus,
-  bool      _withAcc):
-RooAbsPdf(name, title),
-h1("h1", "h1", this, _h1),
-h2("h2", "h2", this, _h2),
-Phi("Phi", "Phi", this, _Phi),
-sqrts("sqrts", "sqrts", this, _sqrts),
-mX("mX", "mX", this, _mX),
-mZ("mZ", "mZ", this, _mZ),
-R1Val("R1Val", "R1Val", this, _R1Val),
-R2Val("R2Val", "R2Val", this, _R2Val),
-parameterization(_parameterization),
-a1Val("a1Val", "a1Val", this, _a1Val),
-phi1Val("phi1Val", "phi1Val", this, _phi1Val),
-a2Val("a2Val", "a2Val", this, _a2Val),
-phi2Val("phi2Val", "phi2Val", this, _phi2Val),
-a3Val("a3Val", "a3Val", this, _a3Val),
-phi3Val("phi3Val", "phi3Val", this, _phi3Val),
-g1Val("g1Val", "g1Val", this, _g1Val),
-g2Val("g2Val", "g2Val", this, _g2Val),
-g3Val("g3Val", "g3Val", this, _g3Val),
-g4Val("g4Val", "g4Val", this, _g4Val),
-g1ValIm("g1ValIm", "g1ValIm", this, _g1ValIm),
-g2ValIm("g2ValIm", "g2ValIm", this, _g2ValIm),
-g3ValIm("g3ValIm", "g3ValIm", this, _g3ValIm),
-g4ValIm("g4ValIm", "g4ValIm", this, _g4ValIm),
-fa2("fa2", "fa2", this, _fa2),
-fa3("fa3", "fa3", this, _fa3),
-phia2("phia2", "phia2", this, _phia2),
-phia3("phia3", "phia3", this, _phia3),
-b2("b2", "b2", this, _b2),
-cgaus("cgaus", "cgaus", this, _cgaus),
-sgaus("sgaus", "sgaus", this, _sgaus),
-withAcc(_withAcc)
-{
-}
+  bool _withAcc
+  ) : RooSpinZero(
+  name, title,
+  _h1, _h2, _Phi,
+  _mX, _mV, _R1Val, _R2Val,
+  _parameterization,
+  _a1Val, _phi1Val, _a2Val, _phi2Val, _a3Val, _phi3Val,
+  _g1Val, _g2Val, _g3Val, _g4Val, _g1ValIm, _g2ValIm, _g3ValIm, _g4ValIm,
+  _fa2, _fa3, _phia2, _phia3
+  ),
+  sqrts("sqrts", "sqrts", this, _sqrts),
+  b2("b2", "b2", this, _b2),
+  cgaus("cgaus", "cgaus", this, _cgaus),
+  sgaus("sgaus", "sgaus", this, _sgaus),
+  withAcc(_withAcc)
+{}
 
 
-RooSpinZero_3D_withAccep_VH::RooSpinZero_3D_withAccep_VH(const RooSpinZero_3D_withAccep_VH& other, const char* name) :
-RooAbsPdf(other, name),
-h1("h1", this, other.h1),
-h2("h2", this, other.h2),
-Phi("Phi", this, other.Phi),
-sqrts("sqrts", this, other.sqrts),
-mX("mX", this, other.mX),
-mZ("mZ", this, other.mZ),
-R1Val("R1Val", this, other.R1Val),
-R2Val("R2Val", this, other.R2Val),
-parameterization(other.parameterization),
-a1Val("a1Val", this, other.a1Val),
-phi1Val("phi1Val", this, other.phi1Val),
-a2Val("a2Val", this, other.a2Val),
-phi2Val("phi2Val", this, other.phi2Val),
-a3Val("a3Val", this, other.a3Val),
-phi3Val("phi3Val", this, other.phi3Val),
-g1Val("g1Val", this, other.g1Val),
-g2Val("a2Val", this, other.g2Val),
-g3Val("g3Val", this, other.g3Val),
-g4Val("g4Val", this, other.g4Val),
-g1ValIm("g1ValIm", this, other.g1ValIm),
-g2ValIm("a2ValIm", this, other.g2ValIm),
-g3ValIm("g3ValIm", this, other.g3ValIm),
-g4ValIm("g4ValIm", this, other.g4ValIm),
-fa2("fa2", this, other.fa2),
-fa3("fa3", this, other.fa3),
-phia2("phia2", this, other.phia2),
-phia3("phia3", this, other.phia3),
-b2("b2", this, other.b2),
-cgaus("cgaus", this, other.cgaus),
-sgaus("sgaus", this, other.sgaus),
-withAcc(other.withAcc)
-{
-}
+RooSpinZero_3D_withAccep_VH::RooSpinZero_3D_withAccep_VH(
+  const RooSpinZero_3D_withAccep_VH& other, const char* name
+  ) : RooSpinZero(other, name),
+  sqrts("sqrts", this, other.sqrts),
+  b2("b2", this, other.b2),
+  cgaus("cgaus", this, other.cgaus),
+  sgaus("sgaus", this, other.sgaus),
+  withAcc(other.withAcc)
+{}
 
 
 
@@ -121,7 +76,7 @@ Double_t RooSpinZero_3D_withAccep_VH::evaluate() const
 
   // these amplitudes are calculated based on comparing equations to the PRD paper
   // the beta and gamma are velocities of the Z in the C.O.M
-  // Double_t betaValSquared =(pow(sqrts,2)-(pow(mX+mZ,2)))*(pow(sqrts,2)-(pow(mX-mZ,2)))/pow(pow(sqrts,2)-mX*mX+mZ*mZ,2);
+  // Double_t betaValSquared =(pow(sqrts,2)-(pow(mX+mV,2)))*(pow(sqrts,2)-(pow(mX-mV,2)))/pow(pow(sqrts,2)-mX*mX+mV*mV,2);
   // Double_t gamma = 1./sqrt(1-betaValSquared);
   // http://prd.aps.org/pdf/PRD/v49/i1/p79_1
   // Double_t f00 = gamma*gamma/(2+gamma*gamma);
@@ -129,17 +84,22 @@ Double_t RooSpinZero_3D_withAccep_VH::evaluate() const
 
   // check whether event is in acceptance or not
 
-  vector<TLorentzVector> lep_4vecs = Calculate4Momentum(sqrts, mZ, mX, acos(h1), acos(h2), acos(0), Phi, 0);
+  vector<TLorentzVector> lep_4vecs = Calculate4Momentum(sqrts, mV, mX, acos(h1), acos(h2), acos(0), Phi, 0);
 
   double pt_plus = lep_4vecs[1].Pt();
   double pt_minus = lep_4vecs[0].Pt();
   double eta_plus = lep_4vecs[1].Eta();
   double eta_minus = lep_4vecs[0].Eta();
 
+  if (withAcc) {
+    if (pt_minus<5.0 || pt_plus<5.0 || eta_minus>2.4 || eta_plus>2.4 || eta_minus<-2.4 || eta_plus<-2.4) return 1e-15;
+  }
+
+
   //-------------------------------------------------
 
   // below calcualtions are based on the H->ZZ amplitudes 
-  double s=-(mX*mX-sqrts*sqrts-mZ*mZ)/2.;
+  double s=-(mX*mX-sqrts*sqrts-mV*mV)/2.;
   double kappa=s/(1000*1000);
 
   double a1=0, a2=0, a3=0, a1Im=0, a2Im=0, a3Im=0;
@@ -230,8 +190,8 @@ Double_t RooSpinZero_3D_withAccep_VH::evaluate() const
       g4Im = -g4ValIm;
     }
 
-    a1 = g1*mZ*mZ/(mX*mX) + g2*2.*s/(mX*mX) + g3*kappa*s/(mX*mX);
-    a1Im = g1Im*mZ*mZ/(mX*mX) + g2Im*2.*s/(mX*mX) + g3Im*kappa*s/(mX*mX);
+    a1 = g1*mV*mV/(mX*mX) + g2*2.*s/(mX*mX) + g3*kappa*s/(mX*mX);
+    a1Im = g1Im*mV*mV/(mX*mX) + g2Im*2.*s/(mX*mX) + g3Im*kappa*s/(mX*mX);
     a2 = -2.*g2 - g3*kappa;
     a2Im = -2.*g2Im - g3Im*kappa;
     a3 = -2.*g4;
@@ -240,16 +200,16 @@ Double_t RooSpinZero_3D_withAccep_VH::evaluate() const
   }
 
 
-  Double_t x = pow((mX*mX-sqrts*sqrts-mZ*mZ)/(2.*sqrts*mZ), 2)-1;
+  Double_t x = pow((mX*mX-sqrts*sqrts-mV*mV)/(2.*sqrts*mV), 2)-1;
 
-  Double_t A00Real = -(a1*sqrt(1+x) + a2*(mZ*sqrts)/(mX*mX)*x);
-  Double_t A00Imag = -(a1Im*sqrt(1+x) + a2Im*(mZ*sqrts)/(mX*mX)*x);
+  Double_t A00Real = -(a1*sqrt(1+x) + a2*(mV*sqrts)/(mX*mX)*x);
+  Double_t A00Imag = -(a1Im*sqrt(1+x) + a2Im*(mV*sqrts)/(mX*mX)*x);
 
-  Double_t Ap0Real = a1 - a3Im*(mZ*sqrts)/(mX*mX)*sqrt(x);
-  Double_t Ap0Imag = a1Im + a3*(mZ*sqrts)/(mX*mX)*sqrt(x);
+  Double_t Ap0Real = a1 - a3Im*(mV*sqrts)/(mX*mX)*sqrt(x);
+  Double_t Ap0Imag = a1Im + a3*(mV*sqrts)/(mX*mX)*sqrt(x);
 
-  Double_t Am0Real = a1 + a3Im*(mZ*sqrts)/(mX*mX)*sqrt(x);
-  Double_t Am0Imag = a1Im - a3*(mZ*sqrts)/(mX*mX)*sqrt(x);
+  Double_t Am0Real = a1 + a3Im*(mV*sqrts)/(mX*mX)*sqrt(x);
+  Double_t Am0Imag = a1Im - a3*(mV*sqrts)/(mX*mX)*sqrt(x);
 
   Double_t f00 = A00Real*A00Real + A00Imag*A00Imag;
   Double_t fp0 = Ap0Real*Ap0Real + Ap0Imag*Ap0Imag;
@@ -312,7 +272,7 @@ Double_t RooSpinZero_3D_withAccep_VH::analyticalIntegral(Int_t code, const char*
 
   // check whether event is in acceptance or not
 
-  vector<TLorentzVector> lep_4vecs = Calculate4Momentum(sqrts, mZ, mX, acos(h1), acos(h2), acos(0), Phi, 0);
+  vector<TLorentzVector> lep_4vecs = Calculate4Momentum(sqrts, mV, mX, acos(h1), acos(h2), acos(0), Phi, 0);
 
   double pt_plus = lep_4vecs[1].Pt();
   double pt_minus = lep_4vecs[0].Pt();
@@ -320,11 +280,11 @@ Double_t RooSpinZero_3D_withAccep_VH::analyticalIntegral(Int_t code, const char*
   double eta_minus = lep_4vecs[0].Eta();
 
   if (withAcc) {
-    if (pt_minus<5.0 || pt_plus<5.0 || eta_minus>2.4 || eta_plus>2.4 || eta_minus<-2.4 || eta_plus<-2.4) return 0.0;
+    if (pt_minus<5.0 || pt_plus<5.0 || eta_minus>2.4 || eta_plus>2.4 || eta_minus<-2.4 || eta_plus<-2.4) return 1e-10;
   }
 
   // the beta and gamma are velocities of the Z in the C.O.M
-  Double_t betaValSquared =(pow(sqrts, 2)-(pow(mX+mZ, 2)))*(pow(sqrts, 2)-(pow(mX-mZ, 2)))/pow(pow(sqrts, 2)-mX*mX+mZ*mZ, 2);
+  Double_t betaValSquared =(pow(sqrts, 2)-(pow(mX+mV, 2)))*(pow(sqrts, 2)-(pow(mX-mV, 2)))/pow(pow(sqrts, 2)-mX*mX+mV*mV, 2);
   Double_t gamma = 1./sqrt(1-betaValSquared);
 
   // these amplitudes are calculated based on comparing equations to the PRD paper
@@ -332,7 +292,7 @@ Double_t RooSpinZero_3D_withAccep_VH::analyticalIntegral(Int_t code, const char*
   // Double_t f00 = gamma*gamma/(2+gamma*gamma);
 
   // below calcualtions are based on the H->ZZ amplitudes 
-  double s=-(mX*mX-sqrts*sqrts-mZ*mZ)/2.;
+  double s=-(mX*mX-sqrts*sqrts-mV*mV)/2.;
   double kappa=s/(1000*1000);
 
   double a1=0, a2=0, a3=0, a1Im=0, a2Im=0, a3Im=0;
@@ -424,8 +384,8 @@ Double_t RooSpinZero_3D_withAccep_VH::analyticalIntegral(Int_t code, const char*
       g4Im = -g4ValIm;
     }
 
-    a1 = g1*mZ*mZ/(mX*mX) + g2*2.*s/(mX*mX) + g3*kappa*s/(mX*mX);
-    a1Im = g1Im*mZ*mZ/(mX*mX) + g2Im*2.*s/(mX*mX) + g3Im*kappa*s/(mX*mX);
+    a1 = g1*mV*mV/(mX*mX) + g2*2.*s/(mX*mX) + g3*kappa*s/(mX*mX);
+    a1Im = g1Im*mV*mV/(mX*mX) + g2Im*2.*s/(mX*mX) + g3Im*kappa*s/(mX*mX);
     a2 = -2.*g2 - g3*kappa;
     a2Im = -2.*g2Im - g3Im*kappa;
     a3 =  -2.*g4;
@@ -433,16 +393,16 @@ Double_t RooSpinZero_3D_withAccep_VH::analyticalIntegral(Int_t code, const char*
 
   }
 
-  Double_t x = pow((mX*mX-sqrts*sqrts-mZ*mZ)/(2.*sqrts*mZ), 2)-1;
+  Double_t x = pow((mX*mX-sqrts*sqrts-mV*mV)/(2.*sqrts*mV), 2)-1;
 
-  Double_t A00Real = -(a1*sqrt(1+x) + a2*(mZ*sqrts)/(mX*mX)*x);
-  Double_t A00Imag = -(a1Im*sqrt(1+x) + a2Im*(mZ*sqrts)/(mX*mX)*x);
+  Double_t A00Real = -(a1*sqrt(1+x) + a2*(mV*sqrts)/(mX*mX)*x);
+  Double_t A00Imag = -(a1Im*sqrt(1+x) + a2Im*(mV*sqrts)/(mX*mX)*x);
 
-  Double_t Ap0Real = a1 - a3Im*(mZ*sqrts)/(mX*mX)*sqrt(x);
-  Double_t Ap0Imag = a1Im + a3*(mZ*sqrts)/(mX*mX)*sqrt(x);
+  Double_t Ap0Real = a1 - a3Im*(mV*sqrts)/(mX*mX)*sqrt(x);
+  Double_t Ap0Imag = a1Im + a3*(mV*sqrts)/(mX*mX)*sqrt(x);
 
-  Double_t Am0Real = a1 + a3Im*(mZ*sqrts)/(mX*mX)*sqrt(x);
-  Double_t Am0Imag = a1Im - a3*(mZ*sqrts)/(mX*mX)*sqrt(x);
+  Double_t Am0Real = a1 + a3Im*(mV*sqrts)/(mX*mX)*sqrt(x);
+  Double_t Am0Imag = a1Im - a3*(mV*sqrts)/(mX*mX)*sqrt(x);
 
   Double_t f00 = A00Real*A00Real + A00Imag*A00Imag;
   Double_t fp0 = Ap0Real*Ap0Real + Ap0Imag*Ap0Imag;

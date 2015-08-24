@@ -11,7 +11,7 @@
 #include "TLorentzVector.h"
 #include "TLorentzRotation.h"
  
-class RooSpinZero_3D_withAccep_VH : public RooAbsPdf {
+class RooSpinZero_3D_withAccep_VH : public RooSpinZero {
 public:
   RooSpinZero_3D_withAccep_VH() {};
   RooSpinZero_3D_withAccep_VH(const char *name, const char *title,
@@ -20,10 +20,10 @@ public:
     RooAbsReal& _Phi,
     RooAbsReal& _sqrts,
     RooAbsReal& _mX,
-    RooAbsReal& _mZ,
-    RooAbsReal& _R1val,
+    RooAbsReal& _mV,
+    RooAbsReal& _R1Val,
     RooAbsReal& _R2Val,
-    int _parameterizatiion,
+    int _parameterization,
     RooAbsReal& _a1Val,
     RooAbsReal& _phi1Val,
     RooAbsReal& _a2Val,
@@ -45,7 +45,7 @@ public:
     RooAbsReal& _b2,
     RooAbsReal& _cgaus,
     RooAbsReal& _sgaus,
-    bool  _withAcc);
+    bool _withAcc);
 
   RooSpinZero_3D_withAccep_VH(const RooSpinZero_3D_withAccep_VH& other, const char* name=0);
   virtual TObject* clone(const char* newname) const { return new RooSpinZero_3D_withAccep_VH(*this, newname); }
@@ -57,38 +57,11 @@ public:
 
 protected:
 
-  RooRealProxy h1;
-  RooRealProxy h2;
-  RooRealProxy Phi;
   RooRealProxy sqrts;
-  RooRealProxy mX;
-  RooRealProxy mZ;
-  RooRealProxy R1Val;
-  RooRealProxy R2Val;
-  int parameterization;
-  RooRealProxy a1Val;
-  RooRealProxy phi1Val;
-  RooRealProxy a2Val;
-  RooRealProxy phi2Val;
-  RooRealProxy a3Val;
-  RooRealProxy phi3Val;
-  RooRealProxy g1Val;
-  RooRealProxy g2Val;
-  RooRealProxy g3Val;
-  RooRealProxy g4Val;
-  RooRealProxy g1ValIm;
-  RooRealProxy g2ValIm;
-  RooRealProxy g3ValIm;
-  RooRealProxy g4ValIm;
-  RooRealProxy fa2;
-  RooRealProxy fa3;
-  RooRealProxy phia2;
-  RooRealProxy phia3;
   RooRealProxy b2;
   RooRealProxy cgaus;
   RooRealProxy sgaus;
   bool withAcc;
-
 
   Double_t evaluate() const;
 

@@ -9,85 +9,26 @@
 
 #include "RooSpinZero.h"
  
-class RooSpinZero_5D_VH : public RooAbsPdf {
+class RooSpinZero_5D_VH : public RooSpinZero {
 public:
-  RooSpinZero_5D_VH() {} ; 
-  RooSpinZero_5D_VH(const char *name, const char *title,
-		    RooAbsReal& _h1,
-		    RooAbsReal& _h2,
-		    RooAbsReal& _hs,
-		    RooAbsReal& _Phi,
-		    RooAbsReal& _Phi1,
-		    RooAbsReal& _sqrts,
-		    RooAbsReal& _mX,
-		    RooAbsReal& _mV,
-		    RooAbsReal& _R1val,
-		    RooAbsReal& _R2Val,
-		    int _parameterizatiion, 
-		    RooAbsReal& _a1Val,
-		    RooAbsReal& _phi1Val,
-		    RooAbsReal& _a2Val,
-		    RooAbsReal& _phi2Val,
-		    RooAbsReal& _a3Val,
-		    RooAbsReal& _phi3Val,
-		    RooAbsReal& _g1Val,
-		    RooAbsReal& _g2Val,
-		    RooAbsReal& _g3Val,
-		    RooAbsReal& _g4Val,
-		    RooAbsReal& _g1ValIm,
-		    RooAbsReal& _g2ValIm,
-		    RooAbsReal& _g3ValIm,
-		    RooAbsReal& _g4ValIm,			
-		    RooAbsReal& _fa2,
-		    RooAbsReal& _fa3,
-		    RooAbsReal& _phia2,
-		    RooAbsReal& _phia3);
-		    
-  RooSpinZero_5D_VH(const RooSpinZero_5D_VH& other, const char* name=0) ;
-  virtual TObject* clone(const char* newname) const { return new RooSpinZero_5D_VH(*this,newname); }
-  inline virtual ~RooSpinZero_5D_VH() { }
-  
-  Int_t getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* rangeName=0) const ;
-  Double_t analyticalIntegral(Int_t code, const char* rangeName=0) const ;
-  
-	
+  RooSpinZero_5D_VH() {};
+  RooSpinZero_5D_VH(
+    const char *name, const char *title,
+    modelMeasurables _measurables,
+    modelParameters _parameters
+    );
+
+  RooSpinZero_5D_VH(const RooSpinZero_5D_VH& other, const char* name=0);
+  virtual TObject* clone(const char* newname) const { return new RooSpinZero_5D_VH(*this, newname); }
+  inline virtual ~RooSpinZero_5D_VH(){}
+
+  Int_t getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* rangeName=0) const;
+  Double_t analyticalIntegral(Int_t code, const char* rangeName=0) const;
+
+
 protected:
 
-  RooRealProxy h1 ;
-  RooRealProxy h2 ;
-  RooRealProxy hs ;
-  RooRealProxy Phi ;
-  RooRealProxy Phi1 ;
-  RooRealProxy sqrts ;
-  RooRealProxy mX ;
-  RooRealProxy mV ;
-  RooRealProxy R1Val ;
-  RooRealProxy R2Val ;
-  int parameterization ;
-  RooRealProxy a1Val ;
-  RooRealProxy phi1Val ;
-  RooRealProxy a2Val ;
-  RooRealProxy phi2Val ;
-  RooRealProxy a3Val ;
-  RooRealProxy phi3Val ;
-  RooRealProxy g1Val ;
-  RooRealProxy g2Val ;
-  RooRealProxy g3Val ;
-  RooRealProxy g4Val ;
-  RooRealProxy g1ValIm ;
-  RooRealProxy g2ValIm ;
-  RooRealProxy g3ValIm ;
-  RooRealProxy g4ValIm ;
-  RooRealProxy fa2;
-  RooRealProxy fa3;
-  RooRealProxy phia2;
-  RooRealProxy phia3;
-
-    
-  Double_t evaluate() const ;
-
-private:
-
+  Double_t evaluate() const;
 };
  
 #endif
