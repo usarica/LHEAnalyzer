@@ -181,9 +181,9 @@ Float_t melaHelpers::melaBranchMEInterpreter(const ZZCandidate* cand, string& br
         V_daughters.push_back(mom);
         V_daughter_ids.push_back(0);
       }
-      if (V_daughter_ids.size()==0)
-        return result;
     }
+    else
+      return result;
   }
 
   vector<string> gList[2];
@@ -310,7 +310,7 @@ Float_t melaHelpers::melaBranchMEInterpreter(const ZZCandidate* cand, string& br
   }
 
   // Note: No implementation of tt/bbH yet!
-  if ((myProduction==TVar::JJVBF || myProduction==TVar::JJGG || myProduction==TVar::JH) && myME==TVar::JHUGen){
+  if ((myProduction==TVar::JJVBF || myProduction==TVar::JJGG || myProduction==TVar::JH) && myME==TVar::JHUGen && V_daughter_ids.size() > 1){
     Float_t tmpME = 0, auxME = 1;
     melaHelpers::melaHandle->computeProdP(
       V_daughters.at(0), V_daughter_ids.at(0),
@@ -325,7 +325,7 @@ Float_t melaHelpers::melaBranchMEInterpreter(const ZZCandidate* cand, string& br
     melaHelpers::melaHandle->get_PAux(auxME);
     result = tmpME*auxME;
   }
-  else if ((myProduction==TVar::WH || myProduction==TVar::ZH) && myME==TVar::JHUGen){
+  else if ((myProduction==TVar::WH || myProduction==TVar::ZH) && myME==TVar::JHUGen && V_daughter_ids.size() > 1){
     Float_t tmpME = 0;
     
     // Unfortunately, cannot use vector::data
