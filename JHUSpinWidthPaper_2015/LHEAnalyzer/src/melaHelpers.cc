@@ -181,6 +181,8 @@ Float_t melaHelpers::melaBranchMEInterpreter(const ZZCandidate* cand, string& br
         V_daughters.push_back(mom);
         V_daughter_ids.push_back(0);
       }
+      if (V_daughter_ids.size()==0)
+        return result;
     }
   }
 
