@@ -182,8 +182,6 @@ Float_t melaHelpers::melaBranchMEInterpreter(const ZZCandidate* cand, string& br
         V_daughter_ids.push_back(0);
       }
     }
-    else
-      return result;
   }
 
   vector<string> gList[2];
