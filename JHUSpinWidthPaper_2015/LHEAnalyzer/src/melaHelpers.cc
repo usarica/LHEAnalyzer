@@ -116,8 +116,11 @@ Float_t melaHelpers::melaBranchMEInterpreter(const ZZCandidate* cand, string& br
 
   // Find channel flavor
   int flavor=-1;
-  if (abs(Higgs_daughter_ids.at(1))==abs(Higgs_daughter_ids.at(3)) &&
-    abs(Higgs_daughter_ids.at(0))==abs(Higgs_daughter_ids.at(2))) flavor = 1;
+  if (
+    abs(Higgs_daughter_ids.at(1))==abs(Higgs_daughter_ids.at(3))
+    &&
+    abs(Higgs_daughter_ids.at(0))==abs(Higgs_daughter_ids.at(2))
+    ) flavor = 1;
   else flavor=3;
 
   // Special treatment for VH involves calling the routine with a single Higgs
@@ -168,7 +171,12 @@ Float_t melaHelpers::melaBranchMEInterpreter(const ZZCandidate* cand, string& br
   }
   else{ // Hadronic 2-jet MEs
     if (cand->getNAssociatedJets()>0){ // Uniform treatment for 1-jet cases
-      if (cand->getNAssociatedJets()<2 && myProduction!=TVar::JJVBF && myProduction!=TVar::JH) return result; // Escape for non-implemented MEs
+      if (
+        (cand->getNAssociatedJets()<2 && myProduction==TVar::JJGG)
+        ||
+        (cand->getNAssociatedJets()>1 && myProduction==TVar::JH)
+        ) return result;
+
       int nrealjets = min(2, cand->getNAssociatedJets());
       for (int av=0; av<nrealjets; av++){ // Jets are already ordered by pT.
         Particle* pJ = cand->getAssociatedJet(av);
@@ -183,6 +191,7 @@ Float_t melaHelpers::melaBranchMEInterpreter(const ZZCandidate* cand, string& br
       }
     }
   }
+
 
   vector<string> gList[2];
   vector<pair<int, double>> gCoef;
@@ -269,7 +278,7 @@ Float_t melaHelpers::melaBranchMEInterpreter(const ZZCandidate* cand, string& br
           for (int tt=0; tt<2; tt++){
             string chvar = gList[tt].at(gg);
             if (im==1) chvar.append("_pi2");
-            if (branchname.find(chvar)!=string::npos) gFind[gg][im]=true; // Does not care if it also finds g1g1_pi2, for example. It is the responsibility of other functions to pass the correct g's.
+            if (branchname.find(chvar)!=string::npos) gFind[gg][im]=true; // Does not care if it also finds g1g1_pi2, for example.
           }
         }
       }
@@ -308,43 +317,44 @@ Float_t melaHelpers::melaBranchMEInterpreter(const ZZCandidate* cand, string& br
   }
 
   // Note: No implementation of tt/bbH yet!
-  if ((myProduction==TVar::JJVBF || myProduction==TVar::JJGG || myProduction==TVar::JH) && myME==TVar::JHUGen && V_daughter_ids.size() > 1){
-    Float_t tmpME = 0, auxME = 1;
-    melaHelpers::melaHandle->computeProdP(
-      V_daughters.at(0), V_daughter_ids.at(0),
-      V_daughters.at(1), V_daughter_ids.at(1),
-      pHiggs, Higgs_id,
-      nullFourVector, 0,
-      selfDHggcoupl,
-      selfDHvvcoupl,
-      selfDHwwcoupl,
-      tmpME
-      );
-    melaHelpers::melaHandle->get_PAux(auxME);
-    result = tmpME*auxME;
+  Float_t tmpME = 0;
+  if ((myProduction==TVar::JJVBF || myProduction==TVar::JJGG || myProduction==TVar::JH) && myME==TVar::JHUGen){
+    if (V_daughters.size()>1){
+      Float_t auxME = 1;
+      melaHelpers::melaHandle->computeProdP(
+        V_daughters.at(0), V_daughter_ids.at(0),
+        V_daughters.at(1), V_daughter_ids.at(1),
+        pHiggs, Higgs_id,
+        nullFourVector, 0,
+        selfDHggcoupl,
+        selfDHvvcoupl,
+        selfDHwwcoupl,
+        tmpME
+        );
+      melaHelpers::melaHandle->get_PAux(auxME);
+      result = tmpME*auxME;
+    }
   }
-  else if ((myProduction==TVar::WH || myProduction==TVar::ZH) && myME==TVar::JHUGen && V_daughter_ids.size() > 1){
-    Float_t tmpME = 0;
-    
-    // Unfortunately, cannot use vector::data
-    TLorentzVector myjets[2] ={ V_daughters.at(0), V_daughters.at(1) };
-    TLorentzVector daughters[4] ={ Higgs_daughters.at(0), Higgs_daughters.at(1), Higgs_daughters.at(2), Higgs_daughters.at(3) };
-    int daughterids[4] ={ Higgs_daughter_ids.at(0), Higgs_daughter_ids.at(1), Higgs_daughter_ids.at(2), Higgs_daughter_ids.at(3) };
-    int jetids[2] ={ V_daughter_ids.at(0), V_daughter_ids.at(1) };
+  else if ((myProduction==TVar::WH || myProduction==TVar::ZH) && myME==TVar::JHUGen){
+    if (V_daughters.size()>1){
+      // Unfortunately, cannot use vector::data
+      TLorentzVector myjets[2] ={ V_daughters.at(0), V_daughters.at(1) };
+      TLorentzVector daughters[4] ={ Higgs_daughters.at(0), Higgs_daughters.at(1), Higgs_daughters.at(2), Higgs_daughters.at(3) };
+      int daughterids[4] ={ Higgs_daughter_ids.at(0), Higgs_daughter_ids.at(1), Higgs_daughter_ids.at(2), Higgs_daughter_ids.at(3) };
+      int jetids[2] ={ V_daughter_ids.at(0), V_daughter_ids.at(1) };
 
-    melaHelpers::melaHandle->computeProdP(
-      myjets,
-      daughters,
-      jetids,
-      daughterids,
-      false,
-      selfDHvvcoupl,
-      tmpME);
-    result = tmpME;
+      melaHelpers::melaHandle->computeProdP(
+        myjets,
+        daughters,
+        jetids,
+        daughterids,
+        false,
+        selfDHvvcoupl,
+        tmpME);
+      result = tmpME;
+    }
   }
   else if ((myProduction==TVar::ZZGG || myProduction==TVar::ZZQQB) && !hasSuperMELA){
-    Float_t tmpME = 0;
-
     Float_t helcosthetaZ1=0, helcosthetaZ2=0, helphi=0, costhetastar=0, phistarZ1=0;
     if (cand!=0) mela::computeAngles(
       cand->getSortedV(0)->getDaughter(0)->p4, cand->getSortedV(0)->getDaughter(0)->id,

@@ -2,6 +2,11 @@
 
 using namespace PDGHelpers;
 
+namespace debugVars{
+  bool debugFlag = false;
+}
+
+
 Particle::Particle():
 id(0),
 passSelection(true),

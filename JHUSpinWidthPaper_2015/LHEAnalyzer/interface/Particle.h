@@ -6,6 +6,10 @@
 #include "TLorentzVector.h"
 #include "PDGHelpers.h"
 
+namespace debugVars{
+  extern bool debugFlag;
+}
+
 class Particle{
 public:
 

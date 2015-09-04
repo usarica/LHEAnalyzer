@@ -38,6 +38,7 @@ void OptionParser::analyze(){
   bool hasInvalidOption=false;
   bool redefinedOutputFile=false;
   bool hasDecayAngles=false;
+  bool hasGenProdProb=false;
   char rawdelimiter = '=';
   for (int opt=1; opt<rawOptions.size(); opt++){
     string wish, value;
@@ -45,6 +46,7 @@ void OptionParser::analyze(){
     interpretOption(wish, value);
     if (wish=="outfile") redefinedOutputFile=true;
     if (wish=="computeDecayAngles") hasDecayAngles=true;
+    if (wish=="includeGenProdProb") hasGenProdProb=true;
   }
 
   if (filename.size()==0){ cerr << "You have to specify the input files." << endl; if(!hasInvalidOption) hasInvalidOption=true; }
@@ -62,6 +64,8 @@ void OptionParser::analyze(){
   if (mPOLE==0 || wPOLE==0 || erg_tev==0){ cerr << "Cannot have mH, GammaH or sqrts == 0" << endl; if(!hasInvalidOption) hasInvalidOption=true; }
   if (genHiggsCandidateSelectionScheme>=HiggsComparators::nCandidateSelections){ cerr << "Gen. H selection scheme is invalid!" << endl; if(!hasInvalidOption) hasInvalidOption=true; }
   if (recoHiggsCandidateSelectionScheme>=HiggsComparators::nCandidateSelections){ cerr << "Reco. H selection scheme is invalid!" << endl; if(!hasInvalidOption) hasInvalidOption=true; }
+  if (hasGenProdProb && sampleProductionId.first==TVar::ZZGG){ cerr << "sampleProductionId==ZZGG is not a valid option (ME is not implemented). Use decay MEs instead for ZZGG or specify another production." << endl; if (!hasInvalidOption) hasInvalidOption=true; }
+
   if (!redefinedOutputFile) cout << "WARNING: No output file specified. Defaulting to " << coutput << "." << endl;
   if (!hasDecayAngles && fileLevel<0 && recoSelBehaviour==0) { cout << "Disabling the re-calculation of decay angles in ReadMode by default since no relevant option is specified." << endl; computeDecayAngles=0; }
   if (fileLevel<0 && recoSelBehaviour!=0) { cout << "Enabling the (re-)calculation of all angles in ReadMode since the re-selection option is specified." << endl; computeVBFAngles=1; computeVHAngles=1; computeDecayAngles=1; }
@@ -121,7 +125,7 @@ void OptionParser::extractMelaGenProdId(string rawoption){
   vector<string> prod_me_pair;
   splitOptionRecursive(rawoption, prod_me_pair, ',');
   if (prod_me_pair.size()!=2){
-    cerr << "Incorrect specification for sampleProductionId. Has to follow the format (TVar::Production, TVar::MatrixElement)." << endl;
+    cerr << "Incorrect specification for sampleProductionId. Has to follow the format (TVar::Production, TVar::MatrixElement) (no parentheses)." << endl;
     printOptionsHelp(); // The process ends here.
   }
   else{
@@ -240,7 +244,7 @@ void OptionParser::printOptionsHelp(){
   cout << "- computeVBFProdAngles: Switch to control the VBF production angles computation. Default=0\n\n";
   cout << "- computeVHProdAngles: Switch to control the VH production angles computation. Default=0.\n\tPossible values are 0 (==disable), 1 (==compute from jets only), 2 (==compute from leptons only), 3 (==compute from jets and leptons, with separate variable suffixes \"*_VHhadronic\" and \"*_VHleptonic\".).\n\n";
   cout << "- includeGenDecayProb, includeGenProdProb, includeRecoDecayProb, includeRecoProdProb: Comma-separated list of spin-0 gen. or reco. decay or production MEs. Default=Empty (==None).\n\tThe explicit values tested are g1, g2, g4, g1_prime2; g1_pi2, g2_pi2, g4_pi2, g1_prime2_pi2, m4l, None, All.\n\t Gen. MEs are present for the purpose of reweighting. The appropriate target and origin combinations are left to the user at an analysis step.\n\n";
-  cout << "- sampleProductionId: Production mechanism used in the computation of includeGenProdProb. Follows the format (TVar::Production, TVar::MatrixElement). Default=(ZZGG, JHUGen)\n\n";
+  cout << "- sampleProductionId: Production mechanism used in the computation of includeGenProdProb. Follows the format (TVar::Production, TVar::MatrixElement) with no parentheses. Default=(ZZGG, JHUGen)\n\tProduction==ZZGG is an invalid option since one can use decay MEs for this purpose, and the ghg_i couplings are not enabled in the MEs.\n\n";
 
   cout << "- mH / MH / mPOLE: Mass of the Higgs. Used in common for generator and reco. objects. Default=125 (GeV)\n\n";
   cout << "- GH / GaH / GammaH / wPOLE: Width of the generated Higgs. Used in generator objects. Default=4.07 (MeV)\n\n";

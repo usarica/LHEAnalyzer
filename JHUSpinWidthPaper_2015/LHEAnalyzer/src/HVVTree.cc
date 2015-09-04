@@ -207,7 +207,7 @@ vector<string> HVVTree::constructMELABranchList(bool doSetAddress){
     prods.push_back(TVar::WH);
     prods.push_back(TVar::ttH);
     prods.push_back(TVar::bbH);
-    prods.push_back(TVar::ZZGG);
+//    prods.push_back(TVar::ZZGG);
     for (int pp=0; pp<prods.size(); pp++){
       for (int mm=0; mm<mes.size(); mm++) setupMELASignalMECases(blist, prods.at(pp), mes.at(mm), true, true, doSetAddress);
     }
@@ -215,7 +215,7 @@ vector<string> HVVTree::constructMELABranchList(bool doSetAddress){
 
   // Reco. prod. MEs
   me = TVar::JHUGen;
-  prod = TVar::ZZGG; setupMELASignalMECases(blist, prod, me, false, true, doSetAddress);
+//  prod = TVar::ZZGG; setupMELASignalMECases(blist, prod, me, false, true, doSetAddress);
   prod = TVar::JJGG; setupMELASignalMECases(blist, prod, me, false, true, doSetAddress);
   prod = TVar::JJVBF; setupMELASignalMECases(blist, prod, me, false, true, doSetAddress);
   prod = TVar::ZH; setupMELASignalMECases(blist, prod, me, false, true, doSetAddress);

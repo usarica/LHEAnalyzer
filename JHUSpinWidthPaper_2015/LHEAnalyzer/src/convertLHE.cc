@@ -106,6 +106,7 @@ void convertLHE::run(){
           if (options->recoSelectionMode()==0) smearedEvent.applyParticleSelection();
           smearedEvent.addVVCandidateAppendages();
           ZZCandidate* rCand = HiggsComparators::candidateSelector(smearedEvent, options->getHiggsCandidateSelectionScheme(false), options->doRecoHZZdecay());
+
           if (rCand!=0){
             isSelected=1;
             tree->fillCandidate(rCand, false);
