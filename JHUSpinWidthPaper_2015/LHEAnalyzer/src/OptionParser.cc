@@ -13,7 +13,7 @@ computeDecayAngles(1), // Decay angles
 computeVBFAngles(0), // VBF production angles
 computeVHAngles(0), // VH production angles
 sampleProductionId(TVar::ZZGG, TVar::JHUGen), // Sample gen. production mode
-fileLevel(0), // -1: ReadMode, 0: LHE, 1: Pythia, 
+fileLevel(0), // -1: ReadMode, 0: LHE, 1: Pythia,
 isGenHZZ(1), // H->ZZ or H->WW
 isRecoHZZ(1), // H->ZZ or H->WW
 genDecayMode(0), // 4l with HZZ, 2l2nu with HWW, see Event::constructVVCandidates(bool isZZ, int fstype)
@@ -130,7 +130,7 @@ void OptionParser::extractMelaGenProdId(string rawoption){
   }
   else{
     TVar::Production tmpProd; TVar::MatrixElement tmpME;
-    
+
     if (prod_me_pair.at(0) == "JJGG") tmpProd = TVar::JJGG;
     else if (prod_me_pair.at(0) == "JJVBF") tmpProd = TVar::JJVBF;
     else if (prod_me_pair.at(0) == "JH") tmpProd = TVar::JH;

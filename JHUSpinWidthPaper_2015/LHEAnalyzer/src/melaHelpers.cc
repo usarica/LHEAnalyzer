@@ -264,7 +264,7 @@ Float_t melaHelpers::melaBranchMEInterpreter(const ZZCandidate* cand, string& br
         else gCoef.push_back(pair<int, double>(11, 12100.42*coeffScale)); // For a mostly positive discriminant
       }
     }
-  
+
     int sgList = gList[0].size();
     bool** gFind;
     if (sgList>0){
@@ -497,7 +497,7 @@ void melaHelpers::computeAngles(
   TVector3 normal1_BX = (p4M11_BX.Vect().Cross(p4M12_BX.Vect())).Unit();
   TVector3 normal2_BX = (p4M21_BX.Vect().Cross(p4M22_BX.Vect())).Unit();
   TVector3 normalSC_BX = (beamAxis.Cross(p3V1_BX)).Unit();
-  
+
 /*
   cout << "p4M11: "
     << p4M11.X() << '\t'

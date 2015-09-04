@@ -24,7 +24,7 @@ lifetime(0)
 {
   p4.SetXYZT(p4_.X(), p4_.Y(), p4_.Z(), p4_.T());
 }
-Particle::Particle(const Particle& particle_) : 
+Particle::Particle(const Particle& particle_) :
 id(particle_.id),
 passSelection(particle_.passSelection),
 genStatus(particle_.genStatus),

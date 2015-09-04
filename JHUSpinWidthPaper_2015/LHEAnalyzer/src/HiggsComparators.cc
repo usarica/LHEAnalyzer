@@ -13,7 +13,7 @@ ZZCandidate* HiggsComparators::matchAHiggsToParticle(Event& ev, Particle* genH){
         TLorentzVector vGen = genH->p4;
         TLorentzVector vTmp = tmpCand->p4;
         TLorentzVector vCur = cand->p4;
-        
+
         double dot_tmp = vTmp.Dot(vGen);
         double dot_curr = vCur.Dot(vGen);
         if (fabs(dot_tmp-vGen.M2())<fabs(dot_curr - vGen.M2())) cand = tmpCand;
