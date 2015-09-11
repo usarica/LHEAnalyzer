@@ -223,41 +223,32 @@ Float_t melaHelpers::melaBranchMEInterpreter(const ZZCandidate* cand, string& br
       }
     }
     else{
-      gList[0].push_back("g1"); gList[1].push_back("0plus"); gCoef.push_back(pair<int, double>(0, 1));
+      double coeffScale = 1.;
+      if (myME==TVar::MCFM && branchname.find("Gen")!=string::npos && branchname.find("GHscaled")!=string::npos) coeffScale = pow(mePoleScale, 0.25);
+
+      gList[0].push_back("g1"); gList[1].push_back("0plus"); gCoef.push_back(pair<int, double>(0, 1.*coeffScale));
       gList[0].push_back("g2"); gList[1].push_back("0hplus");
       gList[0].push_back("g4"); gList[1].push_back("0minus");
       gList[0].push_back("g1_prime2"); gList[1].push_back("0_g1prime2");
       if (myProduction==TVar::WH){ // WH, to be revised
-        double coeffScale = 1.;
-        if (myME==TVar::MCFM && branchname.find("Gen")!=string::npos && branchname.find("GHscaled")!=string::npos) coeffScale = pow(mePoleScale, 0.25);
-        gCoef.push_back(pair<int, double>(0, 1.*coeffScale));
         gCoef.push_back(pair<int, double>(1, 1.*coeffScale));
         gCoef.push_back(pair<int, double>(3, 0.123659*coeffScale));
         if (myME==TVar::MCFM) gCoef.push_back(pair<int, double>(11, 1.*coeffScale));
         else gCoef.push_back(pair<int, double>(5, 1.*coeffScale));
       }
       else if (myProduction==TVar::ZH){ // ZH, to be revised
-        double coeffScale = 1.;
-        if (myME==TVar::MCFM && branchname.find("Gen")!=string::npos && branchname.find("GHscaled")!=string::npos) coeffScale = pow(mePoleScale, 0.25);
-        gCoef.push_back(pair<int, double>(0, 1.*coeffScale));
         gCoef.push_back(pair<int, double>(1, 1.*coeffScale));
         gCoef.push_back(pair<int, double>(3, 0.143276*coeffScale));
         if (myME==TVar::MCFM) gCoef.push_back(pair<int, double>(11, 1.*coeffScale));
         else gCoef.push_back(pair<int, double>(5, 1.*coeffScale));
       }
       else if (myProduction==TVar::JJVBF){ // VBF
-        double coeffScale = 1.;
-        if (myME==TVar::MCFM && branchname.find("Gen")!=string::npos && branchname.find("GHscaled")!=string::npos) coeffScale = pow(mePoleScale, 0.25);
-        gCoef.push_back(pair<int, double>(0, 1.*coeffScale));
         gCoef.push_back(pair<int, double>(1, 0.270955*coeffScale));
         gCoef.push_back(pair<int, double>(3, 0.29724129*coeffScale));
         if (myME==TVar::MCFM) gCoef.push_back(pair<int, double>(11, 2132.143*coeffScale));
         else gCoef.push_back(pair<int, double>(5, 2132.143*coeffScale));
       }
       else if (myProduction==TVar::ZZGG){ // 0-jet ggH dec. ME
-        double coeffScale = 1.;
-        if (myME==TVar::MCFM && branchname.find("Gen")!=string::npos && branchname.find("GHscaled")!=string::npos) coeffScale = sqrt(mePoleScale);
-        gCoef.push_back(pair<int, double>(0, 1.*coeffScale));
         gCoef.push_back(pair<int, double>(1, 1.65684*coeffScale));
         gCoef.push_back(pair<int, double>(3, 2.55052*coeffScale));
         if (branchname.find("Gen")==string::npos) gCoef.push_back(pair<int, double>(11, -12100.42*coeffScale));
@@ -268,6 +259,7 @@ Float_t melaHelpers::melaBranchMEInterpreter(const ZZCandidate* cand, string& br
     int sgList = gList[0].size();
     bool** gFind;
     if (sgList>0){
+      string trimmedBranchname = branchname;
       gFind = new bool*[sgList];
       for (int gg=0; gg<sgList; gg++){
         gFind[gg] = new bool[2];
@@ -278,7 +270,11 @@ Float_t melaHelpers::melaBranchMEInterpreter(const ZZCandidate* cand, string& br
           for (int tt=0; tt<2; tt++){
             string chvar = gList[tt].at(gg);
             if (im==1) chvar.append("_pi2");
-            if (branchname.find(chvar)!=string::npos) gFind[gg][im]=true; // Does not care if it also finds g1g1_pi2, for example.
+            size_t posFound = trimmedBranchname.find(chvar);
+            if (posFound!=string::npos){
+              gFind[gg][im]=true; // Does not care if it also finds g1g1_pi2, for example.
+              trimmedBranchname.erase(trimmedBranchname.begin()+posFound, trimmedBranchname.begin()+posFound+chvar.length());
+            }
           }
         }
       }

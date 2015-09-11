@@ -32,6 +32,7 @@ public:
     RooRealVar* m12;
     RooRealVar* hs;
     RooRealVar* Phi1;
+    RooRealVar* Y;
   };
   struct modelParameters{
     RooRealVar* mX;
