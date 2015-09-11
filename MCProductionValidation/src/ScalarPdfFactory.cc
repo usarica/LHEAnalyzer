@@ -42,6 +42,7 @@ void ScalarPdfFactory::initMeasurables(RooSpinZero::modelMeasurables measurables
   measurables.m12 = measurables_.m12;
   measurables.hs = measurables_.hs;
   measurables.Phi1 = measurables_.Phi1;
+  measurables.Y = measurables_.Y;
 }
 void ScalarPdfFactory::initMassPole(){
   parameters.mX = new RooRealVar("mX", "mX", (measurables.m12)->getVal());

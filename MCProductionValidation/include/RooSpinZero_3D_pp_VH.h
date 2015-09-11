@@ -11,7 +11,7 @@
 #include "TLorentzVector.h"
 #include "TLorentzRotation.h"
 
-class RooSpinZero_3D_pp_VH : public RooSpinZero {
+class RooSpinZero_3D_pp_VH : public RooSpinZero  {
 public:
 
   Double_t sqrts;
@@ -28,7 +28,7 @@ public:
 
   RooSpinZero_3D_pp_VH(const RooSpinZero_3D_pp_VH& other, const char* name=0);
   virtual TObject* clone(const char* newname) const { return new RooSpinZero_3D_pp_VH(*this, newname); }
-  inline virtual ~RooSpinZero_3D_pp_VH() { }
+  inline virtual ~RooSpinZero_3D_pp_VH(){}
 
   Int_t getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* rangeName=0) const;
   Double_t analyticalIntegral(Int_t code, const char* rangeName=0) const;

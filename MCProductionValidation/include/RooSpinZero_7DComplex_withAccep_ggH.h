@@ -50,7 +50,7 @@ public:
     RooRealVar* dM2;
   };
 
-  RooSpinZero_7DComplex_withAccep_ggH() {};
+  RooSpinZero_7DComplex_withAccep_ggH(){}
   RooSpinZero_7DComplex_withAccep_ggH(
     const char *name, const char *title,
     modelMeasurables _measurables,
@@ -59,7 +59,7 @@ public:
     );
   RooSpinZero_7DComplex_withAccep_ggH(const RooSpinZero_7DComplex_withAccep_ggH& other, const char* name=0);
   virtual TObject* clone(const char* newname) const { return new RooSpinZero_7DComplex_withAccep_ggH(*this, newname); }
-  inline virtual ~RooSpinZero_7DComplex_withAccep_ggH() { }
+  inline virtual ~RooSpinZero_7DComplex_withAccep_ggH(){}
 
   Int_t getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* rangeName=0) const;
   Double_t analyticalIntegral(Int_t code, const char* rangeName=0) const;
@@ -104,8 +104,6 @@ protected:
   RooRealProxy dM2;
 
   Double_t evaluate() const;
-
-private:
 
 };
 

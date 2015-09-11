@@ -11,7 +11,8 @@
  
 class RooSpinZero_5D_VH : public RooSpinZero {
 public:
-  RooSpinZero_5D_VH() {};
+
+  RooSpinZero_5D_VH(){}
   RooSpinZero_5D_VH(
     const char *name, const char *title,
     modelMeasurables _measurables,
@@ -29,6 +30,7 @@ public:
 protected:
 
   Double_t evaluate() const;
+
 };
  
 #endif
