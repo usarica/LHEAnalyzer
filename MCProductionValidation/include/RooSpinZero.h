@@ -78,6 +78,7 @@ protected:
   RooRealProxy m12;
   RooRealProxy hs;
   RooRealProxy Phi1;
+  RooRealProxy Y;
 
   RooRealProxy mX;
   RooRealProxy gamX;

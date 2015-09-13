@@ -21,6 +21,7 @@ RooSpinZero::RooSpinZero(
   m12("m12", "m12", this, (RooAbsReal&)*(_measurables.m12)),
   hs("hs", "hs", this, (RooAbsReal&)*(_measurables.hs)),
   Phi1("Phi1", "Phi1", this, (RooAbsReal&)*(_measurables.Phi1)),
+  Y("Y", "Y", this, (RooAbsReal&)*(_measurables.Y)),
 
   mX("mX", "mX", this, (RooAbsReal&)*(_parameters.mX)),
   gamX("gamX", "gamX", this, (RooAbsReal&)*(_parameters.gamX)),
@@ -128,6 +129,7 @@ m2("m2", this, other.m2),
 m12("m12", this, other.m12),
 hs("hs", this, other.hs),
 Phi1("Phi1", this, other.Phi1),
+Y("Y", this, other.Y),
 
 mX("mX", this, other.mX),
 gamX("gamX", this, other.gamX),

@@ -11,19 +11,17 @@
 #include "TLorentzVector.h"
 #include "TLorentzRotation.h"
 
-class RooSpinZero_3D_pp_VH : public RooSpinZero  {
+class RooSpinZero_3D_pp_VH : public RooSpinZero {
 public:
 
   Double_t sqrts;
-  bool withAcc;
 
   RooSpinZero_3D_pp_VH(){}
   RooSpinZero_3D_pp_VH(
     const char *name, const char *title,
     modelMeasurables _measurables,
     modelParameters _parameters,
-    Double_t _sqrts,
-    bool _withAcc=false
+    Double_t _sqrts
     );
 
   RooSpinZero_3D_pp_VH(const RooSpinZero_3D_pp_VH& other, const char* name=0);

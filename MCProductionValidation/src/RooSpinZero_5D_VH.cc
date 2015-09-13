@@ -25,10 +25,6 @@ Double_t RooSpinZero_5D_VH::evaluate() const{
   Double_t A00 = A00Im*A00Im + A00Re*A00Re;
   Double_t App = AppIm*AppIm + AppRe*AppRe;
   Double_t Amm = AmmIm*AmmIm + AmmRe*AmmRe;
-  Double_t Atotal = A00 + App + Amm;
-  A00/=Atotal;
-  App/=Atotal;
-  Amm/=Atotal;
 
   Double_t phi00=atan2(A00Im, A00Re);
   Double_t phipp=atan2(AppIm, AppRe)-phi00;
@@ -61,10 +57,6 @@ Double_t RooSpinZero_5D_VH::analyticalIntegral(Int_t code, const char* /*rangeNa
   Double_t A00 = A00Im*A00Im + A00Re*A00Re;
   Double_t App = AppIm*AppIm + AppRe*AppRe;
   Double_t Amm = AmmIm*AmmIm + AmmRe*AmmRe;
-  Double_t Atotal = A00 + App + Amm;
-  A00/=Atotal;
-  App/=Atotal;
-  Amm/=Atotal;
 
   Double_t phi00=atan2(A00Im, A00Re);
   Double_t phipp=atan2(AppIm, AppRe)-phi00;
