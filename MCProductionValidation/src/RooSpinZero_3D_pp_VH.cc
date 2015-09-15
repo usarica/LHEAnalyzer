@@ -52,14 +52,23 @@ Double_t RooSpinZero_3D_pp_VH::evaluate() const{
 
   value *= plumi;
   value *= sigma_psf;
+
   return value;
 }
 
 Int_t RooSpinZero_3D_pp_VH::getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* /*rangeName*/) const{
+  std::cout << "getAnalyticalIntegral to return" << std::endl;
+  if (matchArgs(allVars, analVars, RooArgSet(*h1.absArg(), *h2.absArg(), *Phi.absArg()))) cout <<  4 << endl;
+  else if (matchArgs(allVars, analVars, h1, h2)) cout <<  1 << endl;
+  else if (matchArgs(allVars, analVars, h1, Phi)) cout <<  2 << endl;
+  else if (matchArgs(allVars, analVars, h2, Phi)) cout <<  3 << endl;
+  else cout <<  0 << endl;
+
   if (matchArgs(allVars, analVars, RooArgSet(*h1.absArg(), *h2.absArg(), *Phi.absArg()))) return 4;
   if (matchArgs(allVars, analVars, h1, h2)) return 1;
   if (matchArgs(allVars, analVars, h1, Phi)) return 2;
   if (matchArgs(allVars, analVars, h2, Phi)) return 3;
+  std::cout << "failed to return" << std::endl;
   return 0;
 }
 
@@ -132,12 +141,11 @@ Double_t RooSpinZero_3D_pp_VH::analyticalIntegral(Int_t code, const char* /*rang
   return 0;
 }
 
-float RooSpinZero_3D_pp_VH::partonicLuminosity(float mVal, float YVal, float sqrtsVal) const{
-  Double_t s0 = sqrtsVal*sqrtsVal;
-  Double_t s = mVal*mVal;
+double RooSpinZero_3D_pp_VH::partonicLuminosity(double mVal, double YVal, double sqrtsVal) const{
   Double_t Q = mVal;
-  Double_t xa = exp(YVal)*sqrt(s/s0);
-  Double_t xb = exp(-YVal)*sqrt(s/s0);
+  Double_t xa0 = mVal/sqrtsVal;
+  Double_t xa = exp(YVal)*xa0;
+  Double_t xb = exp(-YVal)*xa0;
 
 
   Double_t weightu = 0.5;
@@ -254,7 +262,6 @@ float RooSpinZero_3D_pp_VH::partonicLuminosity(float mVal, float YVal, float sqr
   Double_t FuncABs = Funcca*Funccb/xa/xb;
   Double_t FuncABb = Funcba*Funcbb/xa/xb;
 
-
   Double_t totSec = 2*mVal*(
     (FuncABu)*weightu
     +(FuncABd)*weightd
@@ -263,9 +270,8 @@ float RooSpinZero_3D_pp_VH::partonicLuminosity(float mVal, float YVal, float sqr
     +(FuncABb)*weightb
     );
 
-  if ((mVal <= 600. && TMath::Abs(YVal) > 20*pow(float(mVal), float(-0.32))) || (mVal > 600. && TMath::Abs(YVal) > 21*pow(float(mVal), float(-0.34)))){
+  if ((mVal <= 600. && fabs(YVal) > 20*pow(mVal, -0.32)) || (mVal > 600. && fabs(YVal) > 21*pow(mVal, -0.34))){
     //Find totSec when mZZ, YVal=0
-    Double_t xa0 = sqrt(s/s0); //at YVal=0 xa=xb
 
     //up
     //if xa=xb then FuncAu1=FuncAu2 and FuncBu1=FuncBu2

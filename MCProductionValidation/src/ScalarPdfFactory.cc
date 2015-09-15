@@ -46,7 +46,7 @@ void ScalarPdfFactory::initMeasurables(RooSpinZero::modelMeasurables measurables
 }
 void ScalarPdfFactory::initMassPole(){
   parameters.mX = new RooRealVar("mX", "mX", (measurables.m12)->getVal());
-  parameters.gamX = new RooRealVar("gamX", "gamX", 0);
+  parameters.gamX = new RooRealVar("gamX", "gamX", 4.07e-3);
 }
 void ScalarPdfFactory::initVdecayParams(){
   if (V1decay>0){

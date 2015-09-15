@@ -26,7 +26,7 @@
 using namespace RooFit;
 using namespace std;
 
-void angularDistributions_spin0_ggH(TString INPUT_NAME, double g1Re=0, double g2Re=0, double g4Re=0, double g1L1Re=0, double g2Im=0, double g4Im=0, double g1L1Im=0, int nbins=80){
+void angularDistributions_spin0_ggH(TString INPUT_NAME, double g1Re=1, double g2Re=0, double g4Re=0, double g1L1Re=0, double g2Im=0, double g4Im=0, double g1L1Im=0, int nbins=80){
   RooRealVar* mzz = new RooRealVar("GenHMass", "M_{ZZ} (GeV)", 125, 125.-0.02, 125.+0.02);
   RooRealVar* z1mass = new RooRealVar("GenZ1Mass", "m_{Z1} (GeV)", 0.0, 120);
   RooRealVar* z2mass = new RooRealVar("GenZ2Mass", "m_{Z2} (GeV)", 0.0, 70);
@@ -35,6 +35,7 @@ void angularDistributions_spin0_ggH(TString INPUT_NAME, double g1Re=0, double g2
   RooRealVar* h2 = new RooRealVar("GenhelcosthetaZ2", "cos#theta_{Z2}", -1, 1);
   RooRealVar* Phi = new RooRealVar("Genhelphi", "#Phi", -TMath::Pi(), TMath::Pi());
   RooRealVar* Phi1 = new RooRealVar("GenphistarZ1", "#Phi_{Z1}", -TMath::Pi(), TMath::Pi());
+  RooRealVar* Y = new RooRealVar("GenY", "Y", 0);
 
   RooSpinZero::modelMeasurables measurables_;
   measurables_.h1 = h1;
@@ -45,6 +46,7 @@ void angularDistributions_spin0_ggH(TString INPUT_NAME, double g1Re=0, double g2
   measurables_.m12 = mzz;
   measurables_.hs = hs;
   measurables_.Phi1 = Phi1;
+  measurables_.Y = Y;
 
   RooArgSet treeargs(*mzz, *z1mass, *z2mass, *hs, *h1, *h2, *Phi, *Phi1);
   RooRealVar* measurables[8]={ z1mass, z2mass, h1, h2, hs, Phi, Phi1, mzz };
@@ -167,4 +169,5 @@ void angularDistributions_spin0_ggH(TString INPUT_NAME, double g1Re=0, double g2
   delete h2;
   delete Phi;
   delete Phi1;
+  delete Y;
 }

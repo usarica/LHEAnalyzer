@@ -35,7 +35,7 @@ protected:
 
   Double_t evaluate() const;
 
-  float partonicLuminosity(float mVal, float YVal, float sqrts) const;
+  double partonicLuminosity(double mVal, double YVal, double sqrts) const;
 
 };
 

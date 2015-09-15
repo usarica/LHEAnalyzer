@@ -314,26 +314,21 @@ void RooSpinZero::calculateAmplitudes(Double_t& A00Re, Double_t& A00Im, Double_t
   Double_t a1Re, a2Re, a3Re, a1Im, a2Im, a3Im;
   calculateAiPhiAi(a1Re, a1Im, a2Re, a2Im, a3Re, a3Im);
 
-  Double_t x = (pow(m12, 2) - pow(m1, 2) - pow(m2, 2))/(2.0*m1*m2);
-  if (pow(m1, 2)>pow(m12, 2) || pow(m2, 2)>pow(m12, 2)) x = -x;
+  Double_t eta1 = m1 / m12;
+  Double_t eta2 = m2 / m12;
+
+  Double_t x = (1. - pow(eta1, 2) - pow(eta2, 2))/(2.0*eta1*eta2);
+  if (pow(eta1, 2)>1. || pow(eta2, 2)>1.) x = -x;
   Double_t xsqmo = pow(x, 2) - 1.;
 
-  A00Re =
-    -(
-    a1Re*x*pow(m12,2)
-    +a2Re*xsqmo*m1*m2
-    );
-  A00Im =
-    -(
-    a1Im*x*pow(m12, 2)
-    +a2Im*xsqmo*m1*m2
-    );
+  A00Re = -(a1Re*x + a2Re*xsqmo*eta1*eta2);
+  A00Im = -(a1Im*x + a2Im*xsqmo*eta1*eta2);
 
-  AppRe = a1Re*pow(m12, 2) - a3Im*sqrt(xsqmo)*m1*m2;
-  AppIm = a1Im*pow(m12, 2) + a3Re*sqrt(xsqmo)*m1*m2;
+  AppRe = a1Re - a3Im*sqrt(xsqmo)*eta1*eta2;
+  AppIm = a1Im + a3Re*sqrt(xsqmo)*eta1*eta2;
 
-  AmmRe = a1Re*pow(m12, 2) + a3Im*sqrt(xsqmo)*m1*m2;
-  AmmIm = a1Im*pow(m12, 2) - a3Re*sqrt(xsqmo)*m1*m2;
+  AmmRe = a1Re + a3Im*sqrt(xsqmo)*eta1*eta2;
+  AmmIm = a1Im - a3Re*sqrt(xsqmo)*eta1*eta2;
 }
 
 
