@@ -8,8 +8,8 @@
 class ScalarPdfFactory_VH : public ScalarPdfFactory {
 public:
 
-  ScalarPdfFactory_VH(RooSpinZero::modelMeasurables measurables_, double sqrts_, int PDFType_=1, int VHmode_=1);
-  ScalarPdfFactory_VH(RooSpinZero::modelMeasurables measurables_, double gRatio_[4][8], double sqrts_, int PDFType_=1, bool pmf_applied_=false, int VHmode_=1);
+  ScalarPdfFactory_VH(RooSpinZero::modelMeasurables measurables_, double sqrts_, int VHmode1_=3, int VHmode2_=3);
+  ScalarPdfFactory_VH(RooSpinZero::modelMeasurables measurables_, double gRatio_[4][8], double sqrts_, bool pmf_applied_=false, int VHmode1_=3, int VHmode2_=3);
   ~ScalarPdfFactory_VH();
 
   void makeParamsConst(bool yesNo=true);

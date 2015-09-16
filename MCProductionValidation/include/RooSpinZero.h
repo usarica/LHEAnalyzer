@@ -67,6 +67,7 @@ public:
   virtual Int_t getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* rangeName=0) const = 0;
   virtual Double_t analyticalIntegral(Int_t code, const char* rangeName=0) const = 0;
 
+  virtual void setProxy(RooRealProxy& proxy, RooAbsReal* objectPtr);
 
 protected:
 
@@ -164,6 +165,8 @@ protected:
 
   virtual void calculateAiPhiAi(Double_t& a1Re, Double_t& a1Im, Double_t& a2Re, Double_t& a2Im, Double_t& a3Re, Double_t& a3Im) const;
   virtual void calculateAmplitudes(Double_t& A00Re, Double_t& A00Im, Double_t& AppRe, Double_t& AppIm, Double_t& AmmRe, Double_t& AmmIm) const;
+
+  virtual void setProxies(modelMeasurables _measurables);
 };
 
 #endif

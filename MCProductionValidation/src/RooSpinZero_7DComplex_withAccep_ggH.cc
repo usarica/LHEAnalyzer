@@ -91,10 +91,10 @@ Double_t RooSpinZero_7DComplex_withAccep_ggH::evaluate() const{
   bool isZZ = true;
   if (mV < 90.) isZZ = false;
   if (isZZ) {
-    //if ((m1+m2) > mX || m2>m1 || m2 <= 0.0 || m1 <= 0.0) return 1e-15;
-    if ((m1+m2) > mX || fabs(m2-mV)<fabs(m1-mV) || m2 <= 0.0 || m1 <= 0.0) return 1e-15;
+    //if ((m1+m2) > m12 || m2>m1 || m2 <= 0.0 || m1 <= 0.0) return 1e-15;
+    if ((m1+m2) > m12 || fabs(m2-mV)<fabs(m1-mV) || m2 <= 0.0 || m1 <= 0.0) return 1e-15;
   }
-  else if ((m1+m2) > mX) return 1e-15;
+  else if ((m1+m2) > m12 || m2 <= 0.0 || m1 <= 0.0) return 1e-15;
 
   Double_t betaValSq = (1.-(pow(m1-m2, 2)/pow(m12, 2)))*(1.-(pow(m1+m2, 2)/pow(m12, 2)));
   if (betaValSq<0) return 1e-15;
@@ -124,10 +124,12 @@ Double_t RooSpinZero_7DComplex_withAccep_ggH::evaluate() const{
   value+=(sqrt(A00)*sqrt(App)*sqrt(1 - pow(h1, 2))*(aH1 + bH1*pow(h1, 2) + cH1*pow(h1, 4) + dH1*pow(h1, 6) +eH1*pow(h1, 8))*sqrt(1 - pow(h2, 2))*(aH2 + bH2*pow(h2, 2) + cH2*pow(h2, 4) + dH2*pow(h2, 6) +eH2*pow(h2, 8))*(aHs + bHs*pow(hs, 2) + cHs*pow(hs, 4) +dHs*pow(hs, 6) + eHs*pow(hs, 8))*(h1 + R1Val)*(h2 + R2Val)*(aPhi + bPhi*cos(Phi) + cPhi*cos(2*Phi) + dPhi*cos(3*Phi) +ePhi*cos(4*Phi))*(aPhi1 + bPhi1*cos(Phi1) + cPhi1*cos(2*Phi1) +dPhi1*cos(3*Phi1) + ePhi1*cos(4*Phi1))*cos(Phi + phipp))/4.;
   value+=(sqrt(Amm)*sqrt(App)*(-1 + pow(h1, 2))*(aH1 + bH1*pow(h1, 2) + cH1*pow(h1, 4) + dH1*pow(h1, 6) +eH1*pow(h1, 8))*(-1 + pow(h2, 2))*(aH2 + bH2*pow(h2, 2) + cH2*pow(h2, 4) + dH2*pow(h2, 6) +eH2*pow(h2, 8))*(aHs + bHs*pow(hs, 2) + cHs*pow(hs, 4) +dHs*pow(hs, 6) + eHs*pow(hs, 8))*(aPhi + bPhi*cos(Phi) + cPhi*cos(2*Phi) + dPhi*cos(3*Phi) +ePhi*cos(4*Phi))*(aPhi1 + bPhi1*cos(Phi1) + cPhi1*cos(2*Phi1) +dPhi1*cos(3*Phi1) + ePhi1*cos(4*Phi1))*cos(2*Phi - phimm + phipp))/8.;
 
-
-  return betaVal*term1Coeff*term2Coeff*value
+  value = betaVal*term1Coeff*term2Coeff*value
     *(1+aM1*m1+bM1*m1*m1+cM1*m1*m1*m1+dM1*m1*m1*m1*m1)
     *(1+aM2*m1+bM2*m2*m2+cM2*m2*m2*m2+dM2*m2*m2*m2*m2);
+
+  if (!(value==value)) cout << "Evaluate NaN=" << value << endl;
+  return value;
 }
 
 
@@ -144,10 +146,10 @@ Double_t RooSpinZero_7DComplex_withAccep_ggH::analyticalIntegral(Int_t code, con
   bool isZZ = true;
   if (mV < 90.) isZZ = false;
   if (isZZ) {
-    //if ((m1+m2) > mX || m2>m1 || m2 <= 0.0 || m1 <= 0.0) return 1e-15;
-    if ((m1+m2) > mX || fabs(m2-mV)<fabs(m1-mV) || m2 <= 0.0 || m1 <= 0.0) return 1e-10;
+    //if ((m1+m2) > m12 || m2>m1 || m2 <= 0.0 || m1 <= 0.0) return 1e-10;
+    if ((m1+m2) > m12 || fabs(m2-mV)<fabs(m1-mV) || m2 <= 0.0 || m1 <= 0.0) return 1e-10;
   }
-  else if ((m1+m2) > mX) return 1e-10;
+  else if ((m1+m2) > m12 || m2 <= 0.0 || m1 <= 0.0) return 1e-10;
 
   Double_t betaValSq = (1.-(pow(m1-m2, 2)/pow(m12, 2)))*(1.-(pow(m1+m2, 2)/pow(m12, 2)));
   if (betaValSq<0) return 1e-15;
@@ -169,125 +171,110 @@ Double_t RooSpinZero_7DComplex_withAccep_ggH::analyticalIntegral(Int_t code, con
   Double_t term2Coeff = pow(m2, 3)/(pow(pow(m2, 2)-pow(mV, 2), 2)+pow(mV*gamV, 2));
 
   double value = 0;
-  switch (code)
-  {
-    // projections to hs
-  case 1:
-  {
-          // test_InteNoHs.txt
+  if (code==1){ // projections to hs
+    // test_InteNoHs.txt
 
-          value+=(16*aPhi*aPhi1*(1155*aH1 + 231*bH1 + 99*cH1 + 55*dH1 + 35*eH1)*(1155*aH2 + 231*bH2 + 99*cH2 + 55*dH2 + 35*eH2)*A00*(aHs + bHs*pow(hs, 2) + cHs*pow(hs, 4) + dHs*pow(hs, 6) +eHs*pow(hs, 8))*pow(Pi, 2))/1.2006225e7;
-          value+=(16*aPhi*aPhi1*(1155*aH1 + 462*bH1 + 297*cH1 + 220*dH1 + 175*eH1)*(1155*aH2 + 462*bH2 + 297*cH2 + 220*dH2 + 175*eH2)*Amm*(aHs + bHs*pow(hs, 2) + cHs*pow(hs, 4) + dHs*pow(hs, 6) +eHs*pow(hs, 8))*pow(Pi, 2))/1.2006225e7;
-          value+=(16*aPhi*aPhi1*(1155*aH1 + 462*bH1 + 297*cH1 + 220*dH1 + 175*eH1)*(1155*aH2 + 462*bH2 + 297*cH2 + 220*dH2 + 175*eH2)*App*(aHs + bHs*pow(hs, 2) + cHs*pow(hs, 4) + dHs*pow(hs, 6) +eHs*pow(hs, 8))*pow(Pi, 2))/1.2006225e7;
+    value+=(16*aPhi*aPhi1*(1155*aH1 + 231*bH1 + 99*cH1 + 55*dH1 + 35*eH1)*(1155*aH2 + 231*bH2 + 99*cH2 + 55*dH2 + 35*eH2)*A00*(aHs + bHs*pow(hs, 2) + cHs*pow(hs, 4) + dHs*pow(hs, 6) +eHs*pow(hs, 8))*pow(Pi, 2))/1.2006225e7;
+    value+=(16*aPhi*aPhi1*(1155*aH1 + 462*bH1 + 297*cH1 + 220*dH1 + 175*eH1)*(1155*aH2 + 462*bH2 + 297*cH2 + 220*dH2 + 175*eH2)*Amm*(aHs + bHs*pow(hs, 2) + cHs*pow(hs, 4) + dHs*pow(hs, 6) +eHs*pow(hs, 8))*pow(Pi, 2))/1.2006225e7;
+    value+=(16*aPhi*aPhi1*(1155*aH1 + 462*bH1 + 297*cH1 + 220*dH1 + 175*eH1)*(1155*aH2 + 462*bH2 + 297*cH2 + 220*dH2 + 175*eH2)*App*(aHs + bHs*pow(hs, 2) + cHs*pow(hs, 4) + dHs*pow(hs, 6) +eHs*pow(hs, 8))*pow(Pi, 2))/1.2006225e7;
 
-          value+=(aPhi1*bPhi*(128*aH1 + 32*bH1 + 16*cH1 + 10*dH1 + 7*eH1)*(128*aH2 + 32*bH2 + 16*cH2 + 10*dH2 + 7*eH2)*sqrt(A00)*sqrt(Amm)*(aHs + bHs*pow(hs, 2) + cHs*pow(hs, 4) + dHs*pow(hs, 6) +eHs*pow(hs, 8))*pow(Pi, 4)*R1Val*R2Val*cos(phimm))/131072.;
-          value+=(aPhi1*bPhi*(128*aH1 + 32*bH1 + 16*cH1 + 10*dH1 + 7*eH1)*(128*aH2 + 32*bH2 + 16*cH2 + 10*dH2 + 7*eH2)*sqrt(A00)*sqrt(App)*(aHs + bHs*pow(hs, 2) + cHs*pow(hs, 4) + dHs*pow(hs, 6) +eHs*pow(hs, 8))*pow(Pi, 4)*R1Val*R2Val*cos(phipp))/131072.;
+    value+=(aPhi1*bPhi*(128*aH1 + 32*bH1 + 16*cH1 + 10*dH1 + 7*eH1)*(128*aH2 + 32*bH2 + 16*cH2 + 10*dH2 + 7*eH2)*sqrt(A00)*sqrt(Amm)*(aHs + bHs*pow(hs, 2) + cHs*pow(hs, 4) + dHs*pow(hs, 6) +eHs*pow(hs, 8))*pow(Pi, 4)*R1Val*R2Val*cos(phimm))/131072.;
+    value+=(aPhi1*bPhi*(128*aH1 + 32*bH1 + 16*cH1 + 10*dH1 + 7*eH1)*(128*aH2 + 32*bH2 + 16*cH2 + 10*dH2 + 7*eH2)*sqrt(A00)*sqrt(App)*(aHs + bHs*pow(hs, 2) + cHs*pow(hs, 4) + dHs*pow(hs, 6) +eHs*pow(hs, 8))*pow(Pi, 4)*R1Val*R2Val*cos(phipp))/131072.;
 
-          value+=(4*aPhi1*cPhi*(1155*aH1 + 231*bH1 + 99*cH1 + 55*dH1 + 35*eH1)*(1155*aH2 + 231*bH2 + 99*cH2 + 55*dH2 + 35*eH2)*sqrt(Amm)*sqrt(App)*(aHs + bHs*pow(hs, 2) + cHs*pow(hs, 4) + dHs*pow(hs, 6) +eHs*pow(hs, 8))*pow(Pi, 2)*cos(phimm - phipp))/1.2006225e7;
-
-          return betaVal*term1Coeff*term2Coeff*value
-            *(1+aM1*m1+bM1*m1*m1+cM1*m1*m1*m1+dM1*m1*m1*m1*m1)
-            *(1+aM2*m1+bM2*m2*m2+cM2*m2*m2*m2+dM2*m2*m2*m2*m2);
-
+    value+=(4*aPhi1*cPhi*(1155*aH1 + 231*bH1 + 99*cH1 + 55*dH1 + 35*eH1)*(1155*aH2 + 231*bH2 + 99*cH2 + 55*dH2 + 35*eH2)*sqrt(Amm)*sqrt(App)*(aHs + bHs*pow(hs, 2) + cHs*pow(hs, 4) + dHs*pow(hs, 6) +eHs*pow(hs, 8))*pow(Pi, 2)*cos(phimm - phipp))/1.2006225e7;
   }
-    // projections to Phi1
-  case 2:
-  {
-          // from test_IntNoPhi1.txt
+  else if (code==2){ // projections to Phi1
+    // from test_IntNoPhi1.txt
 
-          value+=(16*aPhi*(1155*aH1 + 231*bH1 + 99*cH1 + 55*dH1 + 35*eH1)*(1155*aH2 + 231*bH2 + 99*cH2 + 55*dH2 + 35*eH2)*(315*aHs + 105*bHs + 63*cHs + 45*dHs + 35*eHs)*A00*Pi*(aPhi1 + bPhi1*cos(Phi1) + cPhi1*cos(2*Phi1) + dPhi1*cos(3*Phi1) +ePhi1*cos(4*Phi1)))/3.781960875e9;
-          value+=(16*aPhi*(1155*aH1 + 462*bH1 + 297*cH1 + 220*dH1 + 175*eH1)*(1155*aH2 + 462*bH2 + 297*cH2 + 220*dH2 + 175*eH2)*(315*aHs + 105*bHs + 63*cHs + 45*dHs + 35*eHs)*Amm*Pi*(aPhi1 + bPhi1*cos(Phi1) + cPhi1*cos(2*Phi1) + dPhi1*cos(3*Phi1) +ePhi1*cos(4*Phi1)))/3.781960875e9;
-          value+=(16*aPhi*(1155*aH1 + 462*bH1 + 297*cH1 + 220*dH1 + 175*eH1)*(1155*aH2 + 462*bH2 + 297*cH2 + 220*dH2 + 175*eH2)*(315*aHs + 105*bHs + 63*cHs + 45*dHs + 35*eHs)*App*Pi*(aPhi1 + bPhi1*cos(Phi1) + cPhi1*cos(2*Phi1) + dPhi1*cos(3*Phi1) +ePhi1*cos(4*Phi1)))/3.781960875e9;
+    value+=(16*aPhi*(1155*aH1 + 231*bH1 + 99*cH1 + 55*dH1 + 35*eH1)*(1155*aH2 + 231*bH2 + 99*cH2 + 55*dH2 + 35*eH2)*(315*aHs + 105*bHs + 63*cHs + 45*dHs + 35*eHs)*A00*Pi*(aPhi1 + bPhi1*cos(Phi1) + cPhi1*cos(2*Phi1) + dPhi1*cos(3*Phi1) +ePhi1*cos(4*Phi1)))/3.781960875e9;
+    value+=(16*aPhi*(1155*aH1 + 462*bH1 + 297*cH1 + 220*dH1 + 175*eH1)*(1155*aH2 + 462*bH2 + 297*cH2 + 220*dH2 + 175*eH2)*(315*aHs + 105*bHs + 63*cHs + 45*dHs + 35*eHs)*Amm*Pi*(aPhi1 + bPhi1*cos(Phi1) + cPhi1*cos(2*Phi1) + dPhi1*cos(3*Phi1) +ePhi1*cos(4*Phi1)))/3.781960875e9;
+    value+=(16*aPhi*(1155*aH1 + 462*bH1 + 297*cH1 + 220*dH1 + 175*eH1)*(1155*aH2 + 462*bH2 + 297*cH2 + 220*dH2 + 175*eH2)*(315*aHs + 105*bHs + 63*cHs + 45*dHs + 35*eHs)*App*Pi*(aPhi1 + bPhi1*cos(Phi1) + cPhi1*cos(2*Phi1) + dPhi1*cos(3*Phi1) +ePhi1*cos(4*Phi1)))/3.781960875e9;
 
-          value+=(bPhi*(128*aH1 + 32*bH1 + 16*cH1 + 10*dH1 + 7*eH1)*(128*aH2 + 32*bH2 + 16*cH2 + 10*dH2 + 7*eH2)*(2*aHs + (2*bHs)/3. + (2*cHs)/5. + (2*dHs)/7. + (2*eHs)/9.)*sqrt(A00)*sqrt(Amm)*pow(Pi, 3)*R1Val*R2Val*(aPhi1 + bPhi1*cos(Phi1) + cPhi1*cos(2*Phi1) + dPhi1*cos(3*Phi1) +ePhi1*cos(4*Phi1))*cos(phimm))/262144.;
-          value+=(bPhi*(128*aH1 + 32*bH1 + 16*cH1 + 10*dH1 + 7*eH1)*(128*aH2 + 32*bH2 + 16*cH2 + 10*dH2 + 7*eH2)*(2*aHs + (2*bHs)/3. + (2*cHs)/5. + (2*dHs)/7. + (2*eHs)/9.)*sqrt(A00)*sqrt(App)*pow(Pi, 3)*R1Val*R2Val*(aPhi1 + bPhi1*cos(Phi1) + cPhi1*cos(2*Phi1) + dPhi1*cos(3*Phi1) +ePhi1*cos(4*Phi1))*cos(phipp))/262144.;
+    value+=(bPhi*(128*aH1 + 32*bH1 + 16*cH1 + 10*dH1 + 7*eH1)*(128*aH2 + 32*bH2 + 16*cH2 + 10*dH2 + 7*eH2)*(2*aHs + (2*bHs)/3. + (2*cHs)/5. + (2*dHs)/7. + (2*eHs)/9.)*sqrt(A00)*sqrt(Amm)*pow(Pi, 3)*R1Val*R2Val*(aPhi1 + bPhi1*cos(Phi1) + cPhi1*cos(2*Phi1) + dPhi1*cos(3*Phi1) +ePhi1*cos(4*Phi1))*cos(phimm))/262144.;
+    value+=(bPhi*(128*aH1 + 32*bH1 + 16*cH1 + 10*dH1 + 7*eH1)*(128*aH2 + 32*bH2 + 16*cH2 + 10*dH2 + 7*eH2)*(2*aHs + (2*bHs)/3. + (2*cHs)/5. + (2*dHs)/7. + (2*eHs)/9.)*sqrt(A00)*sqrt(App)*pow(Pi, 3)*R1Val*R2Val*(aPhi1 + bPhi1*cos(Phi1) + cPhi1*cos(2*Phi1) + dPhi1*cos(3*Phi1) +ePhi1*cos(4*Phi1))*cos(phipp))/262144.;
 
-          value+=(4*cPhi*(1155*aH1 + 231*bH1 + 99*cH1 + 55*dH1 + 35*eH1)*(1155*aH2 + 231*bH2 + 99*cH2 + 55*dH2 + 35*eH2)*(315*aHs + 105*bHs + 63*cHs + 45*dHs + 35*eHs)*sqrt(Amm)*sqrt(App)*Pi*(aPhi1 + bPhi1*cos(Phi1) + cPhi1*cos(2*Phi1) + dPhi1*cos(3*Phi1) +ePhi1*cos(4*Phi1))*cos(phimm - phipp))/3.781960875e9;
-
-          return betaVal*term1Coeff*term2Coeff*value
-            *(1+aM1*m1+bM1*m1*m1+cM1*m1*m1*m1+dM1*m1*m1*m1*m1)
-            *(1+aM2*m1+bM2*m2*m2+cM2*m2*m2*m2+dM2*m2*m2*m2*m2);
-
+    value+=(4*cPhi*(1155*aH1 + 231*bH1 + 99*cH1 + 55*dH1 + 35*eH1)*(1155*aH2 + 231*bH2 + 99*cH2 + 55*dH2 + 35*eH2)*(315*aHs + 105*bHs + 63*cHs + 45*dHs + 35*eHs)*sqrt(Amm)*sqrt(App)*Pi*(aPhi1 + bPhi1*cos(Phi1) + cPhi1*cos(2*Phi1) + dPhi1*cos(3*Phi1) +ePhi1*cos(4*Phi1))*cos(phimm - phipp))/3.781960875e9;
   }
-    // projections to h2
-  case 3:
-  {
-          // from test_IntNoH2.txt
+  else if (code==3){ // projections to h2
+    // from test_IntNoH2.txt
 
-          value+=(-4*aPhi*aPhi1*(1155*aH1 + 231*bH1 + 99*cH1 + 55*dH1 + 35*eH1)*(2*aHs + (2*bHs)/3. + (2*cHs)/5. + (2*dHs)/7. + (2*eHs)/9.)*A00*(-1 + pow(h2, 2))*(aH2 + bH2*pow(h2, 2) + cH2*pow(h2, 4) +dH2*pow(h2, 6) + eH2*pow(h2, 8))*pow(Pi, 2))/3465.;
-          value+=(2*aPhi*aPhi1*(1155*aH1 + 462*bH1 + 297*cH1 + 220*dH1 + 175*eH1)*(2*aHs + (2*bHs)/3. + (2*cHs)/5. + (2*dHs)/7. + (2*eHs)/9.)*Amm*(aH2 + bH2*pow(h2, 2) + cH2*pow(h2, 4) + dH2*pow(h2, 6) +eH2*pow(h2, 8))*pow(Pi, 2)*(1 + pow(h2, 2) - 2*h2*R2Val))/3465.;
-          value+=(2*aPhi*aPhi1*(1155*aH1 + 462*bH1 + 297*cH1 + 220*dH1 + 175*eH1)*(2*aHs + (2*bHs)/3. + (2*cHs)/5. + (2*dHs)/7. + (2*eHs)/9.)*App*(aH2 + bH2*pow(h2, 2) + cH2*pow(h2, 4) + dH2*pow(h2, 6) +eH2*pow(h2, 8))*pow(Pi, 2)*(1 + pow(h2, 2) + 2*h2*R2Val))/3465.;
+    value+=(-4*aPhi*aPhi1*(1155*aH1 + 231*bH1 + 99*cH1 + 55*dH1 + 35*eH1)*(2*aHs + (2*bHs)/3. + (2*cHs)/5. + (2*dHs)/7. + (2*eHs)/9.)*A00*(-1 + pow(h2, 2))*(aH2 + bH2*pow(h2, 2) + cH2*pow(h2, 4) +dH2*pow(h2, 6) + eH2*pow(h2, 8))*pow(Pi, 2))/3465.;
+    value+=(2*aPhi*aPhi1*(1155*aH1 + 462*bH1 + 297*cH1 + 220*dH1 + 175*eH1)*(2*aHs + (2*bHs)/3. + (2*cHs)/5. + (2*dHs)/7. + (2*eHs)/9.)*Amm*(aH2 + bH2*pow(h2, 2) + cH2*pow(h2, 4) + dH2*pow(h2, 6) +eH2*pow(h2, 8))*pow(Pi, 2)*(1 + pow(h2, 2) - 2*h2*R2Val))/3465.;
+    value+=(2*aPhi*aPhi1*(1155*aH1 + 462*bH1 + 297*cH1 + 220*dH1 + 175*eH1)*(2*aHs + (2*bHs)/3. + (2*cHs)/5. + (2*dHs)/7. + (2*eHs)/9.)*App*(aH2 + bH2*pow(h2, 2) + cH2*pow(h2, 4) + dH2*pow(h2, 6) +eH2*pow(h2, 8))*pow(Pi, 2)*(1 + pow(h2, 2) + 2*h2*R2Val))/3465.;
 
-          value+=-(aPhi1*bPhi*(128*aH1 + 32*bH1 + 16*cH1 + 10*dH1 + 7*eH1)*(2*aHs + (2*bHs)/3. + (2*cHs)/5. + (2*dHs)/7. + (2*eHs)/9.)*sqrt(A00)*sqrt(Amm)*sqrt(1 - pow(h2, 2))*(aH2 + bH2*pow(h2, 2) + cH2*pow(h2, 4) + dH2*pow(h2, 6) +eH2*pow(h2, 8))*pow(Pi, 3)*R1Val*(h2 - R2Val)*cos(phimm))/512.;
-          value+=(aPhi1*bPhi*(128*aH1 + 32*bH1 + 16*cH1 + 10*dH1 + 7*eH1)*(2*aHs + (2*bHs)/3. + (2*cHs)/5. + (2*dHs)/7. + (2*eHs)/9.)*sqrt(A00)*sqrt(App)*sqrt(1 - pow(h2, 2))*(aH2 + bH2*pow(h2, 2) + cH2*pow(h2, 4) + dH2*pow(h2, 6) +eH2*pow(h2, 8))*pow(Pi, 3)*R1Val*(h2 + R2Val)*cos(phipp))/512.;
+    value+=-(aPhi1*bPhi*(128*aH1 + 32*bH1 + 16*cH1 + 10*dH1 + 7*eH1)*(2*aHs + (2*bHs)/3. + (2*cHs)/5. + (2*dHs)/7. + (2*eHs)/9.)*sqrt(A00)*sqrt(Amm)*sqrt(1 - pow(h2, 2))*(aH2 + bH2*pow(h2, 2) + cH2*pow(h2, 4) + dH2*pow(h2, 6) +eH2*pow(h2, 8))*pow(Pi, 3)*R1Val*(h2 - R2Val)*cos(phimm))/512.;
+    value+=(aPhi1*bPhi*(128*aH1 + 32*bH1 + 16*cH1 + 10*dH1 + 7*eH1)*(2*aHs + (2*bHs)/3. + (2*cHs)/5. + (2*dHs)/7. + (2*eHs)/9.)*sqrt(A00)*sqrt(App)*sqrt(1 - pow(h2, 2))*(aH2 + bH2*pow(h2, 2) + cH2*pow(h2, 4) + dH2*pow(h2, 6) +eH2*pow(h2, 8))*pow(Pi, 3)*R1Val*(h2 + R2Val)*cos(phipp))/512.;
 
-          value+=-(aPhi1*cPhi*(1155*aH1 + 231*bH1 + 99*cH1 + 55*dH1 + 35*eH1)*(2*aHs + (2*bHs)/3. + (2*cHs)/5. + (2*dHs)/7. + (2*eHs)/9.)*sqrt(Amm)*sqrt(App)*(-1 + pow(h2, 2))*(aH2 + bH2*pow(h2, 2) + cH2*pow(h2, 4) + dH2*pow(h2, 6) +eH2*pow(h2, 8))*pow(Pi, 2)*cos(phimm - phipp))/3465.;
-
-          return betaVal*term1Coeff*term2Coeff*value
-            *(1+aM1*m1+bM1*m1*m1+cM1*m1*m1*m1+dM1*m1*m1*m1*m1)
-            *(1+aM2*m1+bM2*m2*m2+cM2*m2*m2*m2+dM2*m2*m2*m2*m2);
-
+    value+=-(aPhi1*cPhi*(1155*aH1 + 231*bH1 + 99*cH1 + 55*dH1 + 35*eH1)*(2*aHs + (2*bHs)/3. + (2*cHs)/5. + (2*dHs)/7. + (2*eHs)/9.)*sqrt(Amm)*sqrt(App)*(-1 + pow(h2, 2))*(aH2 + bH2*pow(h2, 2) + cH2*pow(h2, 4) + dH2*pow(h2, 6) +eH2*pow(h2, 8))*pow(Pi, 2)*cos(phimm - phipp))/3465.;
   }
-    // projections to h1
-  case 4:
-  {
-          // from test_IntNoH1.txt
+  else if (code==4){ // projections to h1
+    // from test_IntNoH1.txt
 
-          value+=(-4*aPhi*aPhi1*(1155*aH2 + 231*bH2 + 99*cH2 + 55*dH2 + 35*eH2)*(2*aHs + (2*bHs)/3. + (2*cHs)/5. + (2*dHs)/7. + (2*eHs)/9.)*A00*(-1 + pow(h1, 2))*(aH1 + bH1*pow(h1, 2) + cH1*pow(h1, 4) +dH1*pow(h1, 6) + eH1*pow(h1, 8))*pow(Pi, 2))/3465.;
-          value+=(2*aPhi*aPhi1*(1155*aH2 + 462*bH2 + 297*cH2 + 220*dH2 + 175*eH2)*(2*aHs + (2*bHs)/3. + (2*cHs)/5. + (2*dHs)/7. + (2*eHs)/9.)*Amm*(aH1 + bH1*pow(h1, 2) + cH1*pow(h1, 4) + dH1*pow(h1, 6) +eH1*pow(h1, 8))*pow(Pi, 2)*(1 + pow(h1, 2) - 2*h1*R1Val))/3465.;
-          value+=(2*aPhi*aPhi1*(1155*aH2 + 462*bH2 + 297*cH2 + 220*dH2 + 175*eH2)*(2*aHs + (2*bHs)/3. + (2*cHs)/5. + (2*dHs)/7. + (2*eHs)/9.)*App*(aH1 + bH1*pow(h1, 2) + cH1*pow(h1, 4) + dH1*pow(h1, 6) +eH1*pow(h1, 8))*pow(Pi, 2)*(1 + pow(h1, 2) + 2*h1*R1Val))/3465.;
+    value+=(-4*aPhi*aPhi1*(1155*aH2 + 231*bH2 + 99*cH2 + 55*dH2 + 35*eH2)*(2*aHs + (2*bHs)/3. + (2*cHs)/5. + (2*dHs)/7. + (2*eHs)/9.)*A00*(-1 + pow(h1, 2))*(aH1 + bH1*pow(h1, 2) + cH1*pow(h1, 4) +dH1*pow(h1, 6) + eH1*pow(h1, 8))*pow(Pi, 2))/3465.;
+    value+=(2*aPhi*aPhi1*(1155*aH2 + 462*bH2 + 297*cH2 + 220*dH2 + 175*eH2)*(2*aHs + (2*bHs)/3. + (2*cHs)/5. + (2*dHs)/7. + (2*eHs)/9.)*Amm*(aH1 + bH1*pow(h1, 2) + cH1*pow(h1, 4) + dH1*pow(h1, 6) +eH1*pow(h1, 8))*pow(Pi, 2)*(1 + pow(h1, 2) - 2*h1*R1Val))/3465.;
+    value+=(2*aPhi*aPhi1*(1155*aH2 + 462*bH2 + 297*cH2 + 220*dH2 + 175*eH2)*(2*aHs + (2*bHs)/3. + (2*cHs)/5. + (2*dHs)/7. + (2*eHs)/9.)*App*(aH1 + bH1*pow(h1, 2) + cH1*pow(h1, 4) + dH1*pow(h1, 6) +eH1*pow(h1, 8))*pow(Pi, 2)*(1 + pow(h1, 2) + 2*h1*R1Val))/3465.;
 
-          value+=-(aPhi1*bPhi*(128*aH2 + 32*bH2 + 16*cH2 + 10*dH2 + 7*eH2)*(2*aHs + (2*bHs)/3. + (2*cHs)/5. + (2*dHs)/7. + (2*eHs)/9.)*sqrt(A00)*sqrt(Amm)*sqrt(1 - pow(h1, 2))*(aH1 + bH1*pow(h1, 2) + cH1*pow(h1, 4) + dH1*pow(h1, 6) +eH1*pow(h1, 8))*pow(Pi, 3)*(h1 - R1Val)*R2Val*cos(phimm))/512.;
-          value+=(aPhi1*bPhi*(128*aH2 + 32*bH2 + 16*cH2 + 10*dH2 + 7*eH2)*(2*aHs + (2*bHs)/3. + (2*cHs)/5. + (2*dHs)/7. + (2*eHs)/9.)*sqrt(A00)*sqrt(App)*sqrt(1 - pow(h1, 2))*(aH1 + bH1*pow(h1, 2) + cH1*pow(h1, 4) + dH1*pow(h1, 6) +eH1*pow(h1, 8))*pow(Pi, 3)*(h1 + R1Val)*R2Val*cos(phipp))/512.;
+    value+=-(aPhi1*bPhi*(128*aH2 + 32*bH2 + 16*cH2 + 10*dH2 + 7*eH2)*(2*aHs + (2*bHs)/3. + (2*cHs)/5. + (2*dHs)/7. + (2*eHs)/9.)*sqrt(A00)*sqrt(Amm)*sqrt(1 - pow(h1, 2))*(aH1 + bH1*pow(h1, 2) + cH1*pow(h1, 4) + dH1*pow(h1, 6) +eH1*pow(h1, 8))*pow(Pi, 3)*(h1 - R1Val)*R2Val*cos(phimm))/512.;
+    value+=(aPhi1*bPhi*(128*aH2 + 32*bH2 + 16*cH2 + 10*dH2 + 7*eH2)*(2*aHs + (2*bHs)/3. + (2*cHs)/5. + (2*dHs)/7. + (2*eHs)/9.)*sqrt(A00)*sqrt(App)*sqrt(1 - pow(h1, 2))*(aH1 + bH1*pow(h1, 2) + cH1*pow(h1, 4) + dH1*pow(h1, 6) +eH1*pow(h1, 8))*pow(Pi, 3)*(h1 + R1Val)*R2Val*cos(phipp))/512.;
 
-          value+=-(aPhi1*cPhi*(1155*aH2 + 231*bH2 + 99*cH2 + 55*dH2 + 35*eH2)*(2*aHs + (2*bHs)/3. + (2*cHs)/5. + (2*dHs)/7. + (2*eHs)/9.)*sqrt(Amm)*sqrt(App)*(-1 + pow(h1, 2))*(aH1 + bH1*pow(h1, 2) + cH1*pow(h1, 4) + dH1*pow(h1, 6) +eH1*pow(h1, 8))*pow(Pi, 2)*cos(phimm - phipp))/3465.;
-
-          return betaVal*term1Coeff*term2Coeff*value
-            *(1+aM1*m1+bM1*m1*m1+cM1*m1*m1*m1+dM1*m1*m1*m1*m1)
-            *(1+aM2*m1+bM2*m2*m2+cM2*m2*m2*m2+dM2*m2*m2*m2*m2);
-
+    value+=-(aPhi1*cPhi*(1155*aH2 + 231*bH2 + 99*cH2 + 55*dH2 + 35*eH2)*(2*aHs + (2*bHs)/3. + (2*cHs)/5. + (2*dHs)/7. + (2*eHs)/9.)*sqrt(Amm)*sqrt(App)*(-1 + pow(h1, 2))*(aH1 + bH1*pow(h1, 2) + cH1*pow(h1, 4) + dH1*pow(h1, 6) +eH1*pow(h1, 8))*pow(Pi, 2)*cos(phimm - phipp))/3465.;
   }
-    // projections to Phi
-  case 5:
-  {
-          // from test_IntNoPhi.txt
+  else if (code==5){ // projections to Phi
+    // from test_IntNoPhi.txt
 
-          value+=(16*aPhi1*(1155*aH1 + 231*bH1 + 99*cH1 + 55*dH1 + 35*eH1)*(1155*aH2 + 231*bH2 + 99*cH2 + 55*dH2 + 35*eH2)*(315*aHs + 105*bHs + 63*cHs + 45*dHs + 35*eHs)*A00*Pi*(aPhi + bPhi*cos(Phi) + cPhi*cos(2*Phi) + dPhi*cos(3*Phi) +ePhi*cos(4*Phi)))/3.781960875e9;
-          value+=(16*aPhi1*(1155*aH1 + 462*bH1 + 297*cH1 + 220*dH1 + 175*eH1)*(1155*aH2 + 462*bH2 + 297*cH2 + 220*dH2 + 175*eH2)*(315*aHs + 105*bHs + 63*cHs + 45*dHs + 35*eHs)*Amm*Pi*(aPhi + bPhi*cos(Phi) + cPhi*cos(2*Phi) + dPhi*cos(3*Phi) +ePhi*cos(4*Phi)))/3.781960875e9;
-          value+=(16*aPhi1*(1155*aH1 + 462*bH1 + 297*cH1 + 220*dH1 + 175*eH1)*(1155*aH2 + 462*bH2 + 297*cH2 + 220*dH2 + 175*eH2)*(315*aHs + 105*bHs + 63*cHs + 45*dHs + 35*eHs)*App*Pi*(aPhi + bPhi*cos(Phi) + cPhi*cos(2*Phi) + dPhi*cos(3*Phi) +ePhi*cos(4*Phi)))/3.781960875e9;
+    value+=(16*aPhi1*(1155*aH1 + 231*bH1 + 99*cH1 + 55*dH1 + 35*eH1)*(1155*aH2 + 231*bH2 + 99*cH2 + 55*dH2 + 35*eH2)*(315*aHs + 105*bHs + 63*cHs + 45*dHs + 35*eHs)*A00*Pi*(aPhi + bPhi*cos(Phi) + cPhi*cos(2*Phi) + dPhi*cos(3*Phi) +ePhi*cos(4*Phi)))/3.781960875e9;
+    value+=(16*aPhi1*(1155*aH1 + 462*bH1 + 297*cH1 + 220*dH1 + 175*eH1)*(1155*aH2 + 462*bH2 + 297*cH2 + 220*dH2 + 175*eH2)*(315*aHs + 105*bHs + 63*cHs + 45*dHs + 35*eHs)*Amm*Pi*(aPhi + bPhi*cos(Phi) + cPhi*cos(2*Phi) + dPhi*cos(3*Phi) +ePhi*cos(4*Phi)))/3.781960875e9;
+    value+=(16*aPhi1*(1155*aH1 + 462*bH1 + 297*cH1 + 220*dH1 + 175*eH1)*(1155*aH2 + 462*bH2 + 297*cH2 + 220*dH2 + 175*eH2)*(315*aHs + 105*bHs + 63*cHs + 45*dHs + 35*eHs)*App*Pi*(aPhi + bPhi*cos(Phi) + cPhi*cos(2*Phi) + dPhi*cos(3*Phi) +ePhi*cos(4*Phi)))/3.781960875e9;
 
-          value+=(aPhi1*(128*aH1 + 32*bH1 + 16*cH1 + 10*dH1 + 7*eH1)*(128*aH2 + 32*bH2 + 16*cH2 + 10*dH2 + 7*eH2)*(2*aHs + (2*bHs)/3. + (2*cHs)/5. + (2*dHs)/7. + (2*eHs)/9.)*sqrt(A00)*sqrt(Amm)*pow(Pi, 3)*R1Val*R2Val*(aPhi + bPhi*cos(Phi) + cPhi*cos(2*Phi) + dPhi*cos(3*Phi) +ePhi*cos(4*Phi))*cos(Phi - phimm))/131072.;
-          value+=(aPhi1*(128*aH1 + 32*bH1 + 16*cH1 + 10*dH1 + 7*eH1)*(128*aH2 + 32*bH2 + 16*cH2 + 10*dH2 + 7*eH2)*(2*aHs + (2*bHs)/3. + (2*cHs)/5. + (2*dHs)/7. + (2*eHs)/9.)*sqrt(A00)*sqrt(App)*pow(Pi, 3)*R1Val*R2Val*(aPhi + bPhi*cos(Phi) + cPhi*cos(2*Phi) + dPhi*cos(3*Phi) +ePhi*cos(4*Phi))*cos(Phi + phipp))/131072.;
+    value+=(aPhi1*(128*aH1 + 32*bH1 + 16*cH1 + 10*dH1 + 7*eH1)*(128*aH2 + 32*bH2 + 16*cH2 + 10*dH2 + 7*eH2)*(2*aHs + (2*bHs)/3. + (2*cHs)/5. + (2*dHs)/7. + (2*eHs)/9.)*sqrt(A00)*sqrt(Amm)*pow(Pi, 3)*R1Val*R2Val*(aPhi + bPhi*cos(Phi) + cPhi*cos(2*Phi) + dPhi*cos(3*Phi) +ePhi*cos(4*Phi))*cos(Phi - phimm))/131072.;
+    value+=(aPhi1*(128*aH1 + 32*bH1 + 16*cH1 + 10*dH1 + 7*eH1)*(128*aH2 + 32*bH2 + 16*cH2 + 10*dH2 + 7*eH2)*(2*aHs + (2*bHs)/3. + (2*cHs)/5. + (2*dHs)/7. + (2*eHs)/9.)*sqrt(A00)*sqrt(App)*pow(Pi, 3)*R1Val*R2Val*(aPhi + bPhi*cos(Phi) + cPhi*cos(2*Phi) + dPhi*cos(3*Phi) +ePhi*cos(4*Phi))*cos(Phi + phipp))/131072.;
 
-          value+=(8*aPhi1*(1155*aH1 + 231*bH1 + 99*cH1 + 55*dH1 + 35*eH1)*(1155*aH2 + 231*bH2 + 99*cH2 + 55*dH2 + 35*eH2)*(315*aHs + 105*bHs + 63*cHs + 45*dHs + 35*eHs)*sqrt(Amm)*sqrt(App)*Pi*(aPhi + bPhi*cos(Phi) + cPhi*cos(2*Phi) + dPhi*cos(3*Phi) +ePhi*cos(4*Phi))*cos(2*Phi - phimm + phipp))/3.781960875e9;
-
-          return betaVal*term1Coeff*term2Coeff*value
-            *(1+aM1*m1+bM1*m1*m1+cM1*m1*m1*m1+dM1*m1*m1*m1*m1)
-            *(1+aM2*m1+bM2*m2*m2+cM2*m2*m2*m2+dM2*m2*m2*m2*m2);
-
+    value+=(8*aPhi1*(1155*aH1 + 231*bH1 + 99*cH1 + 55*dH1 + 35*eH1)*(1155*aH2 + 231*bH2 + 99*cH2 + 55*dH2 + 35*eH2)*(315*aHs + 105*bHs + 63*cHs + 45*dHs + 35*eHs)*sqrt(Amm)*sqrt(App)*Pi*(aPhi + bPhi*cos(Phi) + cPhi*cos(2*Phi) + dPhi*cos(3*Phi) +ePhi*cos(4*Phi))*cos(2*Phi - phimm + phipp))/3.781960875e9;
   }
-    // projections to mz1/mz2
-  case 6:
-  {
-          // from test_IntAll.txt
+  else if (code==6){ // projections to mz1/mz2
+    // from test_IntAll.txt
 
-          value+=(32*aPhi*aPhi1*(1155*aH1 + 231*bH1 + 99*cH1 + 55*dH1 + 35*eH1)*(1155*aH2 + 231*bH2 + 99*cH2 + 55*dH2 + 35*eH2)*(315*aHs + 105*bHs + 63*cHs + 45*dHs + 35*eHs)*A00*pow(Pi, 2))/3.781960875e9;
-          value+=(32*aPhi*aPhi1*(1155*aH1 + 462*bH1 + 297*cH1 + 220*dH1 + 175*eH1)*(1155*aH2 + 462*bH2 + 297*cH2 + 220*dH2 + 175*eH2)*(315*aHs + 105*bHs + 63*cHs + 45*dHs + 35*eHs)*Amm*pow(Pi, 2))/3.781960875e9;
-          value+=(32*aPhi*aPhi1*(1155*aH1 + 462*bH1 + 297*cH1 + 220*dH1 + 175*eH1)*(1155*aH2 + 462*bH2 + 297*cH2 + 220*dH2 + 175*eH2)*(315*aHs + 105*bHs + 63*cHs + 45*dHs + 35*eHs)*App*pow(Pi, 2))/3.781960875e9;
+    value+=(32*aPhi*aPhi1*(1155*aH1 + 231*bH1 + 99*cH1 + 55*dH1 + 35*eH1)*(1155*aH2 + 231*bH2 + 99*cH2 + 55*dH2 + 35*eH2)*(315*aHs + 105*bHs + 63*cHs + 45*dHs + 35*eHs)*A00*pow(Pi, 2))/3.781960875e9;
+    value+=(32*aPhi*aPhi1*(1155*aH1 + 462*bH1 + 297*cH1 + 220*dH1 + 175*eH1)*(1155*aH2 + 462*bH2 + 297*cH2 + 220*dH2 + 175*eH2)*(315*aHs + 105*bHs + 63*cHs + 45*dHs + 35*eHs)*Amm*pow(Pi, 2))/3.781960875e9;
+    value+=(32*aPhi*aPhi1*(1155*aH1 + 462*bH1 + 297*cH1 + 220*dH1 + 175*eH1)*(1155*aH2 + 462*bH2 + 297*cH2 + 220*dH2 + 175*eH2)*(315*aHs + 105*bHs + 63*cHs + 45*dHs + 35*eHs)*App*pow(Pi, 2))/3.781960875e9;
 
-          value+=(aPhi1*bPhi*(128*aH1 + 32*bH1 + 16*cH1 + 10*dH1 + 7*eH1)*(128*aH2 + 32*bH2 + 16*cH2 + 10*dH2 + 7*eH2)*(315*aHs + 105*bHs + 63*cHs + 45*dHs + 35*eHs)*sqrt(A00)*sqrt(Amm)*pow(Pi, 4)*R1Val*R2Val*cos(phimm))/2.064384e7;
-          value+=(aPhi1*bPhi*(128*aH1 + 32*bH1 + 16*cH1 + 10*dH1 + 7*eH1)*(128*aH2 + 32*bH2 + 16*cH2 + 10*dH2 + 7*eH2)*(315*aHs + 105*bHs + 63*cHs + 45*dHs + 35*eHs)*sqrt(A00)*sqrt(App)*pow(Pi, 4)*R1Val*R2Val*cos(phipp))/2.064384e7;
+    value+=(aPhi1*bPhi*(128*aH1 + 32*bH1 + 16*cH1 + 10*dH1 + 7*eH1)*(128*aH2 + 32*bH2 + 16*cH2 + 10*dH2 + 7*eH2)*(315*aHs + 105*bHs + 63*cHs + 45*dHs + 35*eHs)*sqrt(A00)*sqrt(Amm)*pow(Pi, 4)*R1Val*R2Val*cos(phimm))/2.064384e7;
+    value+=(aPhi1*bPhi*(128*aH1 + 32*bH1 + 16*cH1 + 10*dH1 + 7*eH1)*(128*aH2 + 32*bH2 + 16*cH2 + 10*dH2 + 7*eH2)*(315*aHs + 105*bHs + 63*cHs + 45*dHs + 35*eHs)*sqrt(A00)*sqrt(App)*pow(Pi, 4)*R1Val*R2Val*cos(phipp))/2.064384e7;
 
-          value+=(8*aPhi1*cPhi*(1155*aH1 + 231*bH1 + 99*cH1 + 55*dH1 + 35*eH1)*(1155*aH2 + 231*bH2 + 99*cH2 + 55*dH2 + 35*eH2)*(315*aHs + 105*bHs + 63*cHs + 45*dHs + 35*eHs)*sqrt(Amm)*sqrt(App)*pow(Pi, 2)*cos(phimm - phipp))/3.781960875e9;
-
-          return betaVal*term1Coeff*term2Coeff*value
-            *(1+aM1*m1+bM1*m1*m1+cM1*m1*m1*m1+dM1*m1*m1*m1*m1)
-            *(1+aM2*m1+bM2*m2*m2+cM2*m2*m2*m2+dM2*m2*m2*m2*m2);
-
+    value+=(8*aPhi1*cPhi*(1155*aH1 + 231*bH1 + 99*cH1 + 55*dH1 + 35*eH1)*(1155*aH2 + 231*bH2 + 99*cH2 + 55*dH2 + 35*eH2)*(315*aHs + 105*bHs + 63*cHs + 45*dHs + 35*eHs)*sqrt(Amm)*sqrt(App)*pow(Pi, 2)*cos(phimm - phipp))/3.781960875e9;
+  }
+  else{
+    assert(0);
+    return 1e-10;
   }
 
+  value = betaVal*term1Coeff*term2Coeff*value
+    *(1+aM1*m1+bM1*m1*m1+cM1*m1*m1*m1+dM1*m1*m1*m1*m1)
+    *(1+aM2*m1+bM2*m2*m2+cM2*m2*m2*m2+dM2*m2*m2*m2*m2);
+
+  if (!(value==value)){
+    cout << "Integral NaN=" << value << " at "
+      << "h1=" << h1 << '\t'
+      << "h2=" << h2 << '\t'
+      << "hs=" << hs << '\t'
+      << "Phi1=" << Phi1 << '\t'
+      << "Phi=" << Phi << '\t'
+      << "m1=" << m1 << '\t'
+      << "m2=" << m2 << '\t'
+      << "m12=" << m12 << '\t'
+      << endl;
+    cout << "Possible sources:\n"
+      << "betaVal=" << betaVal << '\t'
+      << "term1Coeff=" << term1Coeff << '\t'
+      << "term2Coeff=" << term2Coeff << '\t'
+      << "A00=" << A00 << '\t'
+      << "App=" << App << '\t'
+      << "Amm=" << Amm << '\t'
+      << "phi00=" << phi00 << '\t'
+      << "phipp=" << phipp << '\t'
+      << "phimm=" << phimm << '\t'
+      << endl;
   }
-  assert(0);
-  return 1e-10;
+  return value;
 }
 

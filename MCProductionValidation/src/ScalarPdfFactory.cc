@@ -49,6 +49,7 @@ void ScalarPdfFactory::initMassPole(){
   parameters.gamX = new RooRealVar("gamX", "gamX", 4.07e-3);
 }
 void ScalarPdfFactory::initVdecayParams(){
+  if ((V1decay>0 && V2decay<0) || (V1decay<0 && V2decay>0)) cerr << "ScalarPdfFactory::initVdecayParams: V1 and V2 decays are inconsistent!" << endl;
   if (V1decay>0){
     parameters.mV = new RooRealVar("mV", "mV", 91.1876);
     parameters.gamV = new RooRealVar("gamV", "gamV", 2.4952);
@@ -61,32 +62,76 @@ void ScalarPdfFactory::initVdecayParams(){
     parameters.mV = new RooRealVar("mV", "mV", 0);
     parameters.gamV = new RooRealVar("gamV", "gamV", 0);
   }
+
+  /*
+  For Zs,
+  gV = T3 - 2 Q sin**2 thetaW
+  gA = T3
+  T3 = 1/2 for nu, u; -1/2 for l, d
+  Q = 0, -1, 2/3, -1/3 for nu, l, u, d
+  Values below are for sin**2 thetaW = 0.23119
+  For Ws, gV=gA=1.
+  R1, R2 = 2 gV gA / (gV**2 + gA**2) for Z1, Z2
+  */
+
+  double atomicT3 = 0.5;
+  double atomicCharge = 1.;
+  double sin2t = 0.23119;
+
+  double gV_up = atomicT3 - 2.*(2.*atomicCharge/3.)*sin2t;
+  double gV_dn = -atomicT3 - 2.*(-atomicCharge/3.)*sin2t;
+  double gV_l = -atomicT3 - 2.*(-atomicCharge)*sin2t;
+  double gV_nu = atomicT3;
+
+  double gA_up = atomicT3;
+  double gA_dn = -atomicT3;
+  double gA_l = -atomicT3;
+  double gA_nu = atomicT3;
+
   switch (V1decay){
+  case 3:
+    parameters.R1Val = new RooRealVar("R1Val", "R1Val", 0.5*((2.*gV_up*gA_up)/(pow(gV_up, 2)+pow(gA_up, 2))+(2.*gV_dn*gA_dn)/(pow(gV_dn, 2)+pow(gA_dn, 2)))); // Z->uu+dd avg.
+    break;
+  case 5:
+    parameters.R1Val = new RooRealVar("R1Val", "R1Val", (2.*gV_dn*gA_dn)/(pow(gV_dn, 2)+pow(gA_dn, 2))); // Z->dd
+    break;
+  case 4:
+    parameters.R1Val = new RooRealVar("R1Val", "R1Val", (2.*gV_up*gA_up)/(pow(gV_up, 2)+pow(gA_up, 2))); // Z->uu
+    break;
   case 2:
-    parameters.R1Val = new RooRealVar("R1Val", "R1Val", 1);
+    parameters.R1Val = new RooRealVar("R1Val", "R1Val", (2.*gV_nu*gA_nu)/(pow(gV_nu, 2)+pow(gA_nu, 2))); // Z->nunu
     break;
   case 1:
-    parameters.R1Val = new RooRealVar("R1Val", "R1Val", 0.15);
+    parameters.R1Val = new RooRealVar("R1Val", "R1Val", (2.*gV_l*gA_l)/(pow(gV_l, 2)+pow(gA_l, 2))); // Z->ll
     break;
   case -1:
-    parameters.R1Val = new RooRealVar("R1Val", "R1Val", 1);
+    parameters.R1Val = new RooRealVar("R1Val", "R1Val", 1); // W
     break;
   default:
-    parameters.R1Val = new RooRealVar("R1Val", "R1Val", 0);
+    parameters.R1Val = new RooRealVar("R1Val", "R1Val", 0); // gamma
     break;
   }
   switch (V2decay){
+  case 3:
+    parameters.R2Val = new RooRealVar("R2Val", "R2Val", 0.5*((2.*gV_up*gA_up)/(pow(gV_up, 2)+pow(gA_up, 2))+(2.*gV_dn*gA_dn)/(pow(gV_dn, 2)+pow(gA_dn, 2)))); // Z->uu+dd avg.
+    break;
+  case 5:
+    parameters.R2Val = new RooRealVar("R2Val", "R2Val", (2.*gV_dn*gA_dn)/(pow(gV_dn, 2)+pow(gA_dn, 2))); // Z->dd
+    break;
+  case 4:
+    parameters.R2Val = new RooRealVar("R2Val", "R2Val", (2.*gV_up*gA_up)/(pow(gV_up, 2)+pow(gA_up, 2))); // Z->uu
+    break;
   case 2:
-    parameters.R2Val = new RooRealVar("R2Val", "R2Val", 1);
+    parameters.R2Val = new RooRealVar("R2Val", "R2Val", (2.*gV_nu*gA_nu)/(pow(gV_nu, 2)+pow(gA_nu, 2))); // Z->nunu
     break;
   case 1:
-    parameters.R2Val = new RooRealVar("R2Val", "R2Val", 0.15);
+    parameters.R2Val = new RooRealVar("R2Val", "R2Val", (2.*gV_l*gA_l)/(pow(gV_l, 2)+pow(gA_l, 2))); // Z->ll
     break;
   case -1:
-    parameters.R2Val = new RooRealVar("R2Val", "R2Val", 1);
+    parameters.R2Val = new RooRealVar("R2Val", "R2Val", 1); // W
     break;
   default:
-    parameters.R2Val = new RooRealVar("R2Val", "R2Val", 0);
+    parameters.R2Val = new RooRealVar("R2Val", "R2Val", 0); // gamma
     break;
   }
 }

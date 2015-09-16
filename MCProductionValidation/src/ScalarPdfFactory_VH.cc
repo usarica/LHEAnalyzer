@@ -1,18 +1,34 @@
 #include "../include/ScalarPdfFactory_VH.h"
 
-ScalarPdfFactory_VH::ScalarPdfFactory_VH(RooSpinZero::modelMeasurables measurables_, double sqrts_, int PDFType_, int VHmode_) :
-ScalarPdfFactory(measurables_, false, VHmode_, VHmode_),
-sqrts(sqrts_),
-PDFType(PDFType_)
+ScalarPdfFactory_VH::ScalarPdfFactory_VH(RooSpinZero::modelMeasurables measurables_, double sqrts_, int VHmode1_, int VHmode2_) :
+ScalarPdfFactory(measurables_, false, VHmode1_, VHmode2_),
+sqrts(sqrts_)
 {
+  if (VHmode1_==-1 || VHmode1_==3 || VHmode1_==4 || VHmode1_==5) PDFType = 1;
+  else PDFType = 2;
+
+  if (PDFType==1){
+    measurables.hs=0;
+    measurables.Phi1=0;
+  }
+  else measurables.Y=0;
+
   makeParamsConst(true);
   initPDF();
 }
-ScalarPdfFactory_VH::ScalarPdfFactory_VH(RooSpinZero::modelMeasurables measurables_, double gRatio_[4][8], double sqrts_, int PDFType_, bool pmf_applied_, int VHmode_) :
-ScalarPdfFactory(measurables_, gRatio_, pmf_applied_, false, VHmode_, VHmode_),
-sqrts(sqrts_),
-PDFType(PDFType_)
+ScalarPdfFactory_VH::ScalarPdfFactory_VH(RooSpinZero::modelMeasurables measurables_, double gRatio_[4][8], double sqrts_, bool pmf_applied_, int VHmode1_, int VHmode2_) :
+ScalarPdfFactory(measurables_, gRatio_, pmf_applied_, false, VHmode1_, VHmode2_),
+sqrts(sqrts_)
 {
+  if (VHmode1_==-1 || VHmode1_==3 || VHmode1_==4 || VHmode1_==5) PDFType = 1;
+  else PDFType = 2;
+
+  if (PDFType==1){
+    measurables.hs=0;
+    measurables.Phi1=0;
+  }
+  else measurables.Y=0;
+
   makeParamsConst(true);
   initPDF();
 }

@@ -26,7 +26,7 @@
 using namespace RooFit;
 using namespace std;
 
-void angularDistributions_spin0_ggH(TString INPUT_NAME, double g1Re=1, double g2Re=0, double g4Re=0, double g1L1Re=0, double g2Im=0, double g4Im=0, double g1L1Im=0, int nbins=80){
+void angularDistributions_spin0_ggH(string cinput, string coutdir, double g1Re=1, double g2Re=0, double g4Re=0, double g1L1Re=0, double g2Im=0, double g4Im=0, double g1L1Im=0, int nbins=80){
   RooRealVar* mzz = new RooRealVar("GenHMass", "M_{ZZ} (GeV)", 125, 125.-0.02, 125.+0.02);
   RooRealVar* z1mass = new RooRealVar("GenZ1Mass", "m_{Z1} (GeV)", 0.0, 120);
   RooRealVar* z2mass = new RooRealVar("GenZ2Mass", "m_{Z2} (GeV)", 0.0, 70);
@@ -48,10 +48,11 @@ void angularDistributions_spin0_ggH(TString INPUT_NAME, double g1Re=1, double g2
   measurables_.Phi1 = Phi1;
   measurables_.Y = Y;
 
-  RooArgSet treeargs(*mzz, *z1mass, *z2mass, *hs, *h1, *h2, *Phi, *Phi1);
-  RooRealVar* measurables[8]={ z1mass, z2mass, h1, h2, hs, Phi, Phi1, mzz };
-  float kd_vars[8];
-  TString strKDs[8]={
+  const int nVars = 8;
+  RooArgSet treeargs(*z1mass, *z2mass, *hs, *h1, *h2, *Phi, *Phi1);
+  RooRealVar* measurables[nVars-1]={ z1mass, z2mass, h1, h2, hs, Phi, Phi1 };
+  float kd_vars[nVars];
+  TString strKDs[nVars]={
     "GenHMass", "GenZ1Mass", "GenZ2Mass",
     "GenhelcosthetaZ1", "GenhelcosthetaZ2", "GenphistarZ1",
     "Gencosthetastar", "Genhelphi"
@@ -85,13 +86,11 @@ void angularDistributions_spin0_ggH(TString INPUT_NAME, double g1Re=1, double g2
   g4List[0][1]->setVal(g4Im);
   someHiggs->makeParamsConst(true);
 
-  string coutput_common = "/scratch0/hep/usarical/SpinWidthPaper_2015/CMSSW_6_1_1/src/Analysis/Validation/Plots/";
-  string cinput = INPUT_NAME.Data();
   size_t lastSlash = cinput.find_last_of("/\\");
   string finName = cinput.substr(lastSlash+1);
-  finName = finName.substr(0,finName.find(".root"));
+  finName = finName.substr(0, finName.find(".root"));
   finName = finName + "/";
-  string coutput = coutput_common + finName;
+  string coutput = coutdir + finName;
   string strCmd = "mkdir -p ";
   strCmd.append(coutput);
   gSystem->Exec(strCmd.c_str());
@@ -110,6 +109,7 @@ void angularDistributions_spin0_ggH(TString INPUT_NAME, double g1Re=1, double g2
     tree->GetEntry(ev);
     // Do not select events with lepton interference
     if (genFinalState!=2 && genFinalState!=4 && genFinalState!=5) continue;
+    if ((kd_vars[0]-125.)>=0.02) continue;
     // Only select 4l events
     if (
       (GenLepId[0]==11 || GenLepId[0]==13 || GenLepId[0]==15)

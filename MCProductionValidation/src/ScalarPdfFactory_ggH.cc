@@ -3,6 +3,7 @@
 ScalarPdfFactory_ggH::ScalarPdfFactory_ggH(RooSpinZero::modelMeasurables measurables_, bool acceptance_, int V1decay_, int V2decay_) :
 ScalarPdfFactory(measurables_, acceptance_, V1decay_, V2decay_)
 {
+  measurables.Y=0;
   initAcceptanceParams();
   makeParamsConst(true);
   initPDF();
@@ -10,6 +11,7 @@ ScalarPdfFactory(measurables_, acceptance_, V1decay_, V2decay_)
 ScalarPdfFactory_ggH::ScalarPdfFactory_ggH(RooSpinZero::modelMeasurables measurables_, double gRatio_[4][8], bool pmf_applied_, bool acceptance_, int V1decay_, int V2decay_) :
 ScalarPdfFactory(measurables_, gRatio_, pmf_applied_, acceptance_, V1decay_, V2decay_)
 {
+  measurables.Y=0;
   initAcceptanceParams();
   makeParamsConst(true);
   initPDF();

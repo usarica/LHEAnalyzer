@@ -30,8 +30,22 @@ using namespace std;
 void angularDistributions_spin0_VH(string cinput, string coutdir, double sqrts = 13, double g1Re=1, double g2Re=0, double g4Re=0, double g1L1Re=0, double g2Im=0, double g4Im=0, double g1L1Im=0, int isLeptonic=0, int nbins=80, int PDFType=1){
   sqrts *= 1e3;
   bool bdo3D = (PDFType==1 ? true : false);
+
   int VHmode=-1;
-  if (cinput.find("ZH")!=string::npos) VHmode=1;
+  bool isZH=false;
+  if (cinput.find("ZH")!=string::npos){
+    VHmode=3;
+    isZH = true;
+  }
+  int Vdecaymode = 3;
+  if (isLeptonic==1) Vdecaymode = 1;
+  else if (isLeptonic==2) Vdecaymode = 2;
+  
+  const double mHPOLE=125;
+  const double GaHPOLE=4.07e-3;
+  double mVPOLE=(isZH ? 91.1876 : 80.399);
+  double GaVPOLE=(isZH ? 2.49 : 2.05);
+
   const int nVars=8;
   float kd_vars[nVars];
   TString strKDs[nVars]={
@@ -41,21 +55,21 @@ void angularDistributions_spin0_VH(string cinput, string coutdir, double sqrts =
     "", "GenAssociatedVMass"
   };
   for (int v=1; v<nVars-2; v++){
-    if (isLeptonic==0) strKDs[v].Append("_VHhadronic");
-    else if (isLeptonic==1) strKDs[v].Append("_VHleptonic");
+    if (isLeptonic<=0) strKDs[v].Append("_VHhadronic");
+    else strKDs[v].Append("_VHleptonic");
   }
-  if (isLeptonic==0) strKDs[6] = "GenDijetVVMass";
-  else if (isLeptonic==1) strKDs[6] = "GenDileptonVVMass";
+  if (isLeptonic<=0) strKDs[6] = "GenDijetVVMass";
+  else strKDs[6] = "GenDileptonVVMass";
 
-  RooRealVar* m12 = new RooRealVar(strKDs[0], "m_{H} (GeV)", 125, 125.-0.02, 125.+0.02);
-  RooRealVar* m1 = new RooRealVar(strKDs[6], (VHmode==1 ? "m_{ZH} (GeV)" : "m_{WH} (GeV)"), 460, (VHmode==1 ? 125.+79. : 125.+70.), 1000);
-  RooRealVar* m2 = new RooRealVar(strKDs[7], (VHmode==1 ? "m_{Z} (GeV)" : "m_{W} (GeV)"), (VHmode==1 ? 91.1876 : 80.399), 4, 120);
+  RooRealVar* m12 = new RooRealVar(strKDs[0], "m_{H} (GeV)", mHPOLE, mHPOLE-5.*GaHPOLE, mHPOLE+5.*GaHPOLE);
+  RooRealVar* m1 = new RooRealVar(strKDs[6], (isZH ? "m_{ZH} (GeV)" : "m_{WH} (GeV)"), 460, (mHPOLE+mVPOLE)-5.*(GaHPOLE+GaVPOLE), 1000);
+  RooRealVar* m2 = new RooRealVar(strKDs[7], (isZH ? "m_{Z} (GeV)" : "m_{W} (GeV)"), mVPOLE, mVPOLE-5.*GaVPOLE, mVPOLE+5.*GaVPOLE);
   RooRealVar* h1 = new RooRealVar(strKDs[1], "cos#theta_{V*}", -1, 1);
   RooRealVar* h2 = new RooRealVar(strKDs[2], "cos#theta_{V}", -1, 1);
   RooRealVar* Phi1 = new RooRealVar(strKDs[3], "#Phi_{V*}", -TMath::Pi(), TMath::Pi());
   RooRealVar* hs = new RooRealVar(strKDs[4], "cos#theta^{*}", -1, 1);
   RooRealVar* Phi = new RooRealVar(strKDs[5], "#Phi", -TMath::Pi(), TMath::Pi());
-  RooRealVar* Y = new RooRealVar("GenY", "Y", 0, 0, sqrts);
+  RooRealVar* Y = new RooRealVar("GenY", "Y", 0, -4, 4);
 
   RooSpinZero::modelMeasurables measurables_;
   measurables_.h1 = h1;
@@ -68,12 +82,16 @@ void angularDistributions_spin0_VH(string cinput, string coutdir, double sqrts =
   measurables_.Phi1 = Phi1;
   measurables_.Y = Y;
 
-  RooArgSet treeargs(*h1, *h2, *Phi, *hs, *Phi1, *m12, *m1, *m2);
-  RooRealVar* measurables[nVars]={ h1, h2, Phi, hs, Phi1, m12, m1, m2 };
+  RooArgSet treeargs(*h1, *h2, *Phi, *hs, *Phi1, *m1, *Y);
+  RooRealVar* measurables[nVars-2]={ h1, h2, Phi, hs, Phi1, m1 };
 
-  cout << "Initiating vh" << endl;
-
-  ScalarPdfFactory_VH* someHiggs = new ScalarPdfFactory_VH(measurables_, sqrts, PDFType, VHmode);
+  m2->setVal(mVPOLE);
+  m12->setVal(mHPOLE);
+  m2->setRange(mVPOLE, mVPOLE);
+  m12->setRange(mHPOLE, mHPOLE);
+  m2->setConstant(true);
+  m12->setConstant(true);
+  ScalarPdfFactory_VH* someHiggs = new ScalarPdfFactory_VH(measurables_, sqrts, VHmode, Vdecaymode);
   someHiggs->makeParamsConst(false);
   RooRealVar* g1List[8][2];
   RooRealVar* g2List[8][2];
@@ -96,8 +114,10 @@ void angularDistributions_spin0_VH(string cinput, string coutdir, double sqrts =
   g2List[0][1]->setVal(g2Im);
   g4List[0][1]->setVal(g4Im);
   someHiggs->makeParamsConst(true);
-
-  cout << "params set" << endl;
+  m2->setConstant(false);
+  m12->setConstant(false);
+  m2->setRange(mVPOLE-5.*GaVPOLE, mVPOLE+5.*GaVPOLE);
+  m12->setRange(mHPOLE-5.*GaHPOLE, mHPOLE+5.*GaHPOLE);
 
   size_t lastSlash = cinput.find_last_of("/\\");
   string finName = cinput.substr(lastSlash+1);
@@ -112,8 +132,6 @@ void angularDistributions_spin0_VH(string cinput, string coutdir, double sqrts =
   tree->Add(cinput.c_str());
   TFile* foutput = new TFile((coutput + "/plots.root").c_str(), "recreate");
   TTree* reducedTree = new TTree("ReducedTree", "");
-
-  cout << tree->GetEntries() << endl;
 
   for (int v=0; v<nVars-1; v++){
     tree->SetBranchAddress(strKDs[v], (kd_vars+v));
@@ -136,7 +154,11 @@ void angularDistributions_spin0_VH(string cinput, string coutdir, double sqrts =
     GenY=0;
     if (GenAssociatedVMass->size()>0) GenVMass = GenAssociatedVMass->at(0);
     if (GenVMass>0){
-      if (GenMotherPz->size()>1 && kd_vars[6]>0) GenY = (GenMotherPz->at(0)+GenMotherPz->at(1))/kd_vars[6];
+      if (GenMotherPz->size()>1 && kd_vars[6]>0){
+        double energy = fabs(GenMotherPz->at(0))+fabs(GenMotherPz->at(1));
+        double pz = GenMotherPz->at(0)+GenMotherPz->at(1);
+        GenY = 0.5*log((energy+pz) / (energy-pz));
+      }
       else continue;
       reducedTree->Fill();
       nfilled++;
@@ -144,16 +166,11 @@ void angularDistributions_spin0_VH(string cinput, string coutdir, double sqrts =
   }
   foutput->WriteTObject(reducedTree);
 
-  cout << "datasm" << endl;
-
-
   RooDataSet* dataSM = new RooDataSet("data", "data", reducedTree, treeargs);
-  cout << "datasmdone" << endl;
-  for (int plotIndex=0; plotIndex<nVars; plotIndex++){
-    if (plotIndex==nVars-3) continue;
-    if (plotIndex==nVars-1) continue;
-
+  for (int plotIndex=0; plotIndex<nVars-2; plotIndex++){
     cout << plotIndex << endl;
+
+    if (plotIndex!=nVars-3) continue;
 
     RooPlot* plot = measurables[plotIndex]->frame(nbins);
     plot->GetXaxis()->CenterTitle();
@@ -166,7 +183,18 @@ void angularDistributions_spin0_VH(string cinput, string coutdir, double sqrts =
     plot->SetTitle(m_name.c_str());
 
     dataSM->plotOn(plot, MarkerColor(kRed), MarkerStyle(3), MarkerSize(1.2), LineWidth(0), XErrorSize(0), DataError(RooAbsData::Poisson));
+
+    m2->setVal(mVPOLE);
+    m12->setVal(mHPOLE);
+    m2->setRange(mVPOLE, mVPOLE);
+    m12->setRange(mHPOLE, mHPOLE);
+    m2->setConstant(true);
+    m12->setConstant(true);
     someHiggs->getPDF()->plotOn(plot, LineColor(kRed), LineWidth(2));
+    m2->setConstant(false);
+    m12->setConstant(false);
+    m2->setRange(mVPOLE-5.*GaVPOLE, mVPOLE+5.*GaVPOLE);
+    m12->setRange(mHPOLE-5.*GaHPOLE, mHPOLE+5.*GaHPOLE);
 
     TGaxis::SetMaxDigits(3);
 

@@ -13,15 +13,15 @@ RooSpinZero::RooSpinZero(
   modelMeasurables _measurables,
   modelParameters _parameters
   ) : RooAbsPdf(name, title),
-  h1("h1", "h1", this, (RooAbsReal&)*(_measurables.h1)),
-  h2("h2", "h2", this, (RooAbsReal&)*(_measurables.h2)),
-  Phi("Phi", "Phi", this, (RooAbsReal&)*(_measurables.Phi)),
-  m1("m1", "m1", this, (RooAbsReal&)*(_measurables.m1)),
-  m2("m2", "m2", this, (RooAbsReal&)*(_measurables.m2)),
-  m12("m12", "m12", this, (RooAbsReal&)*(_measurables.m12)),
-  hs("hs", "hs", this, (RooAbsReal&)*(_measurables.hs)),
-  Phi1("Phi1", "Phi1", this, (RooAbsReal&)*(_measurables.Phi1)),
-  Y("Y", "Y", this, (RooAbsReal&)*(_measurables.Y)),
+  h1("h1", "h1", this),
+  h2("h2", "h2", this),
+  Phi("Phi", "Phi", this),
+  m1("m1", "m1", this),
+  m2("m2", "m2", this),
+  m12("m12", "m12", this),
+  hs("hs", "hs", this),
+  Phi1("Phi1", "Phi1", this),
+  Y("Y", "Y", this),
 
   mX("mX", "mX", this, (RooAbsReal&)*(_parameters.mX)),
   gamX("gamX", "gamX", this, (RooAbsReal&)*(_parameters.gamX)),
@@ -116,7 +116,9 @@ RooSpinZero::RooSpinZero(
   Lambda_z3("Lambda_z3", "Lambda_z3", this, (RooAbsReal&)*(_parameters.Lambda_z3)),
   Lambda_z4("Lambda_z4", "Lambda_z4", this, (RooAbsReal&)*(_parameters.Lambda_z4)),
   Lambda_Q("Lambda_Q", "Lambda_Q", this, (RooAbsReal&)*(_parameters.Lambda_Q))
-{}
+{
+  setProxies(_measurables);
+}
 
 
 RooSpinZero::RooSpinZero(const RooSpinZero& other, const char* name) :
@@ -316,19 +318,46 @@ void RooSpinZero::calculateAmplitudes(Double_t& A00Re, Double_t& A00Im, Double_t
 
   Double_t eta1 = m1 / m12;
   Double_t eta2 = m2 / m12;
+  Double_t eta1p2 = eta1*eta2;
 
-  Double_t x = (1. - pow(eta1, 2) - pow(eta2, 2))/(2.0*eta1*eta2);
-  if (pow(eta1, 2)>1. || pow(eta2, 2)>1.) x = -x;
-  Double_t xsqmo = pow(x, 2) - 1.;
+  Double_t etas = (1. - pow(eta1, 2) - pow(eta2, 2))/2.;
+  if (pow(eta1+eta2, 2)>1.) etas = -etas;
+  Double_t etasp = pow(etas, 2) - pow(eta1p2, 2);
+  if (etasp<0) etasp=0;
 
-  A00Re = -(a1Re*x + a2Re*xsqmo*eta1*eta2);
-  A00Im = -(a1Im*x + a2Im*xsqmo*eta1*eta2);
+  A00Re = -(a1Re*etas + a2Re*etasp);
+  A00Im = -(a1Im*etas + a2Im*etasp);
 
-  AppRe = a1Re - a3Im*sqrt(xsqmo)*eta1*eta2;
-  AppIm = a1Im + a3Re*sqrt(xsqmo)*eta1*eta2;
+  AppRe = (a1Re - a3Im*sqrt(etasp));
+  AppIm = (a1Im + a3Re*sqrt(etasp));
 
-  AmmRe = a1Re + a3Im*sqrt(xsqmo)*eta1*eta2;
-  AmmIm = a1Im - a3Re*sqrt(xsqmo)*eta1*eta2;
+  AmmRe = (a1Re + a3Im*sqrt(etasp));
+  AmmIm = (a1Im - a3Re*sqrt(etasp));
+
+  A00Re /= eta1p2;
+  A00Im /= eta1p2;
+  /*
+  AppRe *= eta1p2;
+  AppIm *= eta1p2;
+  AmmRe *= eta1p2;
+  AmmIm *= eta1p2;
+  */
+  if (!(AppRe==AppRe) || !(AmmRe==AmmRe)){
+    cout << eta1 << '\t' << eta2 << '\t' << etas << '\t' << etasp << '\t' << eta1p2 << endl;
+  }
 }
 
-
+void RooSpinZero::setProxies(modelMeasurables _measurables){
+  setProxy(h1, (RooAbsReal*)_measurables.h1);
+  setProxy(h2, (RooAbsReal*)_measurables.h2);
+  setProxy(Phi, (RooAbsReal*)_measurables.Phi);
+  setProxy(m1, (RooAbsReal*)_measurables.m1);
+  setProxy(m2, (RooAbsReal*)_measurables.m2);
+  setProxy(m12, (RooAbsReal*)_measurables.m12);
+  setProxy(hs, (RooAbsReal*)_measurables.hs);
+  setProxy(Phi1, (RooAbsReal*)_measurables.Phi1);
+  setProxy(Y, (RooAbsReal*)_measurables.Y);
+}
+void RooSpinZero::setProxy(RooRealProxy& proxy, RooAbsReal* objectPtr){
+  if (objectPtr!=0) proxy.setArg((RooAbsReal&)*objectPtr);
+}

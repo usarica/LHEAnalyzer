@@ -24,6 +24,7 @@ RooSpinZero_3D_pp_VH::RooSpinZero_3D_pp_VH(
 
 
 Double_t RooSpinZero_3D_pp_VH::evaluate() const{
+  if (m1 <= 0.0 || m2 <= 0.0) return 1e-15;
   // Get phasespace factor (arxiv 9306270 Eq. 2)
   double phaseSpaceBetaSq = (1.-pow((m2+m12)/m1, 2))*(1.-pow((m2-m12)/m1, 2));
   if (phaseSpaceBetaSq < 0.) return 1e-15;
@@ -57,22 +58,15 @@ Double_t RooSpinZero_3D_pp_VH::evaluate() const{
 }
 
 Int_t RooSpinZero_3D_pp_VH::getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* /*rangeName*/) const{
-  std::cout << "getAnalyticalIntegral to return" << std::endl;
-  if (matchArgs(allVars, analVars, RooArgSet(*h1.absArg(), *h2.absArg(), *Phi.absArg()))) cout <<  4 << endl;
-  else if (matchArgs(allVars, analVars, h1, h2)) cout <<  1 << endl;
-  else if (matchArgs(allVars, analVars, h1, Phi)) cout <<  2 << endl;
-  else if (matchArgs(allVars, analVars, h2, Phi)) cout <<  3 << endl;
-  else cout <<  0 << endl;
-
   if (matchArgs(allVars, analVars, RooArgSet(*h1.absArg(), *h2.absArg(), *Phi.absArg()))) return 4;
   if (matchArgs(allVars, analVars, h1, h2)) return 1;
   if (matchArgs(allVars, analVars, h1, Phi)) return 2;
   if (matchArgs(allVars, analVars, h2, Phi)) return 3;
-  std::cout << "failed to return" << std::endl;
   return 0;
 }
 
 Double_t RooSpinZero_3D_pp_VH::analyticalIntegral(Int_t code, const char* /*rangeName*/) const{
+  if (m1 <= 0.0 || m2 <= 0.0) return 1e-10;
   // Get phasespace factor (arxiv 9306270 Eq. 2)
   double phaseSpaceBetaSq = (1.-pow((m2+m12)/m1, 2))*(1.-pow((m2-m12)/m1, 2));
   if (phaseSpaceBetaSq < 0.) return 1e-15;
@@ -143,17 +137,15 @@ Double_t RooSpinZero_3D_pp_VH::analyticalIntegral(Int_t code, const char* /*rang
 
 double RooSpinZero_3D_pp_VH::partonicLuminosity(double mVal, double YVal, double sqrtsVal) const{
   Double_t Q = mVal;
-  Double_t xa0 = mVal/sqrtsVal;
-  Double_t xa = exp(YVal)*xa0;
-  Double_t xb = exp(-YVal)*xa0;
-
+  Double_t xa0 = mVal/sqrtsVal; // -> E E <- => xa0=xb0=p/Ebeam (Ebeam = sqrts/2)
+  Double_t xa = exp(YVal)*xa0; // -> Ea Eb <- => xa=Ea/Ebeam
+  Double_t xb = exp(-YVal)*xa0; // -> Ea Eb <- => xb=Eb/Ebeam
 
   Double_t weightu = 0.5;
   Double_t weightd = 0.5;
   Double_t weightc = 1.0;
   Double_t weights = 1.0;
   Double_t weightb = 1.0;
-
 
   // PDF parameters
   // up params
@@ -262,44 +254,33 @@ double RooSpinZero_3D_pp_VH::partonicLuminosity(double mVal, double YVal, double
   Double_t FuncABs = Funcca*Funccb/xa/xb;
   Double_t FuncABb = Funcba*Funcbb/xa/xb;
 
-  Double_t totSec = 2*mVal*(
-    (FuncABu)*weightu
-    +(FuncABd)*weightd
-    +(FuncABc)*weightc
-    +(FuncABs)*weights
-    +(FuncABb)*weightb
-    );
+  // u-dbar 
+  Double_t FuncAB_udbar = FuncAu1/xa*FuncBd1/xb + FuncAu2/xa*FuncBd2/xb;
+  // c-sbar
+  Double_t FuncAB_csbar = Funcca*Funcsb/xa/xb;
+  // d-ubar 
+  Double_t FuncAB_dubar = FuncAd1/xa*FuncBu1/xb + FuncAd2/xa*FuncBu2/xb;
+  // s-cbar
+  Double_t FuncAB_scbar = Funccb*Funcsa/xa/xb;
 
-  if ((mVal <= 600. && fabs(YVal) > 20*pow(mVal, -0.32)) || (mVal > 600. && fabs(YVal) > 21*pow(mVal, -0.34))){
-    //Find totSec when mZZ, YVal=0
-
-    //up
-    //if xa=xb then FuncAu1=FuncAu2 and FuncBu1=FuncBu2
-    FuncAu1 = (up0+up1*xa0+up2*pow(xa0, 2))*pow((1-xa0), 4)*pow(xa0, up3)*exp(1.0+up4*xa0);
-    FuncBu1 = (antiup0+antiup1*xa0+antiup2*pow(xa0, 2)+antiup3*pow(xa0, 3))*pow((1-xa0), 4)*pow(xa0, antiup4)*exp(1.0+antiup5*xa0);
-    FuncABu = 2*(FuncAu1/xa0*FuncBu1/xa0);
-
-    //down
-    //if xa=xb then FuncAd1=FuncAd2 and FuncBd1=FuncBd2
-    FuncAd1 = (down0+down1*xa0+down2*pow(xa0, 2))*pow((1-xa0), 4)*pow(xa0, down3)*exp(1.0+down4*xa0);
-    FuncBd1 = (antidown0+antidown1*xa0+antidown2*pow(xa0, 2)+antidown3*pow(xa0, 3))*pow((1-xa0), 4)*pow(xa0, antidown4)*exp(1.0+antidown5*xa0);
-    FuncABd = 2*(FuncAd1/xa0*FuncBd1/xa0);
-
-    //sea
-    Funcca = (charm0+charm1*xa0+charm2*pow(xa0, 2)+charm3*pow(xa0, 3))*pow((1-xa0), 4)*pow(xa0, charm4)*exp(1.0+charm5*xa0); //Funcca=Funccb
-    Funcsa = (strange0+strange1*xa0+strange2*pow(xa0, 2))*pow((1-xa0), 4)*pow(xa0, strange3)*exp(1.0+strange4*xa0); //Funcsa=Funcsb
-    Funcba = (bottom0+bottom1*xa0+bottom2*pow(xa0, 2))*pow((1-xa0), 4)*pow(xa0, bottom3)*exp(1.0+bottom4*xa0); //Funcba=Funcbb
-    FuncABc = Funcsa*Funcsa/xa0/xa0;
-    FuncABs = Funcca*Funcca/xa0/xa0;
-    FuncABb = Funcba*Funcba/xa0/xa0;
-    Double_t totSec0 = 2*mVal*(
+  Double_t totSec = 0;
+  
+  if (fabs(mV-80.39)>5.){ // ZH or gammaH
+    totSec = 2*mVal*(
       (FuncABu)*weightu
       +(FuncABd)*weightd
       +(FuncABc)*weightc
       +(FuncABs)*weights
       +(FuncABb)*weightb
       );
-    totSec = 1.e-5*totSec0;
+  }
+  else{ // WH
+    totSec = 2*mVal*(
+      (FuncAB_udbar)*weightu
+      +(FuncAB_dubar)*weightd
+      +(FuncAB_csbar)*weightc
+      +(FuncAB_scbar)*weights
+      );
   }
 
   if (totSec<=0.) totSec = 1e-5;
