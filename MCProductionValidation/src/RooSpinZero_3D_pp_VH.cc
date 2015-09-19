@@ -29,7 +29,7 @@ Double_t RooSpinZero_3D_pp_VH::evaluate() const{
   double phaseSpaceBetaSq = (1.-pow((m2+m12)/m1, 2))*(1.-pow((m2-m12)/m1, 2));
   if (phaseSpaceBetaSq < 0.) return 1e-15;
   double phaseSpaceBeta = sqrt(phaseSpaceBetaSq);
-  double sigma_psf = phaseSpaceBeta*(phaseSpaceBetaSq + 12.*pow(m2/m1, 2))/pow(1.-pow(m2/m1, 2), 2);
+  double sigma_psf = phaseSpaceBeta*(phaseSpaceBetaSq + 12.*pow(m2/m1, 2))/pow((1.-pow(m2/m1, 2))*m1, 2);
   Double_t plumi = partonicLuminosity(m1, Y, sqrts);
 
   Double_t A00Re, A00Im, AppRe, AppIm, AmmRe, AmmIm;
@@ -53,7 +53,7 @@ Double_t RooSpinZero_3D_pp_VH::evaluate() const{
 
   value *= plumi;
   value *= sigma_psf;
-
+  if (value<=0) value = 1e-15;
   return value;
 }
 
@@ -71,7 +71,7 @@ Double_t RooSpinZero_3D_pp_VH::analyticalIntegral(Int_t code, const char* /*rang
   double phaseSpaceBetaSq = (1.-pow((m2+m12)/m1, 2))*(1.-pow((m2-m12)/m1, 2));
   if (phaseSpaceBetaSq < 0.) return 1e-15;
   double phaseSpaceBeta = sqrt(phaseSpaceBetaSq);
-  double sigma_psf = phaseSpaceBeta*(phaseSpaceBetaSq + 12.*pow(m2/m1, 2))/pow(1.-pow(m2/m1, 2), 2);
+  double sigma_psf = phaseSpaceBeta*(phaseSpaceBetaSq + 12.*pow(m2/m1, 2))/pow((1.-pow(m2/m1, 2))*m1, 2);
   Double_t plumi = partonicLuminosity(m1, Y, sqrts);
 
   Double_t A00Re, A00Im, AppRe, AppIm, AmmRe, AmmIm;
@@ -86,53 +86,32 @@ Double_t RooSpinZero_3D_pp_VH::analyticalIntegral(Int_t code, const char* /*rang
   Double_t phimm=atan2(AmmIm, AmmRe)-phi00;
 
   Double_t value = 0;
-  switch (code)
-  {
-    // projections to h2
-  case 2:
-  {
-          value += -A00*(-1. + pow(h2, 2))/3.*(2.*TMath::Pi());
-          value += App*(1 + pow(h2, 2) + 2*h2*R2Val)/3.*TMath::Pi();
-          value += Amm*(1 + pow(h2, 2) - 2*h2*R2Val)/3.*TMath::Pi();
-
-          value *= plumi;
-          value *= sigma_psf;
-          return value;
+  if (code==2){ // projections to h2
+    value += -A00*(-1. + pow(h2, 2))/3.*(2.*TMath::Pi());
+    value += App*(1. + pow(h2, 2) + 2.*h2*R2Val)/3.*TMath::Pi();
+    value += Amm*(1. + pow(h2, 2) - 2.*h2*R2Val)/3.*TMath::Pi();
   }
-    // projections to h1
-  case 3:
-  {
-          value += -A00*(-1. + pow(h1, 2))/3.*(2.*TMath::Pi());
-          value += App*(1 + pow(h1, 2) - 2*h1*R1Val)/3.*TMath::Pi();
-          value += Amm*(1 + pow(h1, 2) + 2*h1*R1Val)/3.*TMath::Pi();
-
-          value *= plumi;
-          value *= sigma_psf;
-          return value;
+  else if (code==3){ // projections to h1
+    value += -A00*(-1. + pow(h1, 2))/3.*(2.*TMath::Pi());
+    value += App*(1. + pow(h1, 2) - 2.*h1*R1Val)/3.*TMath::Pi();
+    value += Amm*(1. + pow(h1, 2) + 2.*h1*R1Val)/3.*TMath::Pi();
   }
-    // projections to Phi
-  case 1:
-  {
-          value += (A00+App+A00)*4./9.;
-          value += (sqrt(A00*App)*cos(Phi + phipp)+sqrt(A00*Amm)*cos(Phi - phimm))*R1Val*R2Val*pow(TMath::Pi(), 2)/16.;
-          value += sqrt(Amm*App)*cos(2*Phi - phimm + phipp)*2./9.;
-
-          value *= plumi;
-          value *= sigma_psf;
-          return value;
+  else if (code==1){ // projections to Phi
+    value += (A00+App+A00)*4./9.;
+    value += (sqrt(A00*App)*cos(Phi + phipp)+sqrt(A00*Amm)*cos(Phi - phimm))*R1Val*R2Val*pow(TMath::Pi(), 2)/16.;
+    value += sqrt(Amm*App)*cos(2.*Phi - phimm + phipp)*2./9.;
   }
-    // projected everything
-  case 4:
-  {
-          value += (A00+App+A00)*8.*TMath::Pi()/9.;
-
-          value *= plumi;
-          value *= sigma_psf;
-          return value;
+  else if (code==4){ // projected everything
+    value += (A00+App+A00)*8.*TMath::Pi()/9.;
   }
+  else{
+    assert(0);
+    return 0;
   }
-  assert(0);
-  return 0;
+  value *= plumi;
+  value *= sigma_psf;
+  if (value<=0) value = 1e-10;
+  return value;
 }
 
 double RooSpinZero_3D_pp_VH::partonicLuminosity(double mVal, double YVal, double sqrtsVal) const{
@@ -283,7 +262,7 @@ double RooSpinZero_3D_pp_VH::partonicLuminosity(double mVal, double YVal, double
       );
   }
 
-  if (totSec<=0.) totSec = 1e-5;
+  if (totSec<=0) totSec = 1e-5;
   return totSec;
 }
 

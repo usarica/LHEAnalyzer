@@ -82,7 +82,8 @@ void angularDistributions_spin0_VH(string cinput, string coutdir, double sqrts =
   measurables_.Phi1 = Phi1;
   measurables_.Y = Y;
 
-  RooArgSet treeargs(*h1, *h2, *Phi, *hs, *Phi1, *m1, *Y);
+  RooArgSet treeargs(*h1, *h2, *Phi, *hs, *Phi1, *m1);
+  //RooArgSet treeargs(*h1, *h2, *Phi, *hs, *Phi1, *m1, *Y);
   RooRealVar* measurables[nVars-2]={ h1, h2, Phi, hs, Phi1, m1 };
 
   m2->setVal(mVPOLE);
@@ -171,6 +172,7 @@ void angularDistributions_spin0_VH(string cinput, string coutdir, double sqrts =
     cout << plotIndex << endl;
 
     if (plotIndex!=nVars-3) continue;
+    //if (plotIndex!=0) continue;
 
     RooPlot* plot = measurables[plotIndex]->frame(nbins);
     plot->GetXaxis()->CenterTitle();
