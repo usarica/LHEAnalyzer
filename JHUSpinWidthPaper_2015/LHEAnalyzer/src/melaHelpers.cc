@@ -212,10 +212,8 @@ Float_t melaHelpers::melaBranchMEInterpreter(const ZZCandidate* cand, string& br
         gCoef.push_back(pair<int, double>(2, 0));
       }
       else if (myProduction==TVar::JJGG){ // 2-jets ggH
-        double coeffScale = 1.;
-        if (myME==TVar::JHUGen) coeffScale = sqrt(1.8e-5);
-        gCoef.push_back(pair<int, double>(0, 1.*coeffScale));
-        gCoef.push_back(pair<int, double>(2, sqrt(1.0017)*coeffScale));
+        gCoef.push_back(pair<int, double>(0, 1));
+        gCoef.push_back(pair<int, double>(2, sqrt(1.0017)));
       }
       else if (myProduction==TVar::ZZGG && branchname.find("prod")!=string::npos){ // 0-jet ggH prod. ME, the same as 2-jets ggH for now in absolute scale
         gCoef.push_back(pair<int, double>(0, 1));
