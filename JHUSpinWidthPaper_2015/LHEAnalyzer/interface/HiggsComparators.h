@@ -11,8 +11,8 @@ namespace HiggsComparators{
   };
 
   ZZCandidate* matchAHiggsToParticle(Event& ev, Particle* genH);
-  ZZCandidate* candidateSelector(Event& ev, HiggsComparators::CandidateSelection scheme, bool isZZ);
-  ZZCandidate* candComparator(ZZCandidate* cand1, ZZCandidate* cand2, HiggsComparators::CandidateSelection scheme, bool isZZ);
+  ZZCandidate* candidateSelector(Event& ev, HiggsComparators::CandidateSelection scheme, int isZZ);
+  ZZCandidate* candComparator(ZZCandidate* cand1, ZZCandidate* cand2, HiggsComparators::CandidateSelection scheme, int isZZ);
 }
 
 #endif

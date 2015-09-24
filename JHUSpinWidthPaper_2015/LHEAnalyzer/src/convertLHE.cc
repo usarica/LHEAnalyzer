@@ -55,8 +55,10 @@ void convertLHE::run(){
           smearedEvent.setWeight(weight);
           for (int p=0; p<particleList.size(); p++){
             Particle* genPart = particleList.at(p); // Has mother info from LHE reading
-            if (isAHiggs(genPart->id)) hasGenHiggs.push_back(p);
-
+            if (isAHiggs(genPart->id)){
+              hasGenHiggs.push_back(p);
+              if (options->doGenHZZdecay()==-1 && (genPart->genStatus==1 || genPart->genStatus==2)) genEvent.addIntermediate(genPart);
+            }
             if (genPart->genStatus==1){
               if (isALepton(genPart->id)) genEvent.addLepton(genPart);
               else if (isANeutrino(genPart->id)) genEvent.addNeutrino(genPart);

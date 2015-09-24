@@ -533,6 +533,10 @@ void HVVTree::fillCandidateDaughters(ZZCandidate* pH, bool isGen){
 
   Particle* pV1=(pH!=0 ? pH->getSortedV(0) : 0);
   Particle* pV2=(pH!=0 ? pH->getSortedV(1) : 0);
+  if (pH!=0){
+    if (pV1!=0 && pV1->getMother(0)!=pH) pV1=0;
+    if (pV2!=0 && pV2->getMother(0)!=pH) pV2=0;
+  }
 
   strcore = "Z1";
   if (isGen) strcore.insert(0, "Gen");
@@ -569,26 +573,52 @@ void HVVTree::fillDaughterProducts(ZZCandidate* pH, bool isGen){
   string strcore = "Lep";
   if (isGen) strcore.insert(0, "Gen");
 
+  TLorentzVector nullFourVector(0, 0, 0, 0);
+
   for (int v=0; v<2; v++){
+    Particle* intermediateV = (pH!=0 ? pH->getSortedV(v) : 0);
+    if (pH!=0 && intermediateV!=0 && intermediateV->getMother(0)!=pH) intermediateV = 0;
     for (int d=0; d<2; d++){
       int iLep = 2*v+d+1;
       char cILep[2];
       sprintf(cILep, "%i", iLep);
       string strILep = string(cILep);
 
-      Particle* lepton = (pH!=0 ? pH->getSortedV(v)->getDaughter(d) : 0);
+      bool isNew = false;
+      Particle* lepton = (intermediateV!=0 ? intermediateV->getDaughter(d) : 0);
+
+      if (lepton==0 && pH!=0){
+        TLorentzVector nullFourVector(0, 0, 0, 0);
+        isNew=true;
+
+        TLorentzVector pDaughter;
+        int idDaughter;
+        if (intermediateV!=0){
+          if (intermediateV->getNDaughters()==0) pDaughter = (intermediateV->p4)*0.5;
+          else pDaughter = nullFourVector;
+          idDaughter = intermediateV->id;
+        }
+        else{
+          if (v==1) pDaughter = (pH->p4)*0.75;
+          else pDaughter = (pH->p4)*(-0.25);
+          idDaughter = 25;
+        }
+        lepton = new Particle(idDaughter, pDaughter);
+      }
 
       varname = strcore + strILep + "Mass"; setVal(varname, (lepton!=0 ? lepton->m() : 0));
       varname = strcore + strILep + "Pt"; setVal(varname, (lepton!=0 ? lepton->pt() : 0));
       varname = strcore + strILep + "Eta"; setVal(varname, (lepton!=0 ? lepton->eta() : 0));
       varname = strcore + strILep + "Phi"; setVal(varname, (lepton!=0 ? lepton->phi() : 0));
       varname = strcore + strILep + "Id"; setVal(varname, (lepton!=0 ? lepton->id : 0));
+
+      if (isNew){ delete lepton; lepton=0; }
     }
   }
 
   if (isGen){
     Int_t genFinalState=-1;
-    if (pH!=0){
+    if (pH!=0 && pH->getNSortedVs()>=2 && pH->getSortedV(0)->getNDaughters()>=2 && pH->getSortedV(1)->getNDaughters()>=2){
       if (PDGHelpers::isAZBoson(pH->getSortedV(0)->id) && PDGHelpers::isAZBoson(pH->getSortedV(1)->id)){
         // 4l
         if (std::abs(pH->getSortedV(0)->getDaughter(0)->id)==13 && std::abs(pH->getSortedV(1)->getDaughter(0)->id)==13) genFinalState=0; // 4mu
@@ -726,7 +756,8 @@ void HVVTree::fillAssociatedInfo(ZZCandidate* pH, bool isGen){
 void HVVTree::fillDecayAngles(ZZCandidate* pH, bool isGen){
   Float_t helcosthetaZ1=0, helcosthetaZ2=0, helphi=0, costhetastar=0, phistarZ1=0;
 
-  if (pH!=0) melaHelpers::computeAngles(
+  if (pH!=0 && pH->getNSortedVs()>=2 && pH->getSortedV(0)->getNDaughters()>=2 && pH->getSortedV(1)->getNDaughters()>=2)
+    melaHelpers::computeAngles(
     pH->getSortedV(0)->getDaughter(0)->p4, pH->getSortedV(0)->getDaughter(0)->id,
     pH->getSortedV(0)->getDaughter(1)->p4, pH->getSortedV(0)->getDaughter(1)->id,
     pH->getSortedV(1)->getDaughter(0)->p4, pH->getSortedV(1)->getDaughter(0)->id,
@@ -754,9 +785,41 @@ void HVVTree::fillDecayAngles(ZZCandidate* pH, bool isGen){
 }
 void HVVTree::fillVBFProductionAngles(ZZCandidate* pH, bool isGen){
   Float_t helcosthetaV1=0, helcosthetaV2=0, helphi=0, costhetastar=0, phistarV1=0;
-  Float_t q1sq, q2sq;
+  Float_t q1sq=0, q2sq=0;
 
   if (pH!=0){
+    TLorentzVector nullFourVector(0, 0, 0, 0);
+
+    Particle* intermediateV[2]={ 0 };
+    Particle* daughter[2][2]={ { 0 } };
+    for (int v=0; v<2; v++){
+      intermediateV[v] = pH->getSortedV(v);
+      if (intermediateV[v]!=0 && intermediateV[v]->getMother(0)!=pH) intermediateV[v] = 0;
+      if (intermediateV[v]!=0){
+        for (int d=0; d<2; d++) daughter[v][d] = intermediateV[v]->getDaughter(d);
+      }
+    }
+    TLorentzVector pDaughter[2][2];
+    int idDaughter[2][2];
+    for (int v=0; v<2; v++){
+      for (int d=0; d<2; d++){
+        if (daughter[v][d]!=0){
+          pDaughter[v][d] = daughter[v][d]->p4;
+          idDaughter[v][d] = daughter[v][d]->id;
+        }
+        else if (intermediateV[v]!=0){
+          if (intermediateV[v]->getNDaughters()==0) pDaughter[v][d] = (intermediateV[v]->p4)*0.5;
+          else pDaughter[v][d] = nullFourVector;
+          idDaughter[v][d] = intermediateV[v]->id;
+        }
+        else{
+          if (v==1) pDaughter[v][d] = (pH->p4)*0.75;
+          else pDaughter[v][d] = (pH->p4)*(-0.25);
+          idDaughter[v][d] = 25;
+        }
+      }
+    }
+
     if (pH->getNAssociatedJets()>=1){
       TLorentzVector jet1, jet2;
       int jet1Id, jet2Id;
@@ -775,13 +838,7 @@ void HVVTree::fillVBFProductionAngles(ZZCandidate* pH, bool isGen){
         jet2Id = pH->getAssociatedJet(1)->id;
       }
       else{
-        TLorentzVector others(0, 0, 0, 0);
-        for (int v=0; v<2; v++){
-          for (int d=0; d<2; d++){
-            Particle* lepton = (pH!=0 ? pH->getSortedV(v)->getDaughter(d) : 0);
-            if (lepton!=0) others = others + lepton->p4;
-          }
-        }
+        TLorentzVector others = pH->p4;
         mela::computeFakeJet(jet1, others, jet2);
         jet2Id=0;
       }
@@ -795,10 +852,10 @@ void HVVTree::fillVBFProductionAngles(ZZCandidate* pH, bool isGen){
       }
       melaHelpers::computeVBFangles(
         costhetastar, helcosthetaV1, helcosthetaV2, helphi, phistarV1, q1sq, q2sq,
-        pH->getSortedV(0)->getDaughter(0)->p4, pH->getSortedV(0)->getDaughter(0)->id,
-        pH->getSortedV(0)->getDaughter(1)->p4, pH->getSortedV(0)->getDaughter(1)->id,
-        pH->getSortedV(1)->getDaughter(0)->p4, pH->getSortedV(1)->getDaughter(0)->id,
-        pH->getSortedV(1)->getDaughter(1)->p4, pH->getSortedV(1)->getDaughter(1)->id,
+        pDaughter[0][0], idDaughter[0][0],
+        pDaughter[0][1], idDaughter[0][1],
+        pDaughter[1][0], idDaughter[1][0],
+        pDaughter[1][1], idDaughter[1][1],
         jet1, jet1Id,
         jet2, jet2Id,
         mother1ref, mother1Id,
@@ -836,6 +893,8 @@ void HVVTree::fillVHProductionAngles(ZZCandidate* pH, bool isGen){
   Float_t helcosthetaV1_leptonic=0, helcosthetaV2_leptonic=0, helphi_leptonic=0, costhetastar_leptonic=0, phistarV1_leptonic=0;
 
   if (pH!=0){
+    TLorentzVector nullFourVector(0, 0, 0, 0);
+
     TLorentzVector mother1;
     TLorentzVector mother2;
     int mother1Id=0;
@@ -851,6 +910,36 @@ void HVVTree::fillVHProductionAngles(ZZCandidate* pH, bool isGen){
       mother2ref = &mother2;
     }
 
+    Particle* intermediateV[2]={ 0 };
+    Particle* daughter[2][2]={ { 0 } };
+    for (int v=0; v<2; v++){
+      intermediateV[v] = pH->getSortedV(v);
+      if (intermediateV[v]!=0 && intermediateV[v]->getMother(0)!=pH) intermediateV[v] = 0;
+      if (intermediateV[v]!=0){
+        for (int d=0; d<2; d++) daughter[v][d] = intermediateV[v]->getDaughter(d);
+      }
+    }
+    TLorentzVector pDaughter[2][2];
+    int idDaughter[2][2];
+    for (int v=0; v<2; v++){
+      for (int d=0; d<2; d++){
+        if (daughter[v][d]!=0){
+          pDaughter[v][d] = daughter[v][d]->p4;
+          idDaughter[v][d] = daughter[v][d]->id;
+        }
+        else if (intermediateV[v]!=0){
+          if (intermediateV[v]->getNDaughters()==0) pDaughter[v][d] = (intermediateV[v]->p4)*0.5;
+          else pDaughter[v][d] = nullFourVector;
+          idDaughter[v][d] = intermediateV[v]->id;
+        }
+        else{
+          if (v==1) pDaughter[v][d] = (pH->p4)*0.75;
+          else pDaughter[v][d] = (pH->p4)*(-0.25);
+          idDaughter[v][d] = 25;
+        }
+      }
+    }
+
     if (pH->getNAssociatedJets()>=1 && options->computeVHAnglesOrder()!=2){
       TLorentzVector jet1, jet2;
       int jet1Id, jet2Id;
@@ -862,23 +951,17 @@ void HVVTree::fillVHProductionAngles(ZZCandidate* pH, bool isGen){
         jet2Id = pH->getAssociatedJet(1)->id;
       }
       else{
-        TLorentzVector others(0, 0, 0, 0);
-        for (int v=0; v<2; v++){
-          for (int d=0; d<2; d++){
-            Particle* lepton = (pH!=0 ? pH->getSortedV(v)->getDaughter(d) : 0);
-            if (lepton!=0) others = others + lepton->p4;
-          }
-        }
+        TLorentzVector others = pH->p4;
         mela::computeFakeJet(jet1, others, jet2);
         jet2Id=0;
       }
 
       melaHelpers::computeVHangles(
         costhetastar_hadronic, helcosthetaV1_hadronic, helcosthetaV2_hadronic, helphi_hadronic, phistarV1_hadronic,
-        pH->getSortedV(0)->getDaughter(0)->p4, pH->getSortedV(0)->getDaughter(0)->id,
-        pH->getSortedV(0)->getDaughter(1)->p4, pH->getSortedV(0)->getDaughter(1)->id,
-        pH->getSortedV(1)->getDaughter(0)->p4, pH->getSortedV(1)->getDaughter(0)->id,
-        pH->getSortedV(1)->getDaughter(1)->p4, pH->getSortedV(1)->getDaughter(1)->id,
+        pDaughter[0][0], idDaughter[0][0],
+        pDaughter[0][1], idDaughter[0][1],
+        pDaughter[1][0], idDaughter[1][0],
+        pDaughter[1][1], idDaughter[1][1],
         jet1, jet1Id,
         jet2, jet2Id,
         mother1ref, mother1Id,
@@ -896,23 +979,17 @@ void HVVTree::fillVHProductionAngles(ZZCandidate* pH, bool isGen){
         jet2Id = pH->getAssociatedLepton(1)->id;
       }
       else{
-        TLorentzVector others(0, 0, 0, 0);
-        for (int v=0; v<2; v++){
-          for (int d=0; d<2; d++){
-            Particle* lepton = (pH!=0 ? pH->getSortedV(v)->getDaughter(d) : 0);
-            if (lepton!=0) others = others + lepton->p4;
-          }
-        }
+        TLorentzVector others = pH->p4;
         mela::computeFakeJet(jet1, others, jet2);
         jet2Id=0;
       }
 
       melaHelpers::computeVHangles(
         costhetastar_leptonic, helcosthetaV1_leptonic, helcosthetaV2_leptonic, helphi_leptonic, phistarV1_leptonic,
-        pH->getSortedV(0)->getDaughter(0)->p4, pH->getSortedV(0)->getDaughter(0)->id,
-        pH->getSortedV(0)->getDaughter(1)->p4, pH->getSortedV(0)->getDaughter(1)->id,
-        pH->getSortedV(1)->getDaughter(0)->p4, pH->getSortedV(1)->getDaughter(0)->id,
-        pH->getSortedV(1)->getDaughter(1)->p4, pH->getSortedV(1)->getDaughter(1)->id,
+        pDaughter[0][0], idDaughter[0][0],
+        pDaughter[0][1], idDaughter[0][1],
+        pDaughter[1][0], idDaughter[1][0],
+        pDaughter[1][1], idDaughter[1][1],
         jet1, jet1Id,
         jet2, jet2Id,
         mother1ref, mother1Id,

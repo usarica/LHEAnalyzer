@@ -32,16 +32,8 @@ public:
   Bool_t processRecoInfo(){ bool doProcess=true; if (includeRecoInfo==0) doProcess=false; return doProcess; }
   Bool_t isAnExcludedBranch(string branchname);
   Int_t analysisLevel(){ return fileLevel; }
-  Bool_t doGenHZZdecay(){
-    bool doHZZ=true;
-    if (isGenHZZ==0) doHZZ=false;
-    return doHZZ;
-  }
-  Bool_t doRecoHZZdecay(){
-    bool doHZZ=true;
-    if (isRecoHZZ==0) doHZZ=false;
-    return doHZZ;
-  }
+  Int_t doGenHZZdecay(){ return isGenHZZ; }
+  Int_t doRecoHZZdecay(){ return isRecoHZZ; }
   Int_t genDecayProducts(){ return genDecayMode; }
   Int_t recoDecayProducts(){ return recoDecayMode; }
   Int_t recoSelectionMode(){ return recoSelBehaviour; }

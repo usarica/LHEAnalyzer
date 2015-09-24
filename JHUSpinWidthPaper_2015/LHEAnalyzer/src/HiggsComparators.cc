@@ -23,7 +23,7 @@ ZZCandidate* HiggsComparators::matchAHiggsToParticle(Event& ev, Particle* genH){
   return cand;
 }
 
-ZZCandidate* HiggsComparators::candidateSelector(Event& ev, HiggsComparators::CandidateSelection scheme, bool isZZ){
+ZZCandidate* HiggsComparators::candidateSelector(Event& ev, HiggsComparators::CandidateSelection scheme, int isZZ){
   ZZCandidate* cand=0;
   for (int t=0; t<ev.getNZZCandidates(); t++){
     ZZCandidate* tmpCand = ev.getZZCandidate(t);
@@ -34,18 +34,28 @@ ZZCandidate* HiggsComparators::candidateSelector(Event& ev, HiggsComparators::Ca
   return cand;
 }
 
-ZZCandidate* HiggsComparators::candComparator(ZZCandidate* cand1, ZZCandidate* cand2, HiggsComparators::CandidateSelection scheme, bool isZZ){
+ZZCandidate* HiggsComparators::candComparator(ZZCandidate* cand1, ZZCandidate* cand2, HiggsComparators::CandidateSelection scheme, int isZZ){
   ZZCandidate* theChosenOne=0;
 
   double defaultHVVmass = PDGHelpers::HVVmass;
-  if (isZZ){
-    PDGHelpers::setHVVmass(PDGHelpers::Zmass);
-  }
-  else{
+  if (isZZ==0){
     PDGHelpers::setHVVmass(PDGHelpers::Wmass);
   }
+  else if (isZZ==1){
+    PDGHelpers::setHVVmass(PDGHelpers::Zmass);
+  }
 
-  if (scheme==HiggsComparators::BestZ1ThenZ2ScSumPt){
+  if (isZZ==-1){
+    if (
+      (
+      (cand2->m()>cand1->m())
+      ||
+      (cand2->m()==cand1->m() && cand2->pt()>cand1->pt())
+      ) && PDGHelpers::isAHiggs(cand2->id)
+      ) theChosenOne = cand2;
+    else if (PDGHelpers::isAHiggs(cand1->id)) theChosenOne = cand1;
+  }
+  else if (scheme==HiggsComparators::BestZ1ThenZ2ScSumPt){
     double diffmass1 = fabs(cand1->getSortedV(0)->m()-PDGHelpers::HVVmass);
     double diffmass2 = fabs(cand2->getSortedV(0)->m()-PDGHelpers::HVVmass);
     double Z2scsumpt_cand1=0, Z2scsumpt_cand2=0;

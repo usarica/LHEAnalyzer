@@ -94,7 +94,7 @@ void Event::addZZCandidate(ZZCandidate* myParticle){
   else { delete myParticle; myParticle=0; }
 }
 
-void Event::constructVVCandidates(bool isZZ, int fstype){
+void Event::constructVVCandidates(int isZZ, int fstype){
   /*
   ZZ / WW
   fstype=0: 4l / lnulnu
@@ -106,8 +106,8 @@ void Event::constructVVCandidates(bool isZZ, int fstype){
   fstype=-1: Any / Any
   */
 
-  if (!isZZ && fstype>2){
-    std::cerr << "No " << (isZZ ? "ZZ" : "WW") << " candidate with final state " << fstype << " is possible!" << std::endl;
+  if (isZZ!=0 && fstype>2){
+    std::cerr << "No " << (isZZ==-1 ? "undecayed" : "WW") << " candidate with final state " << fstype << " is possible!" << std::endl;
     return;
   }
 
@@ -146,7 +146,7 @@ void Event::constructVVCandidates(bool isZZ, int fstype){
 
   std::vector<Particle*> tmpVhandle;
 
-  if (isZZ){ // ZZ
+  if (isZZ==1){ // ZZ
 
     if (fstype==-1 || fstype==0 || fstype==2 || fstype==3){ // Z->2l
       for (int c=0; c<3; c++){
@@ -189,7 +189,7 @@ void Event::constructVVCandidates(bool isZZ, int fstype){
     }
 
   }
-  else{ // WW
+  else if(isZZ==0){ // WW
 
     if (fstype==-1 || fstype==0 || fstype==2){ // W->lnu
       for (int c=0; c<3; c++){
@@ -236,6 +236,16 @@ void Event::constructVVCandidates(bool isZZ, int fstype){
     }
 
   }
+  else{ // Undecayed
+    for (std::vector<Particle*>::iterator it = intermediates.begin(); it<intermediates.end(); it++){ // Add directly
+      if (isAHiggs((*it)->id)){
+        TLorentzVector pH = (*it)->p4;
+        ZZCandidate* cand = new ZZCandidate(25, pH);
+        addZZCandidate(cand);
+      }
+    }
+  }
+
   if (fstype==-1 || fstype==1 || fstype==2 || fstype==4){ // Z/W->2j reco.-level
     for (int i=0; i<quarkPlusMinus[0][0].size(); i++){
       if (quarkPlusMinus[0][0].at(i)->id!=0) continue;
@@ -270,11 +280,11 @@ void Event::constructVVCandidates(bool isZZ, int fstype){
       cand->addDaughter(Vj2);
 
       double defaultHVVmass = HVVmass;
-      if (isZZ){
-        setHVVmass(Zmass);
+      if (isZZ==0){
+        setHVVmass(Wmass);
       }
       else{
-        setHVVmass(Wmass);
+        setHVVmass(Zmass);
       }
       cand->sortDaughters();
       setHVVmass(defaultHVVmass);
@@ -301,6 +311,10 @@ Particle* Event::getNeutrino(int index)const{
 }
 Particle* Event::getJet(int index)const{
   if ((int)jets.size()>index) return jets.at(index);
+  else return 0;
+}
+Particle* Event::getIntermediate(int index)const{
+  if ((int)intermediates.size()>index) return intermediates.at(index);
   else return 0;
 }
 Particle* Event::getParticle(int index)const{

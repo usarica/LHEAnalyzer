@@ -45,24 +45,46 @@ void ZZCandidate::sortDaughtersInitial(){
     ds[sindex] = dtmp;
     sindex++;
   }
-  if ((df[0]->id<df[1]->id && PDGHelpers::HVVmass==PDGHelpers::Zmass) || (std::abs(df[0]->id)<std::abs(df[1]->id) && PDGHelpers::HVVmass==PDGHelpers::Wmass)){
+  if (
+    (df[0]!=0 && df[1]!=0)
+    &&
+    (
+    (df[0]->id<df[1]->id && PDGHelpers::HVVmass==PDGHelpers::Zmass) || (std::abs(df[0]->id)<std::abs(df[1]->id) && PDGHelpers::HVVmass==PDGHelpers::Wmass)
+    )
+    ){
     Particle* dtmp = df[0];
     df[0] = df[1];
     df[1] = dtmp;
   }
-  if ((ds[0]->id<ds[1]->id && PDGHelpers::HVVmass==PDGHelpers::Zmass) || (std::abs(ds[0]->id)<std::abs(ds[1]->id) && PDGHelpers::HVVmass==PDGHelpers::Wmass)){
+  if (
+    (ds[0]!=0 && ds[1]!=0)
+    &&
+    (
+    (ds[0]->id<ds[1]->id && PDGHelpers::HVVmass==PDGHelpers::Zmass) || (std::abs(ds[0]->id)<std::abs(ds[1]->id) && PDGHelpers::HVVmass==PDGHelpers::Wmass)
+    )
+    ){
     Particle* dtmp = ds[0];
     ds[0] = ds[1];
     ds[1] = dtmp;
   }
-  for (int i=0; i<2; i++) sortedDaughters.push_back(df[i]);
-  for (int i=0; i<2; i++) sortedDaughters.push_back(ds[i]);
+  for (int i=0; i<2; i++){
+    if (df[i]!=0) sortedDaughters.push_back(df[i]);
+  }
+  for (int i=0; i<2; i++){
+    if (ds[i]!=0) sortedDaughters.push_back(ds[i]);
+  }
 }
 void ZZCandidate::sortDaughtersByBestZ1(){
   Particle* orderedDs[2][2]={ { 0 } };
 
-  TLorentzVector pZ1 = sortedDaughters.at(0)->p4+sortedDaughters.at(1)->p4;
-  TLorentzVector pZ2 = sortedDaughters.at(2)->p4+sortedDaughters.at(3)->p4;
+  TLorentzVector pZ1(0, 0, 0, 0);
+  TLorentzVector pZ2(0, 0, 0, 0);
+  for (int d=0; d<2; d++){
+    if (sortedDaughters.at(d)!=0) pZ1 = pZ1 + sortedDaughters.at(d)->p4;
+  }
+  for (int d=2; d<4; d++){
+    if (sortedDaughters.at(d)!=0) pZ2 = pZ2 + sortedDaughters.at(d)->p4;
+  }
   if (std::abs(pZ1.M() - PDGHelpers::HVVmass)<std::abs(pZ2.M() - PDGHelpers::HVVmass)){
     orderedDs[0][0]=sortedDaughters.at(0);
     orderedDs[0][1]=sortedDaughters.at(1);
@@ -78,10 +100,30 @@ void ZZCandidate::sortDaughtersByBestZ1(){
     pZ1 = pZ2;
     pZ2 = ptmp;
   }
-  if (orderedDs[0][1]->id == orderedDs[1][1]->id){
+  if (
+    (
+    (orderedDs[0][1]!=0 && orderedDs[1][1]!=0)
+    &&
+    (orderedDs[0][1]->id == orderedDs[1][1]->id)
+    )
+    ||
+    (
+    (orderedDs[1][0]!=0 && orderedDs[0][0]!=0)
+    &&
+    (orderedDs[1][0]->id == orderedDs[0][0]->id)
+    )
+    ){
     Particle* orderedDps[2][2]={ { 0 } };
-    TLorentzVector pZ1p = orderedDs[0][0]->p4+orderedDs[1][1]->p4;
-    TLorentzVector pZ2p = orderedDs[1][0]->p4+orderedDs[0][1]->p4;
+
+    TLorentzVector pZ1p(0, 0, 0, 0);
+    TLorentzVector pZ2p(0, 0, 0, 0);
+    for (int d=0; d<2; d++){
+      if (orderedDs[d][d]!=0) pZ1p = pZ1p + orderedDs[d][d]->p4;
+    }
+    for (int d=0; d<2; d++){
+      if (orderedDs[1-d][d]!=0) pZ2p = pZ2p + orderedDs[1-d][d]->p4;
+    }
+
     if (std::abs(pZ1p.M() - PDGHelpers::HVVmass)<std::abs(pZ2p.M() - PDGHelpers::HVVmass)){
       orderedDps[0][0]=orderedDs[0][0];
       orderedDps[0][1]=orderedDs[1][1];
@@ -105,32 +147,53 @@ void ZZCandidate::sortDaughtersByBestZ1(){
   }
   sortedDaughters.clear();
   for (int i=0; i<2; i++){
-    for (int j=0; j<2; j++) sortedDaughters.push_back(orderedDs[i][j]);
+    for (int j=0; j<2; j++){
+      if (orderedDs[i][j]!=0) sortedDaughters.push_back(orderedDs[i][j]);
+    }
   }
 }
 void ZZCandidate::createSortedVs(){
-  TLorentzVector pZ1 = sortedDaughters.at(0)->p4+sortedDaughters.at(1)->p4;
-  Particle* Z1 = new Particle(23, pZ1);
+  int VID = 23;
+  if (PDGHelpers::HVVmass==PDGHelpers::Wmass) VID = 24;
+
+  TLorentzVector pZ1(0, 0, 0, 0);
+  TLorentzVector pZ2(0, 0, 0, 0);
+  for (int d=0; d<2; d++){
+    if (sortedDaughters.at(d)!=0) pZ1 = pZ1 + sortedDaughters.at(d)->p4;
+  }
+  for (int d=2; d<4; d++){
+    if (sortedDaughters.at(d)!=0) pZ2 = pZ2 + sortedDaughters.at(d)->p4;
+  }
+
+  // If the number of Zs is less than 2, should still create empty particles
+  Particle* Z1 = new Particle(VID, pZ1);
   Z1->addMother(this);
-  Z1->addDaughter(sortedDaughters.at(0));
-  Z1->addDaughter(sortedDaughters.at(1));
+  for (int d=0; d<2; d++){
+    if (sortedDaughters.at(d)!=0) Z1->addDaughter(sortedDaughters.at(d));
+  }
   addSortedV(Z1);
 
-  TLorentzVector pZ2 = sortedDaughters.at(2)->p4+sortedDaughters.at(3)->p4;
-  Particle* Z2 = new Particle(23, pZ2);
+  Particle* Z2 = new Particle(VID, pZ2);
   Z2->addMother(this);
-  Z2->addDaughter(sortedDaughters.at(2));
-  Z2->addDaughter(sortedDaughters.at(3));
+  for (int d=2; d<4; d++){
+    if (sortedDaughters.at(d)!=0) Z2->addDaughter(sortedDaughters.at(d));
+  }
   addSortedV(Z2);
 }
 TLorentzVector ZZCandidate::getAlternativeVMomentum(int index)const{
-  TLorentzVector pZ1 = sortedDaughters.at(0)->p4+sortedDaughters.at(3)->p4;
-  TLorentzVector pZ2 = sortedDaughters.at(2)->p4+sortedDaughters.at(1)->p4;
-  if (std::abs(pZ1.M() - PDGHelpers::HVVmass)>std::abs(pZ2.M() - PDGHelpers::HVVmass)){
-    pZ1 = sortedDaughters.at(2)->p4+sortedDaughters.at(1)->p4;
-    pZ2 = sortedDaughters.at(0)->p4+sortedDaughters.at(3)->p4;
+  TLorentzVector nullFourVector(0, 0, 0, 0);
+  if (sortedDaughters.size()>3){
+    TLorentzVector pZ1 = sortedDaughters.at(0)->p4;
+    if (sortedDaughters.size()>=3) pZ1 = pZ1 + sortedDaughters.at(3)->p4;
+    TLorentzVector pZ2 = sortedDaughters.at(2)->p4+sortedDaughters.at(1)->p4;
+    if (std::abs(pZ1.M() - PDGHelpers::HVVmass)>std::abs(pZ2.M() - PDGHelpers::HVVmass)){
+      TLorentzVector pZtmp = pZ1;
+      pZ1 = pZ2;
+      pZ2 = pZtmp;
+    }
+    return (index==0 ? pZ1 : pZ2);
   }
-  return (index==0 ? pZ1 : pZ2);
+  else if (sortedDaughters.size()<3) return nullFourVector;
 }
 
 bool ZZCandidate::checkDaughtership(Particle* myParticle)const{

@@ -72,8 +72,10 @@ void convertPythia::run(){
             vectorInt hasGenHiggs;
             for (int p=0; p<genParticleList.size(); p++){
               Particle* genPart = genParticleList.at(p); // Has mother info from Pythia reading
-              if (isAHiggs(genPart->id)) hasGenHiggs.push_back(p);
-
+              if (isAHiggs(genPart->id)){
+                hasGenHiggs.push_back(p);
+                if (options->doGenHZZdecay()==-1 && (genPart->genStatus==1 || genPart->genStatus==2)) genEvent.addIntermediate(genPart);
+              }
               if (genPart->genStatus==1){
                 if (isALepton(genPart->id)) genEvent.addLepton(genPart);
                 else if (isANeutrino(genPart->id)) genEvent.addNeutrino(genPart);
