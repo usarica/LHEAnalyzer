@@ -47,6 +47,8 @@ void convertLHE::run(){
         vector<ZZCandidate*> candList; // Bookkeeping
         vector<ZZCandidate*> smearedCandList; // Bookkeeping
 
+        if (particleList.empty())
+          continue;
         if (nTotalEventsRead < skipevents || nTotalEventsRead >= maxevents+skipevents){
           particleList.clear();
           nTotalEventsRead++;
