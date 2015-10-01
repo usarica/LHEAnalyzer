@@ -44,6 +44,8 @@ public:
   string getTempDir(){ return tmpDir; }
   string outputFilename(){ return coutput; }
   vector<string> inputfiles(){ return filename; }
+  Int_t getMaxEvents();
+  Int_t getSkipEvents();
 
   // MELA-related options
   Double_t mH(){ return mPOLE; }
@@ -94,6 +96,8 @@ protected:
   string outdir;
   string coutput;
   string tmpDir;
+  int maxevents;
+  int skipevents;
 
   vector<string> filename;
   vector<string> excludedBranch;

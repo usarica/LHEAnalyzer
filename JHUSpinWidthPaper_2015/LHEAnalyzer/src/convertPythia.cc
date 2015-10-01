@@ -27,6 +27,9 @@ void convertPythia::finalizeRun(){
 void convertPythia::run(){
   Float_t MC_weight=0;
   Int_t isSelected=0;
+  int nTotalEventsRead = 0;
+  int maxevents = options->getMaxEvents();
+  int skipevents = options->getSkipEvents();
 
   tree->bookAllBranches(false);
 
@@ -51,6 +54,18 @@ void convertPythia::run(){
       int nInputEvents = tin->GetEntries();
       int nProcessed = 0;
       for (int ev=0; ev<nInputEvents; ev++){
+        if (nTotalEventsRead < skipevents){   //this will trigger on the first event, so ev==0
+          int numbertoskip = std::min(skipevents - nTotalEventsRead, nInputEvents);
+          ev += numbertoskip;
+          nTotalEventsRead += numbertoskip;
+          continue;
+        }
+        if (nTotalEventsRead >= maxevents+skipevents){
+          break;
+        }
+
+        nTotalEventsRead++;
+
         double weight;
         bool genSuccess=false, smearedSuccess=false;
 
