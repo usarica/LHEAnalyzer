@@ -56,7 +56,7 @@ void convertPythia::run(){
       for (int ev=0; ev<nInputEvents; ev++){
         if (nTotalEventsRead < skipevents){   //this will trigger on the first event, so ev==0
           int numbertoskip = std::min(skipevents - nTotalEventsRead, nInputEvents);
-          ev += numbertoskip;
+          ev += numbertoskip - 1; //-1 to counter ev++
           nTotalEventsRead += numbertoskip;
           continue;
         }
