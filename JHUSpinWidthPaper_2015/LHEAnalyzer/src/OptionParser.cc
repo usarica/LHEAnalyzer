@@ -244,7 +244,10 @@ void OptionParser::interpretOption(string wish, string value){
   else if (wish=="sampleProductionId") extractMelaGenProdId(value);
 
   else if (wish=="maxevents") maxevents = atoi(value.c_str());
-  else if (wish=="skipevents") skipevents = atoi(value.c_str());
+  else if (wish=="skipevents"){
+    skipevents = atoi(value.c_str());
+    if (skipevents < 0) skipevents = 0;
+  }
 
   else cerr << "Unknown specified argument: " << value << " with specifier " << wish << endl;
 }
@@ -259,8 +262,8 @@ void OptionParser::printOptionsHelp(){
   cout << "- outfile: Output file name. Default=\"tmp.root\"\n\n";
   cout << "- outdir: Location of the output file. Default=\"./\"\n\n";
   cout << "- tmpDir: Location of temporary files. Default=\"./tmpStore/\"\n\n";
-  cout << "- maxevents: Maximum number of events to process\n\n";
-  cout << "- skipevents: Number of events to skip at the beginning\n\n";
+  cout << "- maxevents: Maximum number of events to process. Default=-1 (no maximum)\n\n";
+  cout << "- skipevents: Number of events to skip at the beginning. Default=0\n\n";
 
   cout << "- sqrts: pp collision c.o.m. energy. Default=13 (TeV)\n\n";
   cout << "- removeDaughterMasses: Switch to control the removal of lepton masses in the angle computation. Default=1\n\n";

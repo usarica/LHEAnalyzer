@@ -163,7 +163,7 @@ void Reader::run(){
             nTotalEventsRead += numbertoskip;
             continue;
           }
-          if (nTotalEventsRead >= maxevents+skipevents){
+          if (maxevents >= 0 && nTotalEventsRead >= maxevents+skipevents){
             break;
           }
 

@@ -49,10 +49,10 @@ void convertLHE::run(){
 
         if (particleList.empty())
           continue;
-        if (nTotalEventsRead < skipevents || nTotalEventsRead >= maxevents+skipevents){
+        if (nTotalEventsRead < skipevents || (maxevents >= 0 && nTotalEventsRead >= maxevents+skipevents)){
           particleList.clear();
           nTotalEventsRead++;
-          if (nTotalEventsRead >= maxevents+skipevents)
+          if (maxevents >= 0 && nTotalEventsRead >= maxevents+skipevents)
             break;
           else
             continue;
