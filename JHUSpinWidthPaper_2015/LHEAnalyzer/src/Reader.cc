@@ -121,6 +121,9 @@ void Reader::run(){
   Int_t isSelected=0;
 
   bool firstFile = true;
+  int nTotalEventsRead = 0;
+  int maxevents = options->getMaxEvents();
+  int skipevents = options->getSkipEvents();
 
   for (int f=0; f<filename.size(); f++){
     string cinput = filename.at(f);
@@ -154,6 +157,18 @@ void Reader::run(){
         int nInputEvents = tin->getTree()->GetEntries();
         cout << "Number of input events to process: " << nInputEvents << endl;
         for (int ev=0; ev<nInputEvents; ev++){
+          if (nTotalEventsRead < skipevents){   //this will trigger on the first event, so ev==0
+            int numbertoskip = std::min(skipevents - nTotalEventsRead, nInputEvents);
+            ev += numbertoskip - 1; //-1 to counter ev++
+            nTotalEventsRead += numbertoskip;
+            continue;
+          }
+          if (maxevents >= 0 && nTotalEventsRead >= maxevents+skipevents){
+            break;
+          }
+
+          nTotalEventsRead++;
+
           vector<Particle*> genParticleList;
           vector<Particle*> recoParticleList;
           vector<ZZCandidate*> genCandList; // Bookkeeping

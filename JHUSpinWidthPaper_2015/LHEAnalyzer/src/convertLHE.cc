@@ -27,6 +27,9 @@ void convertLHE::run(){
   double weight;
   Float_t MC_weight=0;
   Int_t isSelected=0;
+  int nTotalEventsRead = 0;
+  int maxevents = options->getMaxEvents();
+  int skipevents = options->getSkipEvents();
 
   tree->bookAllBranches(false);
 
@@ -43,6 +46,19 @@ void convertLHE::run(){
         vector<Particle*> smearedParticleList; // Bookkeeping
         vector<ZZCandidate*> candList; // Bookkeeping
         vector<ZZCandidate*> smearedCandList; // Bookkeeping
+
+        if (particleList.empty())
+          continue;
+        if (nTotalEventsRead < skipevents || (maxevents >= 0 && nTotalEventsRead >= maxevents+skipevents)){
+          particleList.clear();
+          nTotalEventsRead++;
+          if (maxevents >= 0 && nTotalEventsRead >= maxevents+skipevents)
+            break;
+          else
+            continue;
+        }
+
+        nTotalEventsRead++;
 
         if (particleList.size()==0 && weight!=0) weight=0;
         if (weight!=0){

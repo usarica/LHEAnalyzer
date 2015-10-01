@@ -25,7 +25,9 @@ recoHiggsCandidateSelectionScheme(HiggsComparators::BestZ1ThenZ2ScSumPt),
 indir("./"),
 outdir("./"),
 tmpDir("./tmpStore/"),
-coutput("tmp.root")
+coutput("tmp.root"),
+maxevents(-1),
+skipevents(0)
 {
   for (int a=0; a<argc; a++){
     string tmpArg(argv[a]);
@@ -117,6 +119,13 @@ Bool_t OptionParser::isAnExcludedBranch(string branchname){
     }
   }
   return isExcluded;
+}
+
+int OptionParser::getMaxEvents(){
+  return maxevents;
+}
+int OptionParser::getSkipEvents(){
+  return skipevents;
 }
 
 void OptionParser::configureMela(){
@@ -234,6 +243,12 @@ void OptionParser::interpretOption(string wish, string value){
   else if (wish=="includeGenProdProb") splitOptionRecursive(value, includeGenProdProb, ',');
   else if (wish=="sampleProductionId") extractMelaGenProdId(value);
 
+  else if (wish=="maxevents") maxevents = atoi(value.c_str());
+  else if (wish=="skipevents"){
+    skipevents = atoi(value.c_str());
+    if (skipevents < 0) skipevents = 0;
+  }
+
   else cerr << "Unknown specified argument: " << value << " with specifier " << wish << endl;
 }
 
@@ -247,6 +262,8 @@ void OptionParser::printOptionsHelp(){
   cout << "- outfile: Output file name. Default=\"tmp.root\"\n\n";
   cout << "- outdir: Location of the output file. Default=\"./\"\n\n";
   cout << "- tmpDir: Location of temporary files. Default=\"./tmpStore/\"\n\n";
+  cout << "- maxevents: Maximum number of events to process. Default=-1 (no maximum)\n\n";
+  cout << "- skipevents: Number of events to skip at the beginning. Default=0\n\n";
 
   cout << "- sqrts: pp collision c.o.m. energy. Default=13 (TeV)\n\n";
   cout << "- removeDaughterMasses: Switch to control the removal of lepton masses in the angle computation. Default=1\n\n";
