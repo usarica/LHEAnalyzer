@@ -49,7 +49,8 @@ void convertLHE::run(){
         vector<ZZCandidate*> smearedCandList; // Bookkeeping
 
         if (globalNEvents>=maxProcEvents && maxProcEvents>=0) break;
-        bool doSkipEvent = particleList.empty();
+        if (particleList.empty()) continue;
+        bool doSkipEvent = false;
         for (int es=0; es<eventSkipList.size(); es++){
           if (
             (eventSkipList.at(es).first<=globalNEvents && eventSkipList.at(es).second>=globalNEvents)
@@ -57,7 +58,7 @@ void convertLHE::run(){
             (eventSkipList.at(es).first<=globalNEvents && eventSkipList.at(es).second<0)
             )doSkipEvent=true;
         }
-        if (doSkipEvent) continue;
+        if (doSkipEvent){ globalNEvents++; continue; }
 
         if (particleList.size()==0 && weight!=0) weight=0;
         if (weight!=0){

@@ -166,7 +166,7 @@ void Reader::run(){
               (eventSkipList.at(es).first<=globalNEvents && eventSkipList.at(es).second<0)
               )doSkipEvent=true;
           }
-          if (doSkipEvent) continue;
+          if (doSkipEvent){ globalNEvents++; continue; }
 
           vector<Particle*> genParticleList;
           vector<Particle*> recoParticleList;
