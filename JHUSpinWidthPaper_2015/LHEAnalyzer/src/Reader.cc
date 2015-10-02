@@ -160,7 +160,11 @@ void Reader::run(){
           if (globalNEvents>=maxProcEvents && maxProcEvents>=0) break;
           bool doSkipEvent = false;
           for (int es=0; es<eventSkipList.size(); es++){
-            if (eventSkipList.at(es).first<=globalNEvents && eventSkipList.at(es).second>=globalNEvents) doSkipEvent=true;
+            if (
+              (eventSkipList.at(es).first<=globalNEvents && eventSkipList.at(es).second>=globalNEvents)
+              ||
+              (eventSkipList.at(es).first<=globalNEvents && eventSkipList.at(es).second<0)
+              )doSkipEvent=true;
           }
           if (doSkipEvent) continue;
 

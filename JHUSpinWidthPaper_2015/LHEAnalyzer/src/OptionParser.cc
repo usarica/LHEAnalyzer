@@ -160,7 +160,7 @@ void OptionParser::extractSkippedEvents(string rawoption){
     Int_t lastId=(Int_t)atoi(strhigh.c_str());
     if (!lastInclusive) lastId--;
 
-    if (lastId>=0 && lastId<firstId){
+    if ((lastId>=0 && lastId<firstId) || (firstId<0 && lastId<0)){
       cerr << "Invalid skipEvents range. Ignoring..." << endl;
       continue;
     }
