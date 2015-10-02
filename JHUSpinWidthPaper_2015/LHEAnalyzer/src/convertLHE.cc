@@ -58,7 +58,7 @@ void convertLHE::run(){
             (eventSkipList.at(es).first<=globalNEvents && eventSkipList.at(es).second<0)
             )doSkipEvent=true;
         }
-        if (doSkipEvent){ globalNEvents++; continue; }
+        if (doSkipEvent){ globalNEvents++; ev++; continue; }
 
         if (particleList.size()==0 && weight!=0) weight=0;
         if (weight!=0){
@@ -168,7 +168,7 @@ void convertLHE::run(){
         globalNEvents++;
       }
       fin.close();
-      cout << "Processed number of events from the input file: " << nProcessed << " / " << ev << " / " << globalNEvents << endl;
+      cout << "Processed number of events from the input file (recorded events / sample size observed / cumulative traversed): " << nProcessed << " / " << ev << " / " << globalNEvents << endl;
     }
   }
   finalizeRun();

@@ -244,7 +244,7 @@ void Reader::run(){
           globalNEvents++;
         }
         resetBranchBinding();
-        cout << "Processed number of events from the input file: " << nProcessed << " / " << nInputEvents << " / " << globalNEvents << endl;
+        cout << "Processed number of events from the input file (recorded events / sample size observed / cumulative traversed): " << nProcessed << " / " << nInputEvents << " / " << globalNEvents << endl;
       }
       delete tin;
       fin->Close();

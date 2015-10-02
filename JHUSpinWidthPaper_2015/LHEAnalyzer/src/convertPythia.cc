@@ -181,7 +181,7 @@ void convertPythia::run(){
         globalNEvents++;
       }
       fin->Close();
-      cout << "Processed number of events from the input file: " << nProcessed << " / " << nInputEvents << " / " << globalNEvents << endl;
+      cout << "Processed number of events from the input file (recorded events / sample size observed / cumulative traversed): " << nProcessed << " / " << nInputEvents << " / " << globalNEvents << endl;
     }
   }
   finalizeRun();

@@ -60,6 +60,10 @@ void OptionParser::analyze(){
     }
   }
 
+  if (maxEvents>=0){
+    for (int es=0; es<eventSkipRanges.size(); es++) maxEvents += (eventSkipRanges.at(es).second-eventSkipRanges.at(es).first+1);
+  }
+
   // Check for any invalid options
   if (isGenHZZ==-1){
     cout << "Gen. Higgs decay is disabled. Disabling MEs, decay angles and anything reco. as well." << endl;
@@ -143,7 +147,7 @@ void OptionParser::extractSkippedEvents(string rawoption){
     Int_t firstId=(Int_t)atoi(strlow.c_str());
     if (!firstInclusive) firstId++;
 
-    bool lastInclusive = true;
+    bool lastInclusive = false;
     size_t posLastInc=strhigh.find("]");
     size_t posLastExc=strhigh.find(")");
     if (posLastInc!=string::npos || posLastExc!=string::npos){
@@ -151,11 +155,11 @@ void OptionParser::extractSkippedEvents(string rawoption){
         cerr << "Invalid skipEvents range. Ignoring..." << endl;
         continue;
       }
-      if (posLastExc!=string::npos){
-        lastInclusive=false;
-        strhigh.erase(strhigh.begin()+posLastExc, strhigh.end());
+      if (posLastExc!=string::npos) strhigh.erase(strhigh.begin()+posLastExc, strhigh.end());
+      else{
+        lastInclusive=true;
+        strhigh.erase(strhigh.begin()+posLastInc, strhigh.end());
       }
-      else strhigh.erase(strhigh.begin()+posLastInc, strhigh.end());
     }
     Int_t lastId=(Int_t)atoi(strhigh.c_str());
     if (!lastInclusive) lastId--;
