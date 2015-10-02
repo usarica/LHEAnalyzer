@@ -44,8 +44,8 @@ public:
   string getTempDir(){ return tmpDir; }
   string outputFilename(){ return coutput; }
   vector<string> inputfiles(){ return filename; }
-  Int_t getMaxEvents();
-  Int_t getSkipEvents();
+  Int_t maxEventsToProcess(){ return maxEvents; };
+  vector < pair<Int_t, Int_t> > getSkippedEvents(){ return eventSkipRanges; };
 
   // MELA-related options
   Double_t mH(){ return mPOLE; }
@@ -65,6 +65,8 @@ public:
 
 
 protected:
+  void extractSkippedEvents(string rawoption);
+
   void configureMela();
   void deconfigureMela();
   void extractMelaGenProdId(string rawoption);
@@ -92,15 +94,14 @@ protected:
   Int_t recoSmearBehaviour;
   HiggsComparators::CandidateSelection genHiggsCandidateSelectionScheme;
   HiggsComparators::CandidateSelection recoHiggsCandidateSelectionScheme;
+
   string indir;
   string outdir;
   string coutput;
   string tmpDir;
-  int maxevents;
-  int skipevents;
-
   vector<string> filename;
   vector<string> excludedBranch;
+  Int_t maxEvents;
 
   // Mela probabilities to include, has to be in abbreviated form (eg. "All", "None", "p0plus", "g1", "g1_prime2" etc.)
   pair<TVar::Production, TVar::MatrixElement> sampleProductionId;
@@ -108,6 +109,8 @@ protected:
   vector<string> includeRecoDecayProb;
   vector<string> includeGenProdProb;
   vector<string> includeRecoProdProb;
+
+  vector < pair<Int_t, Int_t> > eventSkipRanges;
 };
 
 #endif

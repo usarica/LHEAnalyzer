@@ -26,8 +26,7 @@ indir("./"),
 outdir("./"),
 tmpDir("./tmpStore/"),
 coutput("tmp.root"),
-maxevents(-1),
-skipevents(0)
+maxEvents(-1)
 {
   for (int a=0; a<argc; a++){
     string tmpArg(argv[a]);
@@ -120,12 +119,55 @@ Bool_t OptionParser::isAnExcludedBranch(string branchname){
   }
   return isExcluded;
 }
+void OptionParser::extractSkippedEvents(string rawoption){
+  vector<string> skipPair;
+  splitOptionRecursive(rawoption, skipPair, ',');
+  for (int p=0; p<skipPair.size(); p++){
+    string strlow, strhigh;
+    splitOption(skipPair.at(p), strlow, strhigh, '.');
 
-int OptionParser::getMaxEvents(){
-  return maxevents;
-}
-int OptionParser::getSkipEvents(){
-  return skipevents;
+    bool firstInclusive = true;
+    size_t posFirstInc=strlow.find("[");
+    size_t posFirstExc=strlow.find("(");
+    if (posFirstInc!=string::npos || posFirstExc!=string::npos){
+      if (posFirstInc!=string::npos && posFirstExc!=string::npos){
+        cerr << "Invalid skipEvents range. Ignoring..." << endl;
+        continue;
+      }
+      if (posFirstExc!=string::npos){
+        firstInclusive=false;
+        strlow = strlow.substr(posFirstExc+1);
+      }
+      else strlow = strlow.substr(posFirstInc+1);
+    }
+    Int_t firstId=(Int_t)atoi(strlow.c_str());
+    if (!firstInclusive) firstId++;
+
+    bool lastInclusive = true;
+    size_t posLastInc=strhigh.find("]");
+    size_t posLastExc=strhigh.find(")");
+    if (posLastInc!=string::npos || posLastExc!=string::npos){
+      if (posLastInc!=string::npos && posLastExc!=string::npos){
+        cerr << "Invalid skipEvents range. Ignoring..." << endl;
+        continue;
+      }
+      if (posLastExc!=string::npos){
+        lastInclusive=false;
+        strhigh.erase(strhigh.begin()+posLastExc, strhigh.end());
+      }
+      else strhigh.erase(strhigh.begin()+posLastInc, strhigh.end());
+    }
+    Int_t lastId=(Int_t)atoi(strhigh.c_str());
+    if (!lastInclusive) lastId--;
+
+    if (lastId>=0 && lastId<firstId){
+      cerr << "Invalid skipEvents range. Ignoring..." << endl;
+      continue;
+    }
+    pair<Int_t, Int_t> tmpPair(firstId, lastId);
+    cout << "OptionParser: Will skip events " << tmpPair.first << " - " << tmpPair.second << endl;
+    eventSkipRanges.push_back(tmpPair);
+  }
 }
 
 void OptionParser::configureMela(){
@@ -206,7 +248,7 @@ void OptionParser::interpretOption(string wish, string value){
   else if (wish=="includeGenInfo") includeGenInfo = (int)atoi(value.c_str());
   else if (wish=="includeRecoInfo") includeRecoInfo = (int)atoi(value.c_str());
   else if (wish=="fileLevel") fileLevel = (int)atoi(value.c_str());
-  else if (wish=="isGenHZZ") {
+  else if (wish=="isGenHZZ"){
     isGenHZZ = (int)atoi(value.c_str());
     if (isGenHZZ==0) PDGHelpers::setHVVmass(PDGHelpers::Wmass);
     else PDGHelpers::setHVVmass(PDGHelpers::Zmass);
@@ -227,6 +269,8 @@ void OptionParser::interpretOption(string wish, string value){
   else if (wish=="outfile") coutput = value;
   else if (wish=="tmpDir" || wish=="tempDir") tmpDir = value;
   else if (wish=="excludeBranch") splitOptionRecursive(value, excludedBranch, ',');
+  else if (wish=="maxevents" || wish=="maxEvents") maxEvents = (int)atoi(value.c_str());
+  else if (wish=="skipevents" || wish=="skipEvents") extractSkippedEvents(value);
 
   else if (wish=="mH" || wish=="MH" || wish=="mPOLE") mPOLE = (double)atof(value.c_str());
   else if (wish=="GH" || wish=="GaH" || wish=="GammaH" || wish=="wPOLE") wPOLE = (double)atof(value.c_str());
@@ -243,12 +287,6 @@ void OptionParser::interpretOption(string wish, string value){
   else if (wish=="includeGenProdProb") splitOptionRecursive(value, includeGenProdProb, ',');
   else if (wish=="sampleProductionId") extractMelaGenProdId(value);
 
-  else if (wish=="maxevents") maxevents = atoi(value.c_str());
-  else if (wish=="skipevents"){
-    skipevents = atoi(value.c_str());
-    if (skipevents < 0) skipevents = 0;
-  }
-
   else cerr << "Unknown specified argument: " << value << " with specifier " << wish << endl;
 }
 
@@ -262,8 +300,8 @@ void OptionParser::printOptionsHelp(){
   cout << "- outfile: Output file name. Default=\"tmp.root\"\n\n";
   cout << "- outdir: Location of the output file. Default=\"./\"\n\n";
   cout << "- tmpDir: Location of temporary files. Default=\"./tmpStore/\"\n\n";
-  cout << "- maxevents: Maximum number of events to process. Default=-1 (no maximum)\n\n";
-  cout << "- skipevents: Number of events to skip at the beginning. Default=0\n\n";
+  cout << "- maxevents / maxEvents: Maximum number of events to process. Default=-1 (all events)\n\n";
+  cout << "- skipevents / skipEvents: Events to skip at the beginning. Default=none.\n\tAssignment is made in the form [ev1.ev2],[ev3.ev4] to allow multiple ranges. Use [ or ] for inclusive, ( or ) for exclusive ranges. Counting the events begins from 0.\n\n";
 
   cout << "- sqrts: pp collision c.o.m. energy. Default=13 (TeV)\n\n";
   cout << "- removeDaughterMasses: Switch to control the removal of lepton masses in the angle computation. Default=1\n\n";

@@ -120,11 +120,11 @@ void Reader::run(){
   Float_t MC_weight=0;
   Int_t isSelected=0;
 
-  bool firstFile = true;
-  int nTotalEventsRead = 0;
-  int maxevents = options->getMaxEvents();
-  int skipevents = options->getSkipEvents();
+  int globalNEvents = 0;
+  int maxProcEvents = options->maxEventsToProcess();
+  vector < pair<Int_t, Int_t> > eventSkipList = options->getSkippedEvents();
 
+  bool firstFile = true;
   for (int f=0; f<filename.size(); f++){
     string cinput = filename.at(f);
     cout << "Processing " << cinput << "..." << endl;
@@ -157,17 +157,12 @@ void Reader::run(){
         int nInputEvents = tin->getTree()->GetEntries();
         cout << "Number of input events to process: " << nInputEvents << endl;
         for (int ev=0; ev<nInputEvents; ev++){
-          if (nTotalEventsRead < skipevents){   //this will trigger on the first event, so ev==0
-            int numbertoskip = std::min(skipevents - nTotalEventsRead, nInputEvents);
-            ev += numbertoskip - 1; //-1 to counter ev++
-            nTotalEventsRead += numbertoskip;
-            continue;
+          if (globalNEvents>=maxProcEvents && maxProcEvents>=0) break;
+          bool doSkipEvent = false;
+          for (int es=0; es<eventSkipList.size(); es++){
+            if (eventSkipList.at(es).first<=globalNEvents && eventSkipList.at(es).second>=globalNEvents) doSkipEvent=true;
           }
-          if (maxevents >= 0 && nTotalEventsRead >= maxevents+skipevents){
-            break;
-          }
-
-          nTotalEventsRead++;
+          if (doSkipEvent) continue;
 
           vector<Particle*> genParticleList;
           vector<Particle*> recoParticleList;
@@ -241,9 +236,11 @@ void Reader::run(){
           recoParticleList.clear();
           genCandList.clear();
           genParticleList.clear();
+
+          globalNEvents++;
         }
         resetBranchBinding();
-        cout << "Processed number of events from the input file: " << nProcessed << " / " << nInputEvents << endl;
+        cout << "Processed number of events from the input file: " << nProcessed << " / " << nInputEvents << " / " << globalNEvents << endl;
       }
       delete tin;
       fin->Close();

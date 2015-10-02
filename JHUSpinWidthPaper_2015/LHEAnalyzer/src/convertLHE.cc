@@ -27,9 +27,10 @@ void convertLHE::run(){
   double weight;
   Float_t MC_weight=0;
   Int_t isSelected=0;
-  int nTotalEventsRead = 0;
-  int maxevents = options->getMaxEvents();
-  int skipevents = options->getSkipEvents();
+
+  int globalNEvents = 0;
+  int maxProcEvents = options->maxEventsToProcess();
+  vector < pair<Int_t, Int_t> > eventSkipList = options->getSkippedEvents();
 
   tree->bookAllBranches(false);
 
@@ -47,18 +48,12 @@ void convertLHE::run(){
         vector<ZZCandidate*> candList; // Bookkeeping
         vector<ZZCandidate*> smearedCandList; // Bookkeeping
 
-        if (particleList.empty())
-          continue;
-        if (nTotalEventsRead < skipevents || (maxevents >= 0 && nTotalEventsRead >= maxevents+skipevents)){
-          particleList.clear();
-          nTotalEventsRead++;
-          if (maxevents >= 0 && nTotalEventsRead >= maxevents+skipevents)
-            break;
-          else
-            continue;
+        if (globalNEvents>=maxProcEvents && maxProcEvents>=0) break;
+        bool doSkipEvent = particleList.empty();
+        for (int es=0; es<eventSkipList.size(); es++){
+          if (eventSkipList.at(es).first<=globalNEvents && eventSkipList.at(es).second>=globalNEvents) doSkipEvent=true;
         }
-
-        nTotalEventsRead++;
+        if (doSkipEvent) continue;
 
         if (particleList.size()==0 && weight!=0) weight=0;
         if (weight!=0){
@@ -164,9 +159,11 @@ void convertLHE::run(){
         smearedParticleList.clear();
         candList.clear();
         particleList.clear();
+
+        globalNEvents++;
       }
       fin.close();
-      cout << "Processed number of events from the input file: " << nProcessed << " / " << ev << endl;
+      cout << "Processed number of events from the input file: " << nProcessed << " / " << ev << " / " << globalNEvents << endl;
     }
   }
   finalizeRun();

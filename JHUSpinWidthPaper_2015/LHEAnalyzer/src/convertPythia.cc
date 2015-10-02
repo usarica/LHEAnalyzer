@@ -27,9 +27,10 @@ void convertPythia::finalizeRun(){
 void convertPythia::run(){
   Float_t MC_weight=0;
   Int_t isSelected=0;
-  int nTotalEventsRead = 0;
-  int maxevents = options->getMaxEvents();
-  int skipevents = options->getSkipEvents();
+
+  int globalNEvents = 0;
+  int maxProcEvents = options->maxEventsToProcess();
+  vector < pair<Int_t, Int_t> > eventSkipList = options->getSkippedEvents();
 
   tree->bookAllBranches(false);
 
@@ -54,17 +55,12 @@ void convertPythia::run(){
       int nInputEvents = tin->GetEntries();
       int nProcessed = 0;
       for (int ev=0; ev<nInputEvents; ev++){
-        if (nTotalEventsRead < skipevents){   //this will trigger on the first event, so ev==0
-          int numbertoskip = std::min(skipevents - nTotalEventsRead, nInputEvents);
-          ev += numbertoskip - 1; //-1 to counter ev++
-          nTotalEventsRead += numbertoskip;
-          continue;
+        if (globalNEvents>=maxProcEvents && maxProcEvents>=0) break;
+        bool doSkipEvent = false;
+        for (int es=0; es<eventSkipList.size(); es++){
+          if (eventSkipList.at(es).first<=globalNEvents && eventSkipList.at(es).second>=globalNEvents) doSkipEvent=true;
         }
-        if (maxevents >= 0 && nTotalEventsRead >= maxevents+skipevents){
-          break;
-        }
-
-        nTotalEventsRead++;
+        if (doSkipEvent) continue;
 
         double weight;
         bool genSuccess=false, smearedSuccess=false;
@@ -177,10 +173,11 @@ void convertPythia::run(){
         smearedParticleList.clear();
         genCandList.clear();
         genParticleList.clear();
-      }
 
+        globalNEvents++;
+      }
       fin->Close();
-      cout << "Processed number of events from the input file: " << nProcessed << " / " << nInputEvents << endl;
+      cout << "Processed number of events from the input file: " << nProcessed << " / " << nInputEvents << " / " << globalNEvents << endl;
     }
   }
   finalizeRun();
