@@ -492,81 +492,6 @@ void melaHelpers::computeAngles(
   TVector3 normal2_BX = (p4M21_BX.Vect().Cross(p4M22_BX.Vect())).Unit();
   TVector3 normalSC_BX = (beamAxis.Cross(p3V1_BX)).Unit();
 
-/*
-  cout << "p4M11: "
-    << p4M11.X() << '\t'
-    << p4M11.Y() << '\t'
-    << p4M11.Z() << '\t'
-    << p4M11.T() << '\t'
-    << p4M11.M() << endl;
-  cout << "p4M11_BX: "
-    << p4M11_BX.X() << '\t'
-    << p4M11_BX.Y() << '\t'
-    << p4M11_BX.Z() << '\t'
-    << p4M11_BX.T() << '\t'
-    << p4M11_BX.M() << endl;
-  cout << "p4M12: "
-    << p4M12.X() << '\t'
-    << p4M12.Y() << '\t'
-    << p4M12.Z() << '\t'
-    << p4M12.T() << '\t'
-    << p4M12.M() << endl;
-  cout << "p4M12_BX: "
-    << p4M12_BX.X() << '\t'
-    << p4M12_BX.Y() << '\t'
-    << p4M12_BX.Z() << '\t'
-    << p4M12_BX.T() << '\t'
-    << p4M12_BX.M() << endl;
-  cout << "p4V1_BX: "
-    << p3V1_BX.X() << '\t'
-    << p3V1_BX.Y() << '\t'
-    << p3V1_BX.Z() << '\t'
-    << (p4M11_BX+p4M12_BX).T() << '\t'
-    << (p4M11_BX+p4M12_BX).M() << endl;
-  cout << "p4M21: "
-    << p4M21.X() << '\t'
-    << p4M21.Y() << '\t'
-    << p4M21.Z() << '\t'
-    << p4M21.T() << '\t'
-    << p4M21.M() << endl;
-  cout << "p4M21_BX: "
-    << p4M21_BX.X() << '\t'
-    << p4M21_BX.Y() << '\t'
-    << p4M21_BX.Z() << '\t'
-    << p4M21_BX.T() << '\t'
-    << p4M21_BX.M() << endl;
-  cout << "p4M22: "
-    << p4M22.X() << '\t'
-    << p4M22.Y() << '\t'
-    << p4M22.Z() << '\t'
-    << p4M22.T() << '\t'
-    << p4M22.M() << endl;
-  cout << "p4M22_BX: "
-    << p4M22_BX.X() << '\t'
-    << p4M22_BX.Y() << '\t'
-    << p4M22_BX.Z() << '\t'
-    << p4M22_BX.T() << '\t'
-    << p4M22_BX.M() << endl;
-  cout << "p3V2_BX: "
-    << (p4M21_BX+p4M22_BX).X() << '\t'
-    << (p4M21_BX+p4M22_BX).Y() << '\t'
-    << (p4M21_BX+p4M22_BX).Z() << '\t'
-    << (p4M21_BX+p4M22_BX).T() << '\t'
-    << (p4M21_BX+p4M22_BX).M() << endl;
-  cout << "normalSC_BX: "
-    << normalSC_BX.X() << '\t'
-    << normalSC_BX.Y() << '\t'
-    << normalSC_BX.Z() << endl;
-  cout << "normal1_BX: "
-    << normal1_BX.X() << '\t'
-    << normal1_BX.Y() << '\t'
-    << normal1_BX.Z() << endl;
-  cout << "normal2_BX: "
-    << normal2_BX.X() << '\t'
-    << normal2_BX.Y() << '\t'
-    << normal2_BX.Z() << endl;
-  cout << endl;
-*/
 
   //// Phi
   float tmpSgnPhi = p3V1_BX.Dot(normal1_BX.Cross(normal2_BX));
@@ -820,8 +745,12 @@ void melaHelpers::computeVHangles(
     costheta2,
     Phi,
     Phi1);
-  Phi = -Phi; // Fix convention of phi1 wrt decay angles in VH
-  Phi1 = (Phi1>0 ? TMath::Pi()-Phi1 : -TMath::Pi()-Phi1); // Fix convention of phi1 wrt decay angles in VH
+  // Return from -p_Zs to p_Zs. Notice that inverting this computation will now give p11 as p(incoming qbar) ~ -p(outgoing q)
+  Phi = -Phi; // Because p1 -> -p1
+  Phi1 = (Phi1>0 ? TMath::Pi()-Phi1 : -TMath::Pi()-Phi1); // Because p1 -> -p1 implies nsc -> -nsc, p1 -> -p1
+  costheta1 = -costheta1; // Because for p1 -> -p1, p1i -> -p1i
+  costheta2 = -costheta2; // Because p1 -> -p1
+  costhetastar = -costhetastar; // Because p1 -> -p1
 }
 
 
