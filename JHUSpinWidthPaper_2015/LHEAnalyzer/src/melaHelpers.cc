@@ -228,23 +228,41 @@ Float_t melaHelpers::melaBranchMEInterpreter(const ZZCandidate* cand, string& br
       gList[0].push_back("g2"); gList[1].push_back("0hplus");
       gList[0].push_back("g4"); gList[1].push_back("0minus");
       gList[0].push_back("g1_prime2"); gList[1].push_back("0_g1prime2");
-      if (myProduction==TVar::WH){ // WH, to be revised
-        gCoef.push_back(pair<int, double>(1, 1.*coeffScale));
-        gCoef.push_back(pair<int, double>(3, 0.123659*coeffScale));
-        if (myME==TVar::MCFM) gCoef.push_back(pair<int, double>(11, 1.*coeffScale));
-        else gCoef.push_back(pair<int, double>(5, 1.*coeffScale));
+      if (myProduction==TVar::WH){ // WH
+        gCoef.push_back(pair<int, double>(1, 0.0999064*coeffScale));
+        gCoef.push_back(pair<int, double>(3, 0.123645*coeffScale));
+        if (branchname.find("Gen")==string::npos){
+          if (myME==TVar::MCFM) gCoef.push_back(pair<int, double>(11, -525.556*coeffScale));
+          else gCoef.push_back(pair<int, double>(5, -525.556*coeffScale));
+        }
+        else{ // For a mostly positive discriminant
+          if (myME==TVar::MCFM) gCoef.push_back(pair<int, double>(11, 525.556*coeffScale));
+          else gCoef.push_back(pair<int, double>(5, 525.556*coeffScale));
+        }
       }
-      else if (myProduction==TVar::ZH){ // ZH, to be revised
-        gCoef.push_back(pair<int, double>(1, 1.*coeffScale));
-        gCoef.push_back(pair<int, double>(3, 0.143276*coeffScale));
-        if (myME==TVar::MCFM) gCoef.push_back(pair<int, double>(11, 1.*coeffScale));
-        else gCoef.push_back(pair<int, double>(5, 1.*coeffScale));
+      else if (myProduction==TVar::ZH){ // ZH
+        gCoef.push_back(pair<int, double>(1, 0.112507*coeffScale));
+        gCoef.push_back(pair<int, double>(3, 0.144082*coeffScale));
+        if (branchname.find("Gen")==string::npos){
+          if (myME==TVar::MCFM) gCoef.push_back(pair<int, double>(11, -517.761*coeffScale));
+          else gCoef.push_back(pair<int, double>(5, -517.761*coeffScale));
+        }
+        else{ // For a mostly positive discriminant
+          if (myME==TVar::MCFM) gCoef.push_back(pair<int, double>(11, 517.761*coeffScale));
+          else gCoef.push_back(pair<int, double>(5, 517.761*coeffScale));
+        }
       }
-      else if (myProduction==TVar::JJVBF){ // VBF
+      else if (myProduction==TVar::JJVBF){ // VBF, to be revised
         gCoef.push_back(pair<int, double>(1, 0.270955*coeffScale));
         gCoef.push_back(pair<int, double>(3, 0.29724129*coeffScale));
-        if (myME==TVar::MCFM) gCoef.push_back(pair<int, double>(11, 2132.143*coeffScale));
-        else gCoef.push_back(pair<int, double>(5, 2132.143*coeffScale));
+        if (branchname.find("Gen")==string::npos){
+          if (myME==TVar::MCFM) gCoef.push_back(pair<int, double>(11, -2132.143*coeffScale));
+          else gCoef.push_back(pair<int, double>(5, -2132.143*coeffScale));
+        }
+        else{ // For a mostly positive discriminant
+          if (myME==TVar::MCFM) gCoef.push_back(pair<int, double>(11, 2132.143*coeffScale));
+          else gCoef.push_back(pair<int, double>(5, 2132.143*coeffScale));
+        }
       }
       else if (myProduction==TVar::ZZGG){ // 0-jet ggH dec. ME
         gCoef.push_back(pair<int, double>(1, 1.65684*coeffScale));
