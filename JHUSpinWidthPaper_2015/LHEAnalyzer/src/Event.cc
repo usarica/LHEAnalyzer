@@ -204,12 +204,12 @@ void Event::constructVVCandidates(int isZZ, int fstype){
         }
       }
       for (int c=0; c<3; c++){
-        for (int i=0; i<lepPlusMinus[c][0].size(); i++){
-          for (int j=0; j<lepNu[c][1].size(); j++){
-            TLorentzVector pV = lepPlusMinus[c][0].at(i)->p4+lepNu[c][1].at(j)->p4;
+        for (int i=0; i<lepPlusMinus[c][1].size(); i++){
+          for (int j=0; j<lepNu[c][0].size(); j++){
+            TLorentzVector pV = lepPlusMinus[c][1].at(i)->p4+lepNu[c][0].at(j)->p4;
             Particle* V = new Particle(-24, pV);
-            V->addDaughter(lepPlusMinus[c][0].at(i));
-            V->addDaughter(lepNu[c][1].at(j));
+            V->addDaughter(lepPlusMinus[c][1].at(i));
+            V->addDaughter(lepNu[c][0].at(j));
             tmpVhandle.push_back(V);
           }
         }
@@ -234,7 +234,6 @@ void Event::constructVVCandidates(int isZZ, int fstype){
         }
       }
     }
-
   }
   else{ // Undecayed
     for (std::vector<Particle*>::iterator it = intermediates.begin(); it<intermediates.end(); it++){ // Add directly
@@ -270,6 +269,12 @@ void Event::constructVVCandidates(int isZZ, int fstype){
       Particle* Vi2 = tmpVhandle.at(i)->getDaughter(1);
       Particle* Vj1 = tmpVhandle.at(j)->getDaughter(0);
       Particle* Vj2 = tmpVhandle.at(j)->getDaughter(1);
+      /*
+      std::cout << "11: " << Vi1->id << '\t' << Vi1->x() << '\t' << Vi1->y() << '\t' << Vi1->z() << '\t' << Vi1->t() << '\t' << std::endl;
+      std::cout << "12: " << Vi2->id << '\t' << Vi2->x() << '\t' << Vi2->y() << '\t' << Vi2->z() << '\t' << Vi2->t() << '\t' << std::endl;
+      std::cout << "21: " << Vj1->id << '\t' << Vj1->x() << '\t' << Vj1->y() << '\t' << Vj1->z() << '\t' << Vj1->t() << '\t' << std::endl;
+      std::cout << "22: " << Vj2->id << '\t' << Vj2->x() << '\t' << Vj2->y() << '\t' << Vj2->z() << '\t' << Vj2->t() << '\t' << std::endl;
+      */
       if (Vi1==Vj1 || Vi2==Vj2) continue;
 
       TLorentzVector pH = Vi1->p4+Vi2->p4+Vj1->p4+Vj2->p4;
