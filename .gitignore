@@ -1,0 +1,8 @@
+*.o
+*.so
+*.d
+*.lhe
+*.log
+log*.txt
+analyzer
+
