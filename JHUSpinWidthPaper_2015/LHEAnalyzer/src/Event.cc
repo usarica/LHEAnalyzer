@@ -96,18 +96,22 @@ void Event::addZZCandidate(ZZCandidate* myParticle){
 
 void Event::constructVVCandidates(int isZZ, int fstype){
   /*
-  ZZ / WW
-  fstype=0: 4l / lnulnu
-  fstype=1: 4q / 4q
-  fstype=2: 2l2q / lnu2q
-  fstype=3: 2l2nu / -
-  fstype=4: 2q2nu / -
-  fstype=5: 4nu / -
-  fstype=-1: Any / Any
+  ZZ==1 / WW==0 / Yukawa==2
+  fstype=0: 4l / lnulnu / 2l
+  fstype=1: 4q / 4q / 2q
+  fstype=2: 2l2q / lnu2q / -
+  fstype=3: 2l2nu / - / -
+  fstype=4: 2q2nu / - / -
+  fstype=5: 4nu / - / -
+  fstype=-1: Any / Any / Any
   */
 
-  if (isZZ!=0 && fstype>2){
-    std::cerr << "No " << (isZZ==-1 ? "undecayed" : "WW") << " candidate with final state " << fstype << " is possible!" << std::endl;
+  if ((isZZ<=0 && fstype>2) || (isZZ==1 && fstype>5) || (isZZ==2 && fstype>1) || isZZ>2){
+    if (isZZ<0) std::cerr << "No " << "undecayed" << " candidate with final state " << fstype << " is possible!" << std::endl;
+    else if (isZZ==0) std::cerr << "No " << "WW" << " candidate with final state " << fstype << " is possible!" << std::endl;
+    else if (isZZ==1) std::cerr << "No " << "ZZ" << " candidate with final state " << fstype << " is possible!" << std::endl;
+    else if (isZZ==2) std::cerr << "No " << "f-fbar" << " candidate with final state " << fstype << " is possible!" << std::endl;
+    else if (isZZ>2) std::cerr << "Unknown candidate with final state " << fstype << "!" << std::endl;
     return;
   }
 
@@ -235,6 +239,52 @@ void Event::constructVVCandidates(int isZZ, int fstype){
       }
     }
   }
+  else if (isZZ==2){ // H->f fbar
+
+    if (fstype==-1 || fstype==0){ // H->2l
+      for (int c=0; c<3; c++){
+        for (int i=0; i<lepPlusMinus[c][0].size(); i++){
+          for (int j=0; j<lepPlusMinus[c][1].size(); j++){
+            Particle* F1 = lepPlusMinus[c][0].at(i);
+            Particle* F2 = lepPlusMinus[c][1].at(j);
+
+            TLorentzVector pH = F1->p4+F2->p4;
+            ZZCandidate* cand = new ZZCandidate(25, pH);
+            cand->addDaughter(F1);
+            cand->addDaughter(F2);
+
+            double defaultHVVmass = HVVmass;
+            setHVVmass(Zeromass);
+            cand->sortDaughters();
+            setHVVmass(defaultHVVmass);
+            addZZCandidate(cand);
+          }
+        }
+      }
+    }
+    if (fstype==-1 || fstype==1){ // H->2q
+      for (int c=1; c<7; c++){
+        for (int i=0; i<quarkPlusMinus[c][0].size(); i++){
+          for (int j=0; j<quarkPlusMinus[c][1].size(); j++){
+            Particle* F1 = quarkPlusMinus[c][0].at(i);
+            Particle* F2 = quarkPlusMinus[c][1].at(j);
+
+            TLorentzVector pH = F1->p4+F2->p4;
+            ZZCandidate* cand = new ZZCandidate(25, pH);
+            cand->addDaughter(F1);
+            cand->addDaughter(F2);
+
+            double defaultHVVmass = HVVmass;
+            setHVVmass(Zeromass);
+            cand->sortDaughters();
+            setHVVmass(defaultHVVmass);
+            addZZCandidate(cand);
+          }
+        }
+      }
+    }
+
+  }
   else{ // Undecayed
     for (std::vector<Particle*>::iterator it = intermediates.begin(); it<intermediates.end(); it++){ // Add directly
       if (isAHiggs((*it)->id)){
@@ -245,16 +295,37 @@ void Event::constructVVCandidates(int isZZ, int fstype){
     }
   }
 
-  if (fstype==-1 || fstype==1 || fstype==2 || fstype==4){ // Z/W->2j reco.-level
+  if (
+    ((fstype==-1 || fstype==1 || fstype==2 || fstype==4) && (isZZ==0 || isZZ==1)) // W/Z->2j reco.-level
+    ||
+    ((fstype==-1 || fstype==1) && isZZ==2) // H->2j reco.-level
+    ){
     for (int i=0; i<quarkPlusMinus[0][0].size(); i++){
       if (quarkPlusMinus[0][0].at(i)->id!=0) continue;
       for (int j=i+1; j<quarkPlusMinus[0][0].size(); j++){
         if (quarkPlusMinus[0][0].at(j)->id!=0) continue;
-        TLorentzVector pV = quarkPlusMinus[0][0].at(i)->p4+quarkPlusMinus[0][0].at(j)->p4;
-        Particle* V = new Particle(0, pV);
-        V->addDaughter(quarkPlusMinus[0][0].at(i));
-        V->addDaughter(quarkPlusMinus[0][0].at(j));
-        tmpVhandle.push_back(V);
+        if (isZZ==0 || isZZ==1){
+          TLorentzVector pV = quarkPlusMinus[0][0].at(i)->p4+quarkPlusMinus[0][0].at(j)->p4;
+          Particle* V = new Particle(0, pV);
+          V->addDaughter(quarkPlusMinus[0][0].at(i));
+          V->addDaughter(quarkPlusMinus[0][0].at(j));
+          tmpVhandle.push_back(V);
+        }
+        else if (isZZ==2){
+          Particle* F1 = quarkPlusMinus[0][0].at(i);
+          Particle* F2 = quarkPlusMinus[0][0].at(j);
+
+          TLorentzVector pH = F1->p4+F2->p4;
+          ZZCandidate* cand = new ZZCandidate(25, pH);
+          cand->addDaughter(F1);
+          cand->addDaughter(F2);
+
+          double defaultHVVmass = HVVmass;
+          setHVVmass(Zeromass);
+          cand->sortDaughters();
+          setHVVmass(defaultHVVmass);
+          addZZCandidate(cand);
+        }
       }
     }
   }

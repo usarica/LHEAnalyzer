@@ -573,11 +573,13 @@ void HVVTree::fillDaughterProducts(ZZCandidate* pH, bool isGen){
   string strcore = "Lep";
   if (isGen) strcore.insert(0, "Gen");
 
-  TLorentzVector nullFourVector(0, 0, 0, 0);
+  int nDau = std::min((pH!=0 ? pH->getNSortedVs() : 0), 2);
+  for (int v=0; v<nDau; v++){
+    Particle* intermediateV = pH->getSortedV(v);
+    if (intermediateV!=0 && intermediateV->getMother(0)!=pH){ intermediateV = 0; nDau--; }
+    if (v==nDau) break;
+    int nVDau = (intermediateV!=0 ? intermediateV->getNDaughters() : 0);
 
-  for (int v=0; v<2; v++){
-    Particle* intermediateV = (pH!=0 ? pH->getSortedV(v) : 0);
-    if (pH!=0 && intermediateV!=0 && intermediateV->getMother(0)!=pH) intermediateV = 0;
     for (int d=0; d<2; d++){
       int iLep = 2*v+d+1;
       char cILep[2];
@@ -587,21 +589,17 @@ void HVVTree::fillDaughterProducts(ZZCandidate* pH, bool isGen){
       bool isNew = false;
       Particle* lepton = (intermediateV!=0 ? intermediateV->getDaughter(d) : 0);
 
-      if (lepton==0 && pH!=0){
-        TLorentzVector nullFourVector(0, 0, 0, 0);
+      if (lepton==0){
         isNew=true;
-
-        TLorentzVector pDaughter;
-        int idDaughter;
-        if (intermediateV!=0){
-          if (intermediateV->getNDaughters()==0) pDaughter = (intermediateV->p4)*0.5;
-          else pDaughter = nullFourVector;
+        TLorentzVector pDaughter(0, 0, 0, 0);
+        int idDaughter = 0;
+        if (intermediateV!=0 && nVDau==0 && d==0){
+          pDaughter = intermediateV->p4;
           idDaughter = intermediateV->id;
         }
-        else{
-          if (v==1) pDaughter = (pH->p4)*0.75;
-          else pDaughter = (pH->p4)*(-0.25);
-          idDaughter = 25;
+        else if (nDau==0 && v==0 && d==0){
+          pDaughter = pH->p4;
+          idDaughter = pH->id;
         }
         lepton = new Particle(idDaughter, pDaughter);
       }
@@ -618,7 +616,7 @@ void HVVTree::fillDaughterProducts(ZZCandidate* pH, bool isGen){
 
   if (isGen){
     Int_t genFinalState=-1;
-    if (pH!=0 && pH->getNSortedVs()>=2 && pH->getSortedV(0)->getNDaughters()>=2 && pH->getSortedV(1)->getNDaughters()>=2){
+    if (nDau>=2 && pH->getSortedV(0)->getNDaughters()>=2 && pH->getSortedV(1)->getNDaughters()>=2){
       if (PDGHelpers::isAZBoson(pH->getSortedV(0)->id) && PDGHelpers::isAZBoson(pH->getSortedV(1)->id)){
         // 4l
         if (std::abs(pH->getSortedV(0)->getDaughter(0)->id)==13 && std::abs(pH->getSortedV(1)->getDaughter(0)->id)==13) genFinalState=0; // 4mu
@@ -755,15 +753,24 @@ void HVVTree::fillAssociatedInfo(ZZCandidate* pH, bool isGen){
 
 void HVVTree::fillDecayAngles(ZZCandidate* pH, bool isGen){
   Float_t helcosthetaZ1=0, helcosthetaZ2=0, helphi=0, costhetastar=0, phistarZ1=0;
+  TLorentzVector nullVector(0, 0, 0, 0);
 
-  if (pH!=0 && pH->getNSortedVs()>=2 && pH->getSortedV(0)->getNDaughters()>=2 && pH->getSortedV(1)->getNDaughters()>=2)
+  if (pH!=0 && pH->getNSortedVs()>=2 && pH->getSortedV(0)->getNDaughters()>=1 && pH->getSortedV(1)->getNDaughters()>=1){
+    Particle* dau[2][2]={ { 0 } };
+    for (int vv=0; vv<2; vv++){
+      Particle* Vi = pH->getSortedV(vv);
+      for (int dd=0; dd<Vi->getNDaughters(); dd++){
+        dau[vv][dd] = Vi->getDaughter(dd);
+      }
+    }
     melaHelpers::computeAngles(
-    pH->getSortedV(0)->getDaughter(0)->p4, pH->getSortedV(0)->getDaughter(0)->id,
-    pH->getSortedV(0)->getDaughter(1)->p4, pH->getSortedV(0)->getDaughter(1)->id,
-    pH->getSortedV(1)->getDaughter(0)->p4, pH->getSortedV(1)->getDaughter(0)->id,
-    pH->getSortedV(1)->getDaughter(1)->p4, pH->getSortedV(1)->getDaughter(1)->id,
-    costhetastar, helcosthetaZ1, helcosthetaZ2, helphi, phistarZ1
-    );
+      (dau[0][0]!=0 ? dau[0][0]->p4 : nullVector), (dau[0][0]!=0 ? dau[0][0]->id : 0),
+      (dau[0][1]!=0 ? dau[0][1]->p4 : nullVector), (dau[0][1]!=0 ? dau[0][1]->id : 0),
+      (dau[1][0]!=0 ? dau[1][0]->p4 : nullVector), (dau[1][0]!=0 ? dau[1][0]->id : 0),
+      (dau[1][1]!=0 ? dau[1][1]->p4 : nullVector), (dau[1][1]!=0 ? dau[1][1]->id : 0),
+      costhetastar, helcosthetaZ1, helcosthetaZ2, helphi, phistarZ1
+      );
+  }
   // Protect against NaN
   if (!(costhetastar==costhetastar)) costhetastar=0;
   if (!(helcosthetaZ1==helcosthetaZ1)) helcosthetaZ1=0;
@@ -799,6 +806,7 @@ void HVVTree::fillVBFProductionAngles(ZZCandidate* pH, bool isGen){
         for (int d=0; d<2; d++) daughter[v][d] = intermediateV[v]->getDaughter(d);
       }
     }
+
     TLorentzVector pDaughter[2][2];
     int idDaughter[2][2];
     for (int v=0; v<2; v++){
@@ -807,15 +815,17 @@ void HVVTree::fillVBFProductionAngles(ZZCandidate* pH, bool isGen){
           pDaughter[v][d] = daughter[v][d]->p4;
           idDaughter[v][d] = daughter[v][d]->id;
         }
-        else if (intermediateV[v]!=0){
-          if (intermediateV[v]->getNDaughters()==0) pDaughter[v][d] = (intermediateV[v]->p4)*0.5;
-          else pDaughter[v][d] = nullFourVector;
+        else if (intermediateV[v]!=0 && daughter[v][d]==0 && daughter[v][1-d]==0){
+          pDaughter[v][d] = intermediateV[v]->p4;
           idDaughter[v][d] = intermediateV[v]->id;
         }
+        else if (intermediateV[v]==0 && intermediateV[1-v]==0){
+          pDaughter[v][d] = pH->p4;
+          idDaughter[v][d] = pH->id;
+        }
         else{
-          if (v==1) pDaughter[v][d] = (pH->p4)*0.75;
-          else pDaughter[v][d] = (pH->p4)*(-0.25);
-          idDaughter[v][d] = 25;
+          pDaughter[v][d] = nullFourVector;
+          idDaughter[v][d] = 0;
         }
       }
     }
@@ -919,6 +929,7 @@ void HVVTree::fillVHProductionAngles(ZZCandidate* pH, bool isGen){
         for (int d=0; d<2; d++) daughter[v][d] = intermediateV[v]->getDaughter(d);
       }
     }
+
     TLorentzVector pDaughter[2][2];
     int idDaughter[2][2];
     for (int v=0; v<2; v++){
@@ -927,15 +938,17 @@ void HVVTree::fillVHProductionAngles(ZZCandidate* pH, bool isGen){
           pDaughter[v][d] = daughter[v][d]->p4;
           idDaughter[v][d] = daughter[v][d]->id;
         }
-        else if (intermediateV[v]!=0){
-          if (intermediateV[v]->getNDaughters()==0) pDaughter[v][d] = (intermediateV[v]->p4)*0.5;
-          else pDaughter[v][d] = nullFourVector;
+        else if (intermediateV[v]!=0 && daughter[v][d]==0 && daughter[v][1-d]==0){
+          pDaughter[v][d] = intermediateV[v]->p4;
           idDaughter[v][d] = intermediateV[v]->id;
         }
+        else if (intermediateV[v]==0 && intermediateV[1-v]==0){
+          pDaughter[v][d] = pH->p4;
+          idDaughter[v][d] = pH->id;
+        }
         else{
-          if (v==1) pDaughter[v][d] = (pH->p4)*0.75;
-          else pDaughter[v][d] = (pH->p4)*(-0.25);
-          idDaughter[v][d] = 25;
+          pDaughter[v][d] = nullFourVector;
+          idDaughter[v][d] = 0;
         }
       }
     }

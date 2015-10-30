@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <utility>
+#include <algorithm>
 #include "TFile.h"
 #include "TString.h"
 #include "TTree.h"

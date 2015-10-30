@@ -9,6 +9,7 @@ namespace PDGHelpers{
   const double Zmass = 91.1876;
   const double Topmass = 173.2;
   const double Bottommass = 4.75;
+  const double Zeromass = 0;
   const double m_el = 0.00051100;
   const double m_mu = 0.10566;
   const double m_tau = 1.7768;

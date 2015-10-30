@@ -406,6 +406,52 @@ Float_t melaHelpers::melaBranchMEInterpreter(const ZZCandidate* cand, string& br
 }
 
 
+// Updated constrainedRemoveLeptonMass implementation
+void melaHelpers::constrainedRemoveLeptonMass(TLorentzVector& p1, TLorentzVector& p2){
+  TLorentzVector nullFourVector(0, 0, 0, 0);
+  if (p1==nullFourVector || p2==nullFourVector) return;
+
+  TLorentzVector pZ_old = p1 + p2;
+  TLorentzVector p1_new = p1;
+  TLorentzVector p2_new = p2;
+
+  double energy = p1.T();
+  double mom = p1.P();
+  double mom_new = (energy + mom) / 2.;
+  if (mom != 0){
+    double x_new = p1.X()*mom_new / mom;
+    double y_new = p1.Y()*mom_new / mom;
+    double z_new = p1.Z()*mom_new / mom;
+    p1_new.SetXYZT(x_new, y_new, z_new, mom_new);
+  }
+  energy = p2.T();
+  mom = p2.P();
+  mom_new = (energy + mom) / 2.;
+  if (mom != 0){
+    double x_new = p2.X()*mom_new / mom;
+    double y_new = p2.Y()*mom_new / mom;
+    double z_new = p2.Z()*mom_new / mom;
+    p2_new.SetXYZT(x_new, y_new, z_new, mom_new);
+  }
+  TLorentzVector pZ_new = p1_new + p2_new;
+  double delta_mZ=pZ_old.M()-pZ_new.M();
+
+  p1_new.Boost(-(pZ_new.BoostVector()));
+  mom = p1_new.T();
+  mom_new = mom + delta_mZ / 2.;
+  if (mom!=0) p1_new *= mom_new/mom;
+  p1_new.Boost((pZ_old.BoostVector()));
+  cout << p1_new.X() << p1_new.Y() << p1_new.Z() << endl;
+
+  p2_new.Boost(-(pZ_new.BoostVector()));
+  mom = p2_new.T();
+  mom_new = mom + delta_mZ / 2.;
+  if (mom!=0) p2_new *= mom_new/mom;
+  p2_new.Boost((pZ_old.BoostVector()));
+
+  p1=p1_new; p2=p2_new;
+}
+
 // Updated computeAngles implementation
 void melaHelpers::computeAngles(
   TLorentzVector p4M11, int Z1_lept1Id,
@@ -417,11 +463,25 @@ void melaHelpers::computeAngles(
   float& costheta2,
   float& Phi,
   float& Phi1){
-
+  /*
+  cout << "dec begin" << endl;
+  cout << "Entry:\n";
+  cout << p4M11.X() << "\t" << p4M11.Y() << "\t" << p4M11.Z() << "\t" << p4M11.T() << endl;
+  cout << p4M12.X() << "\t" << p4M12.Y() << "\t" << p4M12.Z() << "\t" << p4M12.T() << endl;
+  cout << p4M21.X() << "\t" << p4M21.Y() << "\t" << p4M21.Z() << "\t" << p4M21.T() << endl;
+  cout << p4M22.X() << "\t" << p4M22.Y() << "\t" << p4M22.Z() << "\t" << p4M22.T() << endl;
+  */
   if (mela::forbidMassiveLeptons){
-    if (!(fabs(Z1_lept1Id)==23 || fabs(Z1_lept1Id)==24 || fabs(Z1_lept1Id)==21 || fabs(Z1_lept1Id)==25 || fabs(Z1_lept2Id)==23 || fabs(Z1_lept2Id)==24 || fabs(Z1_lept2Id)==21 || fabs(Z1_lept2Id)==25)) mela::constrainedRemoveLeptonMass(p4M11, p4M12);
-    if (!(fabs(Z2_lept1Id)==23 || fabs(Z2_lept1Id)==24 || fabs(Z2_lept1Id)==21 || fabs(Z2_lept1Id)==25 || fabs(Z2_lept2Id)==23 || fabs(Z2_lept2Id)==24 || fabs(Z2_lept2Id)==21 || fabs(Z2_lept2Id)==25)) mela::constrainedRemoveLeptonMass(p4M21, p4M22);
+    if (!(fabs(Z1_lept1Id)==23 || fabs(Z1_lept1Id)==24 || fabs(Z1_lept1Id)==21 || fabs(Z1_lept1Id)==25 || fabs(Z1_lept2Id)==23 || fabs(Z1_lept2Id)==24 || fabs(Z1_lept2Id)==21 || fabs(Z1_lept2Id)==25)) melaHelpers::constrainedRemoveLeptonMass(p4M11, p4M12);
+    if (!(fabs(Z2_lept1Id)==23 || fabs(Z2_lept1Id)==24 || fabs(Z2_lept1Id)==21 || fabs(Z2_lept1Id)==25 || fabs(Z2_lept2Id)==23 || fabs(Z2_lept2Id)==24 || fabs(Z2_lept2Id)==21 || fabs(Z2_lept2Id)==25)) melaHelpers::constrainedRemoveLeptonMass(p4M21, p4M22);
   }
+  /*
+  cout << "a.b.:\n";
+  cout << p4M11.X() << "\t" << p4M11.Y() << "\t" << p4M11.Z() << "\t" << p4M11.T() << endl;
+  cout << p4M12.X() << "\t" << p4M12.Y() << "\t" << p4M12.Z() << "\t" << p4M12.T() << endl;
+  cout << p4M21.X() << "\t" << p4M21.Y() << "\t" << p4M21.Z() << "\t" << p4M21.T() << endl;
+  cout << p4M22.X() << "\t" << p4M22.Y() << "\t" << p4M22.Z() << "\t" << p4M22.T() << endl;
+  */
 
   //build Z 4-vectors
   TLorentzVector p4Z1 = p4M11 + p4M12;
@@ -460,6 +520,10 @@ void melaHelpers::computeAngles(
 
   //// --------------------------- costheta1
   TVector3 boostV1 = -(p4Z1.BoostVector());
+  if (boostV1.Mag()>=1.) {
+    cout << "Warning: Mela::computeAngles: Z1 boost with beta=1, scaling down" << endl;
+    boostV1*=0.9999/boostV1.Mag();
+  }
   TLorentzVector p4M11_BV1(p4M11);
   TLorentzVector p4M12_BV1(p4M12);
   TLorentzVector p4M21_BV1(p4M21);
@@ -560,8 +624,8 @@ void melaHelpers::computeVBFangles(
   ){
 
   if (mela::forbidMassiveLeptons){
-    if (!(fabs(Z1_lept1Id)==23 || fabs(Z1_lept1Id)==24 || fabs(Z1_lept1Id)==21 || fabs(Z1_lept1Id)==25 || fabs(Z1_lept2Id)==23 || fabs(Z1_lept2Id)==24 || fabs(Z1_lept2Id)==21 || fabs(Z1_lept2Id)==25)) mela::constrainedRemoveLeptonMass(p4M11, p4M12);
-    if (!(fabs(Z2_lept1Id)==23 || fabs(Z2_lept1Id)==24 || fabs(Z2_lept1Id)==21 || fabs(Z2_lept1Id)==25 || fabs(Z2_lept2Id)==23 || fabs(Z2_lept2Id)==24 || fabs(Z2_lept2Id)==21 || fabs(Z2_lept2Id)==25)) mela::constrainedRemoveLeptonMass(p4M21, p4M22);
+    if (!(fabs(Z1_lept1Id)==23 || fabs(Z1_lept1Id)==24 || fabs(Z1_lept1Id)==21 || fabs(Z1_lept1Id)==25 || fabs(Z1_lept2Id)==23 || fabs(Z1_lept2Id)==24 || fabs(Z1_lept2Id)==21 || fabs(Z1_lept2Id)==25)) melaHelpers::constrainedRemoveLeptonMass(p4M11, p4M12);
+    if (!(fabs(Z2_lept1Id)==23 || fabs(Z2_lept1Id)==24 || fabs(Z2_lept1Id)==21 || fabs(Z2_lept1Id)==25 || fabs(Z2_lept2Id)==23 || fabs(Z2_lept2Id)==24 || fabs(Z2_lept2Id)==21 || fabs(Z2_lept2Id)==25)) melaHelpers::constrainedRemoveLeptonMass(p4M21, p4M22);
   }
 
   TLorentzVector jet1massless, jet2massless;
@@ -581,9 +645,9 @@ void melaHelpers::computeVBFangles(
   //Then associate the one going forwards with jet1 and the one going backwards with jet2
   TLorentzRotation movingframe;
   TLorentzVector pHJJ = pH+jet1massless+jet2massless;
-  TLorentzVector pHJJ_T(pHJJ.X(), pHJJ.Y(), 0, pHJJ.T());
-  movingframe.Boost(-pHJJ_T.BoostVector());
-  pHJJ.Boost(-pHJJ_T.BoostVector());
+  TLorentzVector pHJJ_perp(pHJJ.X(), pHJJ.Y(), 0, pHJJ.T());
+  movingframe.Boost(-pHJJ_perp.BoostVector());
+  pHJJ.Boost(-pHJJ_perp.BoostVector());
   movingframe.Boost(-pHJJ.BoostVector());
   pHJJ.Boost(-pHJJ.BoostVector());   //make sure to boost HJJ AFTER boosting movingframe
 
@@ -673,11 +737,11 @@ void melaHelpers::computeVHangles(
   TLorentzVector* injet1, int injet1Id, // Gen. partons in lab frame
   TLorentzVector* injet2, int injet2Id
   ){
-
+  TLorentzVector nullFourVector(0, 0, 0, 0);
 
   if (mela::forbidMassiveLeptons){
-    if (!(fabs(Z1_lept1Id)==23 || fabs(Z1_lept1Id)==24 || fabs(Z1_lept1Id)==21 || fabs(Z1_lept1Id)==25 || fabs(Z1_lept2Id)==23 || fabs(Z1_lept2Id)==24 || fabs(Z1_lept2Id)==21 || fabs(Z1_lept2Id)==25)) mela::constrainedRemoveLeptonMass(p4M11, p4M12);
-    if (!(fabs(Z2_lept1Id)==23 || fabs(Z2_lept1Id)==24 || fabs(Z2_lept1Id)==21 || fabs(Z2_lept1Id)==25 || fabs(Z2_lept2Id)==23 || fabs(Z2_lept2Id)==24 || fabs(Z2_lept2Id)==21 || fabs(Z2_lept2Id)==25)) mela::constrainedRemoveLeptonMass(p4M21, p4M22);
+    if (!(fabs(Z1_lept1Id)==23 || fabs(Z1_lept1Id)==24 || fabs(Z1_lept1Id)==21 || fabs(Z1_lept1Id)==25 || fabs(Z1_lept2Id)==23 || fabs(Z1_lept2Id)==24 || fabs(Z1_lept2Id)==21 || fabs(Z1_lept2Id)==25)) melaHelpers::constrainedRemoveLeptonMass(p4M11, p4M12);
+    if (!(fabs(Z2_lept1Id)==23 || fabs(Z2_lept1Id)==24 || fabs(Z2_lept1Id)==21 || fabs(Z2_lept1Id)==25 || fabs(Z2_lept2Id)==23 || fabs(Z2_lept2Id)==24 || fabs(Z2_lept2Id)==21 || fabs(Z2_lept2Id)==25)) melaHelpers::constrainedRemoveLeptonMass(p4M21, p4M22);
   }
 
   // Build Z 4-vectors
@@ -705,9 +769,9 @@ void melaHelpers::computeVHangles(
   //Then associate the one going forwards with jet1 and the one going backwards with jet2
   TLorentzRotation movingframe;
   TLorentzVector pHJJ = pH+jet1massless+jet2massless;
-  TLorentzVector pHJJ_T(pHJJ.X(), pHJJ.Y(), 0, pHJJ.T());
-  movingframe.Boost(-pHJJ_T.BoostVector());
-  pHJJ.Boost(-pHJJ_T.BoostVector());
+  TLorentzVector pHJJ_perp(pHJJ.X(), pHJJ.Y(), 0, pHJJ.T());
+  movingframe.Boost(-pHJJ_perp.BoostVector());
+  pHJJ.Boost(-pHJJ_perp.BoostVector());
   movingframe.Boost(-pHJJ.BoostVector());
   pHJJ.Boost(-pHJJ.BoostVector());   //make sure to boost HJJ AFTER boosting movingframe
 
@@ -718,7 +782,7 @@ void melaHelpers::computeVHangles(
   P2.Transform(movingframe.Inverse());
   //movingframe, HJJ, and HJJ_T will not be used anymore
   if (injet1!=0 && injet2!=0){ // Handle gen. partons if they are available
-    if (fabs((*injet1+*injet2).P()-pHJJ.P())<pHJJ.P()*1e-4){
+    if (fabs((*injet1+*injet2).P()-pHJJ.P())<=pHJJ.P()*1e-4){
       P1=*injet1;
       P2=*injet2;
       // Apply convention for incoming (!) particles
@@ -735,23 +799,43 @@ void melaHelpers::computeVHangles(
 
   // Rotate every vector such that Z1 - Z2 axis is the "beam axis" analogue of decay
   TLorentzRotation ZZframe;
-  ZZframe.Boost(-pH.BoostVector());
-  p4Z1.Boost(-pH.BoostVector());
-  p4Z2.Boost(-pH.BoostVector());
   TVector3 beamAxis(0, 0, 1);
-  TVector3 pNewAxis = (p4Z2-p4Z1).Vect().Unit(); // Let Z2 be in the z direction so that once the direction of H is reversed, Z1 is in the z direction
-  TVector3 pNewAxisPerp = pNewAxis.Cross(beamAxis);
-  ZZframe.Rotate(acos(pNewAxis.Dot(beamAxis)), pNewAxisPerp);
-  P1.Transform(ZZframe);
-  P2.Transform(ZZframe);
-  jet1massless = -jet1massless;
-  jet2massless = -jet2massless;
-  jet1massless.Transform(ZZframe);
-  jet2massless.Transform(ZZframe);
-  jet1massless = -jet1massless;
-  jet2massless = -jet2massless;
-  p4Z1.Rotate(acos(pNewAxis.Dot(beamAxis)), pNewAxisPerp);
-  p4Z2.Rotate(acos(pNewAxis.Dot(beamAxis)), pNewAxisPerp);
+  if (p4Z1==nullFourVector || p4Z2==nullFourVector){
+    TVector3 pNewAxis = (p4Z2-p4Z1).Vect().Unit(); // Let Z2 be in the z direction so that once the direction of H is reversed, Z1 is in the z direction
+    if (pNewAxis != nullFourVector.Vect()){
+      TVector3 pNewAxisPerp = pNewAxis.Cross(beamAxis);
+      ZZframe.Rotate(acos(pNewAxis.Dot(beamAxis)), pNewAxisPerp);
+    }
+    ZZframe.Boost(-pH.BoostVector());
+    P1.Transform(ZZframe);
+    P2.Transform(ZZframe);
+    jet1massless = -jet1massless;
+    jet2massless = -jet2massless;
+    jet1massless.Transform(ZZframe);
+    jet2massless.Transform(ZZframe);
+    jet1massless = -jet1massless;
+    jet2massless = -jet2massless;
+    //p4Z1.Transform(ZZframe);
+    //p4Z2.Transform(ZZframe);
+  }
+  else{
+    ZZframe.Boost(-pH.BoostVector());
+    p4Z1.Boost(-pH.BoostVector());
+    p4Z2.Boost(-pH.BoostVector());
+    TVector3 pNewAxis = (p4Z2-p4Z1).Vect().Unit(); // Let Z2 be in the z direction so that once the direction of H is reversed, Z1 is in the z direction
+    TVector3 pNewAxisPerp = pNewAxis.Cross(beamAxis);
+    ZZframe.Rotate(acos(pNewAxis.Dot(beamAxis)), pNewAxisPerp);
+    P1.Transform(ZZframe);
+    P2.Transform(ZZframe);
+    jet1massless = -jet1massless;
+    jet2massless = -jet2massless;
+    jet1massless.Transform(ZZframe);
+    jet2massless.Transform(ZZframe);
+    jet1massless = -jet1massless;
+    jet2massless = -jet2massless;
+    //p4Z1.Rotate(acos(pNewAxis.Dot(beamAxis)), pNewAxisPerp);
+    //p4Z2.Rotate(acos(pNewAxis.Dot(beamAxis)), pNewAxisPerp);
+  }
 
   melaHelpers::computeAngles(
     -P1, 23, // Id is 23 to avoid an attempt to remove quark mass

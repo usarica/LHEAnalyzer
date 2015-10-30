@@ -23,6 +23,8 @@ namespace melaHelpers{
   Float_t melaBranchMEInterpreter(const ZZCandidate* cand, string& branchname);
 
 
+  void constrainedRemoveLeptonMass(TLorentzVector& p1, TLorentzVector& p2);
+
   void computeAngles(
     TLorentzVector p4M11, int Z1_lept1Id,
     TLorentzVector p4M12, int Z1_lept2Id,
