@@ -409,7 +409,7 @@ Float_t melaHelpers::melaBranchMEInterpreter(const ZZCandidate* cand, string& br
 // Updated constrainedRemoveLeptonMass implementation
 void melaHelpers::constrainedRemoveLeptonMass(TLorentzVector& p1, TLorentzVector& p2){
   TLorentzVector nullFourVector(0, 0, 0, 0);
-  if (p1==nullFourVector || p2==nullFourVector) return;
+  if (p1==nullFourVector || p2==nullFourVector) return; // Need to add a smarter if-statement to take H->bb into account
 
   TLorentzVector pZ_old = p1 + p2;
   TLorentzVector p1_new = p1;
@@ -441,7 +441,6 @@ void melaHelpers::constrainedRemoveLeptonMass(TLorentzVector& p1, TLorentzVector
   mom_new = mom + delta_mZ / 2.;
   if (mom!=0) p1_new *= mom_new/mom;
   p1_new.Boost((pZ_old.BoostVector()));
-  cout << p1_new.X() << p1_new.Y() << p1_new.Z() << endl;
 
   p2_new.Boost(-(pZ_new.BoostVector()));
   mom = p2_new.T();
