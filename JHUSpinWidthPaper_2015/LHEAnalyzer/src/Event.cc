@@ -290,6 +290,11 @@ void Event::constructVVCandidates(int isZZ, int fstype){
       if (isAHiggs((*it)->id)){
         TLorentzVector pH = (*it)->p4;
         ZZCandidate* cand = new ZZCandidate(25, pH);
+
+        double defaultHVVmass = HVVmass;
+        setHVVmass(Zeromass);
+        cand->sortDaughters();
+        setHVVmass(defaultHVVmass);
         addZZCandidate(cand);
       }
     }

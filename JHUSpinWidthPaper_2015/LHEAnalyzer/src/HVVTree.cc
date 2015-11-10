@@ -811,21 +811,27 @@ void HVVTree::fillVBFProductionAngles(ZZCandidate* pH, bool isGen){
     int idDaughter[2][2];
     for (int v=0; v<2; v++){
       for (int d=0; d<2; d++){
+        pDaughter[v][d] = nullFourVector;
+        idDaughter[v][d] = 0;
+      }
+    }
+    for (int v=0; v<2; v++){
+      for (int d=0; d<2; d++){
         if (daughter[v][d]!=0){
           pDaughter[v][d] = daughter[v][d]->p4;
           idDaughter[v][d] = daughter[v][d]->id;
         }
         else if (intermediateV[v]!=0 && daughter[v][d]==0 && daughter[v][1-d]==0){
-          pDaughter[v][d] = intermediateV[v]->p4;
-          idDaughter[v][d] = intermediateV[v]->id;
+          if (d==0){
+            pDaughter[v][d] = intermediateV[v]->p4;
+            idDaughter[v][d] = intermediateV[v]->id;
+          }
         }
         else if (intermediateV[v]==0 && intermediateV[1-v]==0){
-          pDaughter[v][d] = pH->p4;
-          idDaughter[v][d] = pH->id;
-        }
-        else{
-          pDaughter[v][d] = nullFourVector;
-          idDaughter[v][d] = 0;
+          if (v==0){
+            pDaughter[v][d] = pH->p4;
+            idDaughter[v][d] = pH->id;
+          }
         }
       }
     }
@@ -934,21 +940,27 @@ void HVVTree::fillVHProductionAngles(ZZCandidate* pH, bool isGen){
     int idDaughter[2][2];
     for (int v=0; v<2; v++){
       for (int d=0; d<2; d++){
+        pDaughter[v][d] = nullFourVector;
+        idDaughter[v][d] = 0;
+      }
+    }
+    for (int v=0; v<2; v++){
+      for (int d=0; d<2; d++){
         if (daughter[v][d]!=0){
           pDaughter[v][d] = daughter[v][d]->p4;
           idDaughter[v][d] = daughter[v][d]->id;
         }
         else if (intermediateV[v]!=0 && daughter[v][d]==0 && daughter[v][1-d]==0){
-          pDaughter[v][d] = intermediateV[v]->p4;
-          idDaughter[v][d] = intermediateV[v]->id;
+          if (d==0){
+            pDaughter[v][d] = intermediateV[v]->p4;
+            idDaughter[v][d] = intermediateV[v]->id;
+          }
         }
         else if (intermediateV[v]==0 && intermediateV[1-v]==0){
-          pDaughter[v][d] = pH->p4;
-          idDaughter[v][d] = pH->id;
-        }
-        else{
-          pDaughter[v][d] = nullFourVector;
-          idDaughter[v][d] = 0;
+          if (v==0){
+            pDaughter[v][d] = pH->p4;
+            idDaughter[v][d] = pH->id;
+          }
         }
       }
     }

@@ -183,21 +183,27 @@ void ZZCandidate::createSortedVs(){
 
   TLorentzVector pZ1(0, 0, 0, 0);
   TLorentzVector pZ2(0, 0, 0, 0);
-  int icutoff = (sortedDaughters.size()>2 ? 2 : 1);
+  int icutoff = (sortedDaughters.size()>2 ? 2 : (sortedDaughters.size()>0 ? 1 : 0));
   int imax = (sortedDaughters.size()>4 ? 4 : (int)sortedDaughters.size());
   int V1id=0, V2id=0;
-  for (int d=0; d<icutoff; d++){
-    if (sortedDaughters.at(d)!=0){
-      pZ1 = pZ1 + sortedDaughters.at(d)->p4;
-      if (icutoff==2) V1id=VID;
-      else if (icutoff==1) V1id=sortedDaughters.at(d)->id;
-    }
+  if (icutoff==0){
+    pZ1=this->p4;
+    V1id=25;
   }
-  for (int d=icutoff; d<imax; d++){
-    if (sortedDaughters.at(d)!=0){
-      pZ2 = pZ2 + sortedDaughters.at(d)->p4;
-      if ((imax-icutoff)==2) V2id=VID;
-      else if ((imax-icutoff)==1) V2id=sortedDaughters.at(d)->id;
+  else{
+    for (int d=0; d<icutoff; d++){
+      if (sortedDaughters.at(d)!=0){
+        pZ1 = pZ1 + sortedDaughters.at(d)->p4;
+        if (icutoff==2) V1id=VID;
+        else if (icutoff==1) V1id=sortedDaughters.at(d)->id;
+      }
+    }
+    for (int d=icutoff; d<imax; d++){
+      if (sortedDaughters.at(d)!=0){
+        pZ2 = pZ2 + sortedDaughters.at(d)->p4;
+        if ((imax-icutoff)==2) V2id=VID;
+        else if ((imax-icutoff)==1) V2id=sortedDaughters.at(d)->id;
+      }
     }
   }
 
