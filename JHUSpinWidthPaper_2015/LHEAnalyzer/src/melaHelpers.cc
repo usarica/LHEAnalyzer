@@ -851,12 +851,6 @@ void melaHelpers::computeVHangles(
     costheta2,
     Phi,
     Phi1);
-  // Return from -p_Zs to p_Zs. Notice that inverting this computation will now give p11 as p(incoming qbar) ~ -p(outgoing q)
-  Phi = -Phi; // Because p1 -> -p1
-  Phi1 = (Phi1>0 ? TMath::Pi()-Phi1 : -TMath::Pi()-Phi1); // Because p1 -> -p1 implies nsc -> -nsc, p1 -> -p1
-  costheta1 = -costheta1; // Because for p1 -> -p1, p1i -> -p1i
-  costheta2 = -costheta2; // Because p1 -> -p1
-  costhetastar = -costhetastar; // Because p1 -> -p1
 }
 
 
