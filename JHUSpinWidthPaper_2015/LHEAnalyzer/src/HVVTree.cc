@@ -21,61 +21,61 @@ void HVVTree::bookAllBranches(bool doSetAddress){
     return;
   }
 
-  reserveBranch("MC_weight", BranchTypes::bFloat, doSetAddress);
+  reserveBranch("MC_weight", BaseTree::bFloat, doSetAddress);
   if (options->processGenInfo()){
-    reserveBranch("genFinalState", BranchTypes::bInt, doSetAddress);
+    reserveBranch("genFinalState", BaseTree::bInt, doSetAddress);
 
-    bookPtEtaPhiMassIdBranches("Mother", BranchTypes::bVectorDouble, doSetAddress, true, true, true);
-    bookPtEtaPhiMassIdBranches("H", BranchTypes::bFloat, doSetAddress, false, true, true);
-    bookPtEtaPhiMassIdBranches("Z1", BranchTypes::bFloat, doSetAddress, false, false, true);
-    bookPtEtaPhiMassIdBranches("Z2", BranchTypes::bFloat, doSetAddress, false, false, true);
-    bookPtEtaPhiMassIdBranches("Za", BranchTypes::bFloat, doSetAddress, false, false, true);
-    bookPtEtaPhiMassIdBranches("Zb", BranchTypes::bFloat, doSetAddress, false, false, true);
+    bookPtEtaPhiMassIdBranches("Mother", BaseTree::bVectorDouble, doSetAddress, true, true, true);
+    bookPtEtaPhiMassIdBranches("H", BaseTree::bFloat, doSetAddress, false, true, true);
+    bookPtEtaPhiMassIdBranches("Z1", BaseTree::bFloat, doSetAddress, false, false, true);
+    bookPtEtaPhiMassIdBranches("Z2", BaseTree::bFloat, doSetAddress, false, false, true);
+    bookPtEtaPhiMassIdBranches("Za", BaseTree::bFloat, doSetAddress, false, false, true);
+    bookPtEtaPhiMassIdBranches("Zb", BaseTree::bFloat, doSetAddress, false, false, true);
 
-    bookPtEtaPhiMassIdBranches("AssociatedParticle", BranchTypes::bVectorDouble, doSetAddress, true, false, true);
-    reserveBranch("GenDijetMass", BranchTypes::bFloat, doSetAddress);
-    reserveBranch("GenDileptonMass", BranchTypes::bFloat, doSetAddress);
-    reserveBranch("GenDijetVVMass", BranchTypes::bFloat, doSetAddress);
-    reserveBranch("GenDileptonVVMass", BranchTypes::bFloat, doSetAddress);
-    reserveBranch("GenDRjet", BranchTypes::bFloat, doSetAddress);
-    reserveBranch("GenDRlepton", BranchTypes::bFloat, doSetAddress);
+    bookPtEtaPhiMassIdBranches("AssociatedParticle", BaseTree::bVectorDouble, doSetAddress, true, false, true);
+    reserveBranch("GenDijetMass", BaseTree::bFloat, doSetAddress);
+    reserveBranch("GenDileptonMass", BaseTree::bFloat, doSetAddress);
+    reserveBranch("GenDijetVVMass", BaseTree::bFloat, doSetAddress);
+    reserveBranch("GenDileptonVVMass", BaseTree::bFloat, doSetAddress);
+    reserveBranch("GenDRjet", BaseTree::bFloat, doSetAddress);
+    reserveBranch("GenDRlepton", BaseTree::bFloat, doSetAddress);
 
-    reserveBranch("NGenAssociatedVs", BranchTypes::bInt, doSetAddress);
-    bookPtEtaPhiMassIdBranches("AssociatedV", BranchTypes::bVectorDouble, doSetAddress, true, false, true);
-    reserveBranch("GenAssociatedV_Particle1Index", BranchTypes::bVectorInt, doSetAddress);
-    reserveBranch("GenAssociatedV_Particle2Index", BranchTypes::bVectorInt, doSetAddress);
+    reserveBranch("NGenAssociatedVs", BaseTree::bInt, doSetAddress);
+    bookPtEtaPhiMassIdBranches("AssociatedV", BaseTree::bVectorDouble, doSetAddress, true, false, true);
+    reserveBranch("GenAssociatedV_Particle1Index", BaseTree::bVectorInt, doSetAddress);
+    reserveBranch("GenAssociatedV_Particle2Index", BaseTree::bVectorInt, doSetAddress);
 
-    bookPtEtaPhiMassIdBranches("Lep1", BranchTypes::bFloat, doSetAddress, true, false, true);
-    bookPtEtaPhiMassIdBranches("Lep2", BranchTypes::bFloat, doSetAddress, true, false, true);
-    bookPtEtaPhiMassIdBranches("Lep3", BranchTypes::bFloat, doSetAddress, true, false, true);
-    bookPtEtaPhiMassIdBranches("Lep4", BranchTypes::bFloat, doSetAddress, true, false, true);
+    bookPtEtaPhiMassIdBranches("Lep1", BaseTree::bFloat, doSetAddress, true, false, true);
+    bookPtEtaPhiMassIdBranches("Lep2", BaseTree::bFloat, doSetAddress, true, false, true);
+    bookPtEtaPhiMassIdBranches("Lep3", BaseTree::bFloat, doSetAddress, true, false, true);
+    bookPtEtaPhiMassIdBranches("Lep4", BaseTree::bFloat, doSetAddress, true, false, true);
   }
   if (options->processRecoInfo()){
-    reserveBranch("isSelected", BranchTypes::bInt, doSetAddress);
+    reserveBranch("isSelected", BaseTree::bInt, doSetAddress);
 
-    bookPtEtaPhiMassIdBranches("ZZ", BranchTypes::bFloat, doSetAddress, false, true, false);
-    bookPtEtaPhiMassIdBranches("Z1", BranchTypes::bFloat, doSetAddress, false, false, false);
-    bookPtEtaPhiMassIdBranches("Z2", BranchTypes::bFloat, doSetAddress, false, false, false);
-    bookPtEtaPhiMassIdBranches("Za", BranchTypes::bFloat, doSetAddress, false, false, false);
-    bookPtEtaPhiMassIdBranches("Zb", BranchTypes::bFloat, doSetAddress, false, false, false);
+    bookPtEtaPhiMassIdBranches("ZZ", BaseTree::bFloat, doSetAddress, false, true, false);
+    bookPtEtaPhiMassIdBranches("Z1", BaseTree::bFloat, doSetAddress, false, false, false);
+    bookPtEtaPhiMassIdBranches("Z2", BaseTree::bFloat, doSetAddress, false, false, false);
+    bookPtEtaPhiMassIdBranches("Za", BaseTree::bFloat, doSetAddress, false, false, false);
+    bookPtEtaPhiMassIdBranches("Zb", BaseTree::bFloat, doSetAddress, false, false, false);
 
-    bookPtEtaPhiMassIdBranches("AssociatedParticle", BranchTypes::bVectorDouble, doSetAddress, true, false, false);
-    reserveBranch("DijetMass", BranchTypes::bFloat, doSetAddress);
-    reserveBranch("DileptonMass", BranchTypes::bFloat, doSetAddress);
-    reserveBranch("DijetVVMass", BranchTypes::bFloat, doSetAddress);
-    reserveBranch("DileptonVVMass", BranchTypes::bFloat, doSetAddress);
-    reserveBranch("DRjet", BranchTypes::bFloat, doSetAddress);
-    reserveBranch("DRlepton", BranchTypes::bFloat, doSetAddress);
+    bookPtEtaPhiMassIdBranches("AssociatedParticle", BaseTree::bVectorDouble, doSetAddress, true, false, false);
+    reserveBranch("DijetMass", BaseTree::bFloat, doSetAddress);
+    reserveBranch("DileptonMass", BaseTree::bFloat, doSetAddress);
+    reserveBranch("DijetVVMass", BaseTree::bFloat, doSetAddress);
+    reserveBranch("DileptonVVMass", BaseTree::bFloat, doSetAddress);
+    reserveBranch("DRjet", BaseTree::bFloat, doSetAddress);
+    reserveBranch("DRlepton", BaseTree::bFloat, doSetAddress);
 
-    reserveBranch("NAssociatedVs", BranchTypes::bInt, doSetAddress);
-    bookPtEtaPhiMassIdBranches("AssociatedV", BranchTypes::bVectorDouble, doSetAddress, true, false, false);
-    reserveBranch("AssociatedV_Particle1Index", BranchTypes::bVectorInt, doSetAddress);
-    reserveBranch("AssociatedV_Particle2Index", BranchTypes::bVectorInt, doSetAddress);
+    reserveBranch("NAssociatedVs", BaseTree::bInt, doSetAddress);
+    bookPtEtaPhiMassIdBranches("AssociatedV", BaseTree::bVectorDouble, doSetAddress, true, false, false);
+    reserveBranch("AssociatedV_Particle1Index", BaseTree::bVectorInt, doSetAddress);
+    reserveBranch("AssociatedV_Particle2Index", BaseTree::bVectorInt, doSetAddress);
 
-    bookPtEtaPhiMassIdBranches("Lep1", BranchTypes::bFloat, doSetAddress, true, false, false);
-    bookPtEtaPhiMassIdBranches("Lep2", BranchTypes::bFloat, doSetAddress, true, false, false);
-    bookPtEtaPhiMassIdBranches("Lep3", BranchTypes::bFloat, doSetAddress, true, false, false);
-    bookPtEtaPhiMassIdBranches("Lep4", BranchTypes::bFloat, doSetAddress, true, false, false);
+    bookPtEtaPhiMassIdBranches("Lep1", BaseTree::bFloat, doSetAddress, true, false, false);
+    bookPtEtaPhiMassIdBranches("Lep2", BaseTree::bFloat, doSetAddress, true, false, false);
+    bookPtEtaPhiMassIdBranches("Lep3", BaseTree::bFloat, doSetAddress, true, false, false);
+    bookPtEtaPhiMassIdBranches("Lep4", BaseTree::bFloat, doSetAddress, true, false, false);
   }
   bookAngularBranches(doSetAddress);
   if (options->initializeMELA() || doSetAddress) bookMELABranches(doSetAddress);
@@ -90,8 +90,8 @@ void HVVTree::bookPtEtaPhiMassIdBranches(string owner, BaseTree::BranchTypes bty
     string branchname = tmpBranchList.at(b);
     if(!addId || branchname.find("Id")==string::npos) reserveBranch(tmpBranchList.at(b), btype, doSetAddress);
     else{
-      BaseTree::BranchTypes bInttype = BranchTypes::bInt;
-      if (btype==BranchTypes::bVectorDouble) bInttype = BranchTypes::bVectorInt;
+      BaseTree::BranchTypes bInttype = BaseTree::bInt;
+      if (btype==BaseTree::bVectorDouble) bInttype = BaseTree::bVectorInt;
       reserveBranch(tmpBranchList.at(b), bInttype, doSetAddress);
     }
   }
@@ -139,7 +139,7 @@ void HVVTree::bookAngularBranches(bool doSetAddress){
     }
   }
   for (int b=0; b<tmpBranchList.size(); b++){
-    reserveBranch(tmpBranchList.at(b), BranchTypes::bFloat, doSetAddress);
+    reserveBranch(tmpBranchList.at(b), BaseTree::bFloat, doSetAddress);
   }
 }
 void HVVTree::getAngularBranches(vector<string>& blist, Int_t prodFlag /* 0: Decay, 1: VBF, 2: VH */, bool isGen){
@@ -178,7 +178,7 @@ void HVVTree::getAngularBranches(vector<string>& blist, Int_t prodFlag /* 0: Dec
 void HVVTree::bookMELABranches(bool doSetAddress){
   vector<string> tmpBranchList = constructMELABranchList(doSetAddress);
   for (int b=0; b<tmpBranchList.size(); b++){
-    bool isReserved = reserveBranch(tmpBranchList.at(b), BranchTypes::bFloat, doSetAddress);
+    bool isReserved = reserveBranch(tmpBranchList.at(b), BaseTree::bFloat, doSetAddress);
     if (isReserved){
       melaProbBranches.push_back(tmpBranchList.at(b));
     }
