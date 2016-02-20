@@ -87,7 +87,7 @@ void OptionParser::analyze(){
   if (genHiggsCandidateSelectionScheme>=HiggsComparators::nCandidateSelections){ cerr << "Gen. H selection scheme is invalid!" << endl; if(!hasInvalidOption) hasInvalidOption=true; }
   if (recoHiggsCandidateSelectionScheme>=HiggsComparators::nCandidateSelections){ cerr << "Reco. H selection scheme is invalid!" << endl; if(!hasInvalidOption) hasInvalidOption=true; }
   if (hasGenProdProb && sampleProductionId.first==TVar::ZZGG){ cerr << "sampleProductionId==ZZGG is not a valid option (ME is not implemented). Use decay MEs instead for ZZGG or specify another production." << endl; if (!hasInvalidOption) hasInvalidOption=true; }
-  if (hasJetAlgo && !(jetDeltaRIso==0.4 || jetDeltaRIso==0.5 || jetDeltaRIso==0.8)){ cerr << "Jet algorithm can only be used with object isolations 0.4, 0.5 or 0.8 at this moment." << endl; if (!hasInvalidOption) hasInvalidOption=true; }
+  if (hasJetAlgo && !( ((jetDeltaRIso==0.4 || jetDeltaRIso==0.5 || jetDeltaRIso==0.8) && jetAlgo=="ak") || ((jetDeltaRIso==0.4 || jetDeltaRIso==0.6) && jetAlgo=="kt") ) ){ cerr << "Jet algorithm can only be used with object isolations 0.4, 0.5 or 0.8 for ak, and 0.4 or 0.6 for kt jets at this moment." << endl; if (!hasInvalidOption) hasInvalidOption=true; }
   else if (hasJetAlgo){ jetAlgo.append(std::to_string(10*jetDeltaRIso)); cout << "Jet algorithm string " << jetAlgo << " has the isolation appended." << endl; }
 
   // Warnings-only
@@ -352,7 +352,7 @@ void OptionParser::printOptionsHelp(){
   cout << "- genCandidateSelection, recoCandidateSelection: Higgs candidate selection algorithm. Values accepted are\n\t->BestZ1ThenZ2 (=BestZ1ThenZ2ScSumPt).\n\tDefaults==(BestZ1ThenZ2, BestZ1ThenZ2)\n\n";
 
   cout << "- JetAlgorithm / jetAlgorithm / jetalgorithm: Jet algorithm to use if available in the input tree. Isolation needs to be set separately if different from the default value. Default=ak\n\n";
-  cout << "- jetDeltaR / jetIso / jetIsolation / jetDeltaRIso / jetDeltaRIsolation: deltaR_jet isolation cut used in selecting jets. This value (x10) is appended to the jet algorithm string and can only be 0.4, 0.5 or 0.8 at the moment. Default=0.5\n\n";
+  cout << "- jetDeltaR / jetIso / jetIsolation / jetDeltaRIso / jetDeltaRIsolation: deltaR_jet isolation cut used in selecting jets. This value (x10) is appended to the jet algorithm string and can only be 0.4, 0.5 or 0.8 for ak, and 0.4 or 0.6 for kt jets at the moment. Default=0.5\n\n";
 
   cout << "- excludeBranch: Comma-separated list of excluded branches. Default is to include all branches called via HVVTree::bookAllBranches.\n\n";
 
