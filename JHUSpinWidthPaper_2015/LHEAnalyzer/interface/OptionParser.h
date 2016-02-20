@@ -97,8 +97,10 @@ protected:
   Int_t recoSmearBehaviour;
   HiggsComparators::CandidateSelection genHiggsCandidateSelectionScheme;
   HiggsComparators::CandidateSelection recoHiggsCandidateSelectionScheme;
+  Double_t objectsDeltaRIso;
 
   string jetAlgo;
+
   string indir;
   string outdir;
   string coutput;

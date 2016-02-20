@@ -15,7 +15,6 @@ computeVHAngles(0), // VH production angles
 sampleProductionId(TVar::ZZGG, TVar::JHUGen), // Sample gen. production mode
 fileLevel(0), // -1: ReadMode, 0: LHE, 1: Pythia,
 pythiaStep(1), //0: GEN, 1: GEN-SIM
-jetAlgo("ak"),
 isGenHZZ(1), // H->ZZ or H->WW
 isRecoHZZ(1), // H->ZZ or H->WW
 genDecayMode(0), // 4l with HZZ, 2l2nu with HWW, see Event::constructVVCandidates(bool isZZ, int fstype)
@@ -24,6 +23,10 @@ recoSelBehaviour(0),
 recoSmearBehaviour(0),
 genHiggsCandidateSelectionScheme(HiggsComparators::BestZ1ThenZ2ScSumPt),
 recoHiggsCandidateSelectionScheme(HiggsComparators::BestZ1ThenZ2ScSumPt),
+objectsDeltaRIso(0.5),
+
+jetAlgo("ak"),
+
 indir("./"),
 outdir("./"),
 tmpDir("./tmpStore/"),
@@ -42,6 +45,7 @@ void OptionParser::analyze(){
   bool redefinedOutputFile=false;
   bool hasDecayAngles=false;
   bool hasGenProdProb=false;
+  bool hasJetAlgo=false;
   char rawdelimiter = '=';
   for (int opt=1; opt<rawOptions.size(); opt++){
     string wish, value;
@@ -50,6 +54,7 @@ void OptionParser::analyze(){
     if (wish=="outfile") redefinedOutputFile=true;
     if (wish=="computeDecayAngles") hasDecayAngles=true;
     if (wish=="includeGenProdProb") hasGenProdProb=true;
+    if (wish=="JetAlgorithm" || wish=="jetAlgorithm" || wish=="jetalgorithm") hasJetAlgo=true;
   }
 
   if (filename.size()==0){ cerr << "You have to specify the input files." << endl; if(!hasInvalidOption) hasInvalidOption=true; }
@@ -66,7 +71,7 @@ void OptionParser::analyze(){
     for (int es=0; es<eventSkipRanges.size(); es++) maxEvents += (eventSkipRanges.at(es).second-eventSkipRanges.at(es).first+1);
   }
 
-  // Check for any invalid options
+  // Check for any invalid options and print an error
   if (isGenHZZ==-1){
     cout << "Gen. Higgs decay is disabled. Disabling MEs, decay angles and anything reco. as well." << endl;
     includeGenDecayProb.clear();
@@ -82,13 +87,19 @@ void OptionParser::analyze(){
   if (genHiggsCandidateSelectionScheme>=HiggsComparators::nCandidateSelections){ cerr << "Gen. H selection scheme is invalid!" << endl; if(!hasInvalidOption) hasInvalidOption=true; }
   if (recoHiggsCandidateSelectionScheme>=HiggsComparators::nCandidateSelections){ cerr << "Reco. H selection scheme is invalid!" << endl; if(!hasInvalidOption) hasInvalidOption=true; }
   if (hasGenProdProb && sampleProductionId.first==TVar::ZZGG){ cerr << "sampleProductionId==ZZGG is not a valid option (ME is not implemented). Use decay MEs instead for ZZGG or specify another production." << endl; if (!hasInvalidOption) hasInvalidOption=true; }
+  if (hasJetAlgo && !(objectsDeltaRIso==0.4 || objectsDeltaRIso==0.5 || objectsDeltaRIso==0.8)){ cerr << "Jet algorithm can only be used with object isolations 0.4, 0.5 or 0.8 at this moment." << endl; if (!hasInvalidOption) hasInvalidOption=true; }
+  else if (hasJetAlgo){ jetAlgo.append(std::to_string(10*objectsDeltaRIso)); cout << "Jet algorithm string " << jetAlgo << " has the isolation appended." << endl; }
 
+  // Warnings-only
   if (!redefinedOutputFile) cout << "WARNING: No output file specified. Defaulting to " << coutput << "." << endl;
   if (!hasDecayAngles && fileLevel<0 && recoSelBehaviour==0) { cout << "Disabling the re-calculation of decay angles in ReadMode by default since no relevant option is specified." << endl; computeDecayAngles=0; }
   if (fileLevel<0 && recoSelBehaviour!=0) { cout << "Enabling the (re-)calculation of all angles in ReadMode since the re-selection option is specified." << endl; computeVBFAngles=1; computeVHAngles=1; computeDecayAngles=1; }
 
   // Print help if needed and abort at this point, nowhere later
   if (hasInvalidOption) printOptionsHelp();
+
+  // Set isolation
+  ParticleComparators::setJetDeltaR(objectsDeltaRIso);
 
   // Initialize the global Mela if needed
   configureMela();
@@ -255,7 +266,6 @@ void OptionParser::interpretOption(string wish, string value){
   else if (wish=="includeRecoInfo") includeRecoInfo = (int)atoi(value.c_str());
   else if (wish=="fileLevel") fileLevel = (int)atoi(value.c_str());
   else if (wish=="pythiaStep" || wish=="pythialevel") pythiaStep = (int)atoi(value.c_str());
-  else if (wish=="jetAlgorithm" || wish=="jetalgorithm") jetAlgo = value;
   else if (wish=="isGenHZZ"){
     isGenHZZ = (int)atoi(value.c_str());
     if (isGenHZZ==0) PDGHelpers::setHVVmass(PDGHelpers::Wmass);
@@ -272,6 +282,8 @@ void OptionParser::interpretOption(string wish, string value){
   else if (wish=="recoCandidateSelection" || wish=="recoCandSel"){
     if (value=="BestZ1ThenZ2" || value=="BestZ1ThenZ2ScSumPt") recoHiggsCandidateSelectionScheme = HiggsComparators::BestZ1ThenZ2ScSumPt;
   }
+
+  else if (wish=="JetAlgorithm" || wish=="jetAlgorithm" || wish=="jetalgorithm") jetAlgo = value;
   else if (wish=="indir"){
     indir = value;
     unsigned int tlen=(unsigned int)indir.length();
@@ -292,6 +304,7 @@ void OptionParser::interpretOption(string wish, string value){
   else if (wish=="GH" || wish=="GaH" || wish=="GammaH" || wish=="wPOLE") wPOLE = (double)atof(value.c_str());
   else if (wish=="GHSM" || wish=="GaHSM" || wish=="GammaHSM" || wish=="wPOLEStandard") wPOLEStandard = (double)atof(value.c_str());
   else if (wish=="sqrts") erg_tev = (int)atoi(value.c_str());
+  else if (wish=="Iso" || wish=="iso" || wish=="isolation" || wish=="Isolation") objectsDeltaRIso = (double)atof(value.c_str());
   else if (wish=="removeDaughterMasses") removeDaughterMasses = (int)atoi(value.c_str());
   else if (wish=="computeDecayAngles") computeDecayAngles = (int)atoi(value.c_str());
   else if (wish=="computeVBFProdAngles") computeVBFAngles = (int)atoi(value.c_str());
@@ -314,7 +327,7 @@ void OptionParser::printOptionsHelp(){
   cout << "- indir: Location of input files. Default=\"./\"\n\n";
   cout << "- fileLevel: -1==ReadMode, 0==LHE, 1==Pythia8. \".lhe\" extension only allowed for 0, and \".root\" is the only format for the others. Default=0\n\n";
   cout << "- pythiaStep: for fileLevel==1, which level of reconstruction to use.  0==GEN, 1==GEN-SIM.  Default=1\n\n";
-  cout << "- jetAlgorithm: For fileLevel==1, which jets in the tree to use. Isolation needs to be set separately if different from the default value. Default=ak\n\n";
+  cout << "- JetAlgorithm / jetAlgorithm / jetalgorithm: For fileLevel==1, which jets in the tree to use. Isolation needs to be set separately if different from the default value. Default=ak\n\n";
   cout << "- outfile: Output file name. Default=\"tmp.root\"\n\n";
   cout << "- outdir: Location of the output file. Default=\"./\"\n\n";
   cout << "- tmpDir: Location of temporary files. Default=\"./tmpStore/\"\n\n";
