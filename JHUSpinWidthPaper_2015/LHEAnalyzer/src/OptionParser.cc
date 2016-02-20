@@ -272,8 +272,16 @@ void OptionParser::interpretOption(string wish, string value){
   else if (wish=="recoCandidateSelection" || wish=="recoCandSel"){
     if (value=="BestZ1ThenZ2" || value=="BestZ1ThenZ2ScSumPt") recoHiggsCandidateSelectionScheme = HiggsComparators::BestZ1ThenZ2ScSumPt;
   }
-  else if (wish=="indir") indir = value;
-  else if (wish=="outdir") outdir = value;
+  else if (wish=="indir"){
+    indir = value;
+    unsigned int tlen=(unsigned int)indir.length();
+    if (tlen>1 && indir[tlen-1]=='/') indir.append("/");
+  }
+  else if (wish=="outdir"){
+    outdir = value;
+    unsigned int tlen=(unsigned int)outdir.length();
+    if (tlen>1 && outdir[tlen-1]=='/') outdir.append("/");
+  }
   else if (wish=="outfile") coutput = value;
   else if (wish=="tmpDir" || wish=="tempDir") tmpDir = value;
   else if (wish=="excludeBranch") splitOptionRecursive(value, excludedBranch, ',');
