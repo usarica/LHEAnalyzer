@@ -14,6 +14,7 @@ computeVBFAngles(0), // VBF production angles
 computeVHAngles(0), // VH production angles
 sampleProductionId(TVar::ZZGG, TVar::JHUGen), // Sample gen. production mode
 fileLevel(0), // -1: ReadMode, 0: LHE, 1: Pythia,
+pythiaStep(1), //0: GEN, 1: GEN-SIM
 isGenHZZ(1), // H->ZZ or H->WW
 isRecoHZZ(1), // H->ZZ or H->WW
 genDecayMode(0), // 4l with HZZ, 2l2nu with HWW, see Event::constructVVCandidates(bool isZZ, int fstype)
@@ -22,6 +23,10 @@ recoSelBehaviour(0),
 recoSmearBehaviour(0),
 genHiggsCandidateSelectionScheme(HiggsComparators::BestZ1ThenZ2ScSumPt),
 recoHiggsCandidateSelectionScheme(HiggsComparators::BestZ1ThenZ2ScSumPt),
+jetDeltaRIso(0.5),
+
+jetAlgo("ak"),
+
 indir("./"),
 outdir("./"),
 tmpDir("./tmpStore/"),
@@ -40,6 +45,7 @@ void OptionParser::analyze(){
   bool redefinedOutputFile=false;
   bool hasDecayAngles=false;
   bool hasGenProdProb=false;
+  bool hasJetAlgo=false;
   char rawdelimiter = '=';
   for (int opt=1; opt<rawOptions.size(); opt++){
     string wish, value;
@@ -48,6 +54,7 @@ void OptionParser::analyze(){
     if (wish=="outfile") redefinedOutputFile=true;
     if (wish=="computeDecayAngles") hasDecayAngles=true;
     if (wish=="includeGenProdProb") hasGenProdProb=true;
+    if (wish=="JetAlgorithm" || wish=="jetAlgorithm" || wish=="jetalgorithm") hasJetAlgo=true;
   }
 
   if (filename.size()==0){ cerr << "You have to specify the input files." << endl; if(!hasInvalidOption) hasInvalidOption=true; }
@@ -64,7 +71,7 @@ void OptionParser::analyze(){
     for (int es=0; es<eventSkipRanges.size(); es++) maxEvents += (eventSkipRanges.at(es).second-eventSkipRanges.at(es).first+1);
   }
 
-  // Check for any invalid options
+  // Check for any invalid options and print an error
   if (isGenHZZ==-1){
     cout << "Gen. Higgs decay is disabled. Disabling MEs, decay angles and anything reco. as well." << endl;
     includeGenDecayProb.clear();
@@ -80,13 +87,27 @@ void OptionParser::analyze(){
   if (genHiggsCandidateSelectionScheme>=HiggsComparators::nCandidateSelections){ cerr << "Gen. H selection scheme is invalid!" << endl; if(!hasInvalidOption) hasInvalidOption=true; }
   if (recoHiggsCandidateSelectionScheme>=HiggsComparators::nCandidateSelections){ cerr << "Reco. H selection scheme is invalid!" << endl; if(!hasInvalidOption) hasInvalidOption=true; }
   if (hasGenProdProb && sampleProductionId.first==TVar::ZZGG){ cerr << "sampleProductionId==ZZGG is not a valid option (ME is not implemented). Use decay MEs instead for ZZGG or specify another production." << endl; if (!hasInvalidOption) hasInvalidOption=true; }
+  if (!(((jetDeltaRIso==0.4 || jetDeltaRIso==0.5 || jetDeltaRIso==0.8) && jetAlgo=="ak") || ((jetDeltaRIso==0.4 || jetDeltaRIso==0.6) && jetAlgo=="kt"))){ cerr << "Jet algorithm can only be used with object isolations 0.4, 0.5 or 0.8 for ak, and 0.4 or 0.6 for kt jets at this moment." << endl; if (!hasInvalidOption) hasInvalidOption=true; }
+  else{ jetAlgo.append(std::to_string((int)(10*jetDeltaRIso))); if(hasJetAlgo) cout << "Jet algorithm string " << jetAlgo << " has the isolation appended." << endl; }
 
+  // Warnings-only
   if (!redefinedOutputFile) cout << "WARNING: No output file specified. Defaulting to " << coutput << "." << endl;
   if (!hasDecayAngles && fileLevel<0 && recoSelBehaviour==0) { cout << "Disabling the re-calculation of decay angles in ReadMode by default since no relevant option is specified." << endl; computeDecayAngles=0; }
   if (fileLevel<0 && recoSelBehaviour!=0) { cout << "Enabling the (re-)calculation of all angles in ReadMode since the re-selection option is specified." << endl; computeVBFAngles=1; computeVHAngles=1; computeDecayAngles=1; }
 
   // Print help if needed and abort at this point, nowhere later
   if (hasInvalidOption) printOptionsHelp();
+
+  // Append extra "/" if they do not exist.
+  unsigned int tlen=(unsigned int)indir.length();
+  if (tlen>1 && indir[tlen-1]!='/') indir.append("/");
+  tlen=(unsigned int)outdir.length();
+  if (tlen>1 && outdir[tlen-1]!='/') outdir.append("/");
+  tlen=(unsigned int)tmpDir.length();
+  if (tlen>1 && tmpDir[tlen-1]!='/') tmpDir.append("/");
+  
+  // Set isolation
+  ParticleComparators::setJetDeltaR(jetDeltaRIso);
 
   // Initialize the global Mela if needed
   configureMela();
@@ -252,6 +273,7 @@ void OptionParser::interpretOption(string wish, string value){
   else if (wish=="includeGenInfo") includeGenInfo = (int)atoi(value.c_str());
   else if (wish=="includeRecoInfo") includeRecoInfo = (int)atoi(value.c_str());
   else if (wish=="fileLevel") fileLevel = (int)atoi(value.c_str());
+  else if (wish=="pythiaStep" || wish=="pythialevel") pythiaStep = (int)atoi(value.c_str());
   else if (wish=="isGenHZZ"){
     isGenHZZ = (int)atoi(value.c_str());
     if (isGenHZZ==0) PDGHelpers::setHVVmass(PDGHelpers::Wmass);
@@ -268,10 +290,12 @@ void OptionParser::interpretOption(string wish, string value){
   else if (wish=="recoCandidateSelection" || wish=="recoCandSel"){
     if (value=="BestZ1ThenZ2" || value=="BestZ1ThenZ2ScSumPt") recoHiggsCandidateSelectionScheme = HiggsComparators::BestZ1ThenZ2ScSumPt;
   }
+
+  else if (wish=="JetAlgorithm" || wish=="jetAlgorithm" || wish=="jetalgorithm") jetAlgo = value;
   else if (wish=="indir") indir = value;
   else if (wish=="outdir") outdir = value;
-  else if (wish=="outfile") coutput = value;
   else if (wish=="tmpDir" || wish=="tempDir") tmpDir = value;
+  else if (wish=="outfile") coutput = value;
   else if (wish=="excludeBranch") splitOptionRecursive(value, excludedBranch, ',');
   else if (wish=="maxevents" || wish=="maxEvents") maxEvents = (int)atoi(value.c_str());
   else if (wish=="skipevents" || wish=="skipEvents") extractSkippedEvents(value);
@@ -280,6 +304,7 @@ void OptionParser::interpretOption(string wish, string value){
   else if (wish=="GH" || wish=="GaH" || wish=="GammaH" || wish=="wPOLE") wPOLE = (double)atof(value.c_str());
   else if (wish=="GHSM" || wish=="GaHSM" || wish=="GammaHSM" || wish=="wPOLEStandard") wPOLEStandard = (double)atof(value.c_str());
   else if (wish=="sqrts") erg_tev = (int)atoi(value.c_str());
+  else if (wish=="jetDeltaR" || wish=="jetIso" || wish=="jetIsolation" || wish=="jetDeltaRIso" || wish=="jetDeltaRIsolation") jetDeltaRIso = (double)atof(value.c_str());
   else if (wish=="removeDaughterMasses") removeDaughterMasses = (int)atoi(value.c_str());
   else if (wish=="computeDecayAngles") computeDecayAngles = (int)atoi(value.c_str());
   else if (wish=="computeVBFProdAngles") computeVBFAngles = (int)atoi(value.c_str());
@@ -301,6 +326,7 @@ void OptionParser::printOptionsHelp(){
   cout << "- No option specifier: Input files with extension .lhe or .root. Multiple input files can be passed as different arguments.\n\n";
   cout << "- indir: Location of input files. Default=\"./\"\n\n";
   cout << "- fileLevel: -1==ReadMode, 0==LHE, 1==Pythia8. \".lhe\" extension only allowed for 0, and \".root\" is the only format for the others. Default=0\n\n";
+  cout << "- pythiaStep: for fileLevel==1, which level of reconstruction to use.  0==GEN, 1==GEN-SIM.  Default=1\n\n";
   cout << "- outfile: Output file name. Default=\"tmp.root\"\n\n";
   cout << "- outdir: Location of the output file. Default=\"./\"\n\n";
   cout << "- tmpDir: Location of temporary files. Default=\"./tmpStore/\"\n\n";
@@ -324,6 +350,9 @@ void OptionParser::printOptionsHelp(){
   cout << "- recoSelBehavior / recoSelBehaviour: Selection behaviour on all reco. final states. Default=0.\n\t0==Apply selection in LHE and Pythia modes, apply no re-selection in ReadMode.\n\t1==Opposite of 0. Also enables the computation of all angles in ReadMode, overriding the relevant command line options.\n\n";
   cout << "- recoSmearBehavior / recoSmearBehaviour: Smearing behaviour on all reco. final states. Does not apply to ReadMode. Default=0.\n\t0==Apply smearing in LHE mode, no smearing in Pythia mode\n\t1==Opposite of 0\n\n";
   cout << "- genCandidateSelection, recoCandidateSelection: Higgs candidate selection algorithm. Values accepted are\n\t->BestZ1ThenZ2 (=BestZ1ThenZ2ScSumPt).\n\tDefaults==(BestZ1ThenZ2, BestZ1ThenZ2)\n\n";
+
+  cout << "- JetAlgorithm / jetAlgorithm / jetalgorithm: Jet algorithm to use if available in the input tree. Isolation needs to be set separately if different from the default value. Default=ak\n\n";
+  cout << "- jetDeltaR / jetIso / jetIsolation / jetDeltaRIso / jetDeltaRIsolation: deltaR_jet isolation cut used in selecting jets. This value (x10) is appended to the jet algorithm string and can only be 0.4, 0.5 or 0.8 for ak, and 0.4 or 0.6 for kt jets at the moment. Default=0.5\n\n";
 
   cout << "- excludeBranch: Comma-separated list of excluded branches. Default is to include all branches called via HVVTree::bookAllBranches.\n\n";
 

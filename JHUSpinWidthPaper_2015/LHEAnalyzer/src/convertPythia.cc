@@ -20,7 +20,8 @@ void convertPythia::configure(){
 }
 void convertPythia::finalizeRun(){
   string tmpdir = options->getTempDir();
-  string strCmd = "rm -rf ";
+  string strCmdcore = "rm -rf ";
+  string strCmd = strCmdcore;
   strCmd.append(tmpdir);
   gSystem->Exec(strCmd.c_str());
 }
@@ -190,12 +191,23 @@ void convertPythia::run(){
 
 TFile* convertPythia::getIntermediateFile(string cinput){
   string coutput = options->getTempDir();
-  string strCmd = "root -b -l -q loadLib.cc 'trimPythia.cc(\"";
-  strCmd.append(cinput);
-  strCmd.append("\", \"");
-  strCmd.append(coutput);
-  strCmd.append("\")'");
-  gSystem->Exec(strCmd.c_str());
+  const bool usePython = true;
+  stringstream streamCmd;
+  if (!usePython){
+    streamCmd
+      << "root -b -l -q loadLib.cc 'trimPythia.cc+(\""
+      << cinput
+      << "\", \""
+      << coutput
+      << "\", "
+      << options->pythiaType()
+      << ", \""
+      << options->jetAlgorithm()
+      << "\")'";
+  }
+  else streamCmd << "python trimPythia.py " << cinput << " " << coutput << " " << options->pythiaType() << " " << options->jetAlgorithm();
+  TString strCmd = streamCmd.str();
+  gSystem->Exec(strCmd);
   string strtmp=coutput;
   strtmp.append("pythiaTemp.root");
   TFile* ftmp = new TFile(strtmp.c_str(), "read");
