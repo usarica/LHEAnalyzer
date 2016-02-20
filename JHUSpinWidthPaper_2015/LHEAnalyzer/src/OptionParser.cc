@@ -23,7 +23,7 @@ recoSelBehaviour(0),
 recoSmearBehaviour(0),
 genHiggsCandidateSelectionScheme(HiggsComparators::BestZ1ThenZ2ScSumPt),
 recoHiggsCandidateSelectionScheme(HiggsComparators::BestZ1ThenZ2ScSumPt),
-objectsDeltaRIso(0.5),
+jetDeltaRIso(0.5),
 
 jetAlgo("ak"),
 
@@ -87,8 +87,8 @@ void OptionParser::analyze(){
   if (genHiggsCandidateSelectionScheme>=HiggsComparators::nCandidateSelections){ cerr << "Gen. H selection scheme is invalid!" << endl; if(!hasInvalidOption) hasInvalidOption=true; }
   if (recoHiggsCandidateSelectionScheme>=HiggsComparators::nCandidateSelections){ cerr << "Reco. H selection scheme is invalid!" << endl; if(!hasInvalidOption) hasInvalidOption=true; }
   if (hasGenProdProb && sampleProductionId.first==TVar::ZZGG){ cerr << "sampleProductionId==ZZGG is not a valid option (ME is not implemented). Use decay MEs instead for ZZGG or specify another production." << endl; if (!hasInvalidOption) hasInvalidOption=true; }
-  if (hasJetAlgo && !(objectsDeltaRIso==0.4 || objectsDeltaRIso==0.5 || objectsDeltaRIso==0.8)){ cerr << "Jet algorithm can only be used with object isolations 0.4, 0.5 or 0.8 at this moment." << endl; if (!hasInvalidOption) hasInvalidOption=true; }
-  else if (hasJetAlgo){ jetAlgo.append(std::to_string(10*objectsDeltaRIso)); cout << "Jet algorithm string " << jetAlgo << " has the isolation appended." << endl; }
+  if (hasJetAlgo && !(jetDeltaRIso==0.4 || jetDeltaRIso==0.5 || jetDeltaRIso==0.8)){ cerr << "Jet algorithm can only be used with object isolations 0.4, 0.5 or 0.8 at this moment." << endl; if (!hasInvalidOption) hasInvalidOption=true; }
+  else if (hasJetAlgo){ jetAlgo.append(std::to_string(10*jetDeltaRIso)); cout << "Jet algorithm string " << jetAlgo << " has the isolation appended." << endl; }
 
   // Warnings-only
   if (!redefinedOutputFile) cout << "WARNING: No output file specified. Defaulting to " << coutput << "." << endl;
@@ -99,7 +99,7 @@ void OptionParser::analyze(){
   if (hasInvalidOption) printOptionsHelp();
 
   // Set isolation
-  ParticleComparators::setJetDeltaR(objectsDeltaRIso);
+  ParticleComparators::setJetDeltaR(jetDeltaRIso);
 
   // Initialize the global Mela if needed
   configureMela();
@@ -304,7 +304,7 @@ void OptionParser::interpretOption(string wish, string value){
   else if (wish=="GH" || wish=="GaH" || wish=="GammaH" || wish=="wPOLE") wPOLE = (double)atof(value.c_str());
   else if (wish=="GHSM" || wish=="GaHSM" || wish=="GammaHSM" || wish=="wPOLEStandard") wPOLEStandard = (double)atof(value.c_str());
   else if (wish=="sqrts") erg_tev = (int)atoi(value.c_str());
-  else if (wish=="Iso" || wish=="iso" || wish=="isolation" || wish=="Isolation") objectsDeltaRIso = (double)atof(value.c_str());
+  else if (wish=="jetDeltaR" || wish=="jetIso" || wish=="jetIsolation" || wish=="jetDeltaRIso" || wish=="jetDeltaRIsolation") jetDeltaRIso = (double)atof(value.c_str());
   else if (wish=="removeDaughterMasses") removeDaughterMasses = (int)atoi(value.c_str());
   else if (wish=="computeDecayAngles") computeDecayAngles = (int)atoi(value.c_str());
   else if (wish=="computeVBFProdAngles") computeVBFAngles = (int)atoi(value.c_str());
@@ -327,7 +327,6 @@ void OptionParser::printOptionsHelp(){
   cout << "- indir: Location of input files. Default=\"./\"\n\n";
   cout << "- fileLevel: -1==ReadMode, 0==LHE, 1==Pythia8. \".lhe\" extension only allowed for 0, and \".root\" is the only format for the others. Default=0\n\n";
   cout << "- pythiaStep: for fileLevel==1, which level of reconstruction to use.  0==GEN, 1==GEN-SIM.  Default=1\n\n";
-  cout << "- JetAlgorithm / jetAlgorithm / jetalgorithm: For fileLevel==1, which jets in the tree to use. Isolation needs to be set separately if different from the default value. Default=ak\n\n";
   cout << "- outfile: Output file name. Default=\"tmp.root\"\n\n";
   cout << "- outdir: Location of the output file. Default=\"./\"\n\n";
   cout << "- tmpDir: Location of temporary files. Default=\"./tmpStore/\"\n\n";
@@ -351,6 +350,9 @@ void OptionParser::printOptionsHelp(){
   cout << "- recoSelBehavior / recoSelBehaviour: Selection behaviour on all reco. final states. Default=0.\n\t0==Apply selection in LHE and Pythia modes, apply no re-selection in ReadMode.\n\t1==Opposite of 0. Also enables the computation of all angles in ReadMode, overriding the relevant command line options.\n\n";
   cout << "- recoSmearBehavior / recoSmearBehaviour: Smearing behaviour on all reco. final states. Does not apply to ReadMode. Default=0.\n\t0==Apply smearing in LHE mode, no smearing in Pythia mode\n\t1==Opposite of 0\n\n";
   cout << "- genCandidateSelection, recoCandidateSelection: Higgs candidate selection algorithm. Values accepted are\n\t->BestZ1ThenZ2 (=BestZ1ThenZ2ScSumPt).\n\tDefaults==(BestZ1ThenZ2, BestZ1ThenZ2)\n\n";
+
+  cout << "- JetAlgorithm / jetAlgorithm / jetalgorithm: Jet algorithm to use if available in the input tree. Isolation needs to be set separately if different from the default value. Default=ak\n\n";
+  cout << "- jetDeltaR / jetIso / jetIsolation / jetDeltaRIso / jetDeltaRIsolation: deltaR_jet isolation cut used in selecting jets. This value (x10) is appended to the jet algorithm string and can only be 0.4, 0.5 or 0.8 at the moment. Default=0.5\n\n";
 
   cout << "- excludeBranch: Comma-separated list of excluded branches. Default is to include all branches called via HVVTree::bookAllBranches.\n\n";
 
