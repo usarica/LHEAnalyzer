@@ -3,8 +3,8 @@ import os
 import ROOT
 import sys
 
-def trimPythia(cinput, outdir="./", pythiaLevel=1, jetAlgorithm="ak5"):
-  pythiaLevel = int(pythiaLevel)
+def trimPythia(cinput, outdir, pythiaStep, jetAlgorithm):
+  pythiaStep = int(pythiaStep)
   coutput = os.path.join(outdir, "pythiaTemp.root")
 
   ftemp = ROOT.TFile(coutput, "recreate")
@@ -43,10 +43,10 @@ def trimPythia(cinput, outdir="./", pythiaLevel=1, jetAlgorithm="ak5"):
     events = f.Get("Events")
     events.SetBranchStatus("*", 0)
 
-    if pythiaLevel == 1: suffix = "SIM"
-    elif pythiaLevel == 0: suffix = "GEN"
+    if pythiaStep == 1: suffix = "SIM"
+    elif pythiaStep == 0: suffix = "GEN"
     else:
-      print "trimPythia should not be called with pythiaLevel=%i" % pythiaLevel
+      print "trimPythia should not be called with pythiaStep=%i" % pythiaStep
       assert False
     events.SetBranchStatus("recoGenJets_"+jetAlgorithm+"GenJets__"+suffix+"*", 1)
     events.SetBranchStatus("recoGenParticles_genParticles__"+suffix+"*", 1)

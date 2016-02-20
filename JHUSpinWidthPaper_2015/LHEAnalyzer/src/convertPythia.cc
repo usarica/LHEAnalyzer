@@ -197,7 +197,7 @@ TFile* convertPythia::getIntermediateFile(string cinput){
   strCmd.append("\", ");
   strCmd.append(to_string(options->pythiaType()));
   strCmd.append(", \"");
-  strCmd.append(options->jetRecoAlgorithm());
+  strCmd.append(options->jetAlgorithm());
   strCmd.append("\")'");
   gSystem->Exec(strCmd.c_str());
   string strtmp=coutput;

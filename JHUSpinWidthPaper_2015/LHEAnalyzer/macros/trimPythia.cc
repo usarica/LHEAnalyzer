@@ -17,7 +17,7 @@ using namespace std;
 
 vector<pair<int, int>> findDuplicates(const vector<double>* fourvector, vector<int> id, vector<int> status);
 
-void trimPythia(TString cinput, TString outdir="./", int pythiaLevel=1, TString jetAlgorithm="ak5"){
+void trimPythia(TString cinput, TString outdir, int pythiaStep, TString jetAlgorithm){
   TString coutput = outdir;
   coutput.Append("pythiaTemp.root");
 
@@ -62,8 +62,8 @@ void trimPythia(TString cinput, TString outdir="./", int pythiaLevel=1, TString 
     edm::Wrapper< GenEventInfoProduct >* geneventinfoWrapper;
 
     TString suffix;
-    if (pythiaLevel == 1) suffix = "SIM";
-    else if (pythiaLevel == 0) suffix = "GEN";
+    if (pythiaStep == 1) suffix = "SIM";
+    else if (pythiaStep == 0) suffix = "GEN";
     else {
       cout << "trimPythia should not be called with fileLevel=" << fileLevel << endl;
       assert(0);
