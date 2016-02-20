@@ -20,7 +20,6 @@ converter::converter(OptionParser* options_){
 void converter::configure(){
   filename = options->inputfiles();
   string cindir = options->inputDir();
-  cindir.append("/"); // Just for protection, extra "/"s do not matter for file names.
   for (int f=0; f<filename.size(); f++) filename.at(f).insert(0, cindir);
 
   string coutput = options->outputDir();

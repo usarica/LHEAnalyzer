@@ -1,5 +1,11 @@
-br.sm1
-br.sm2
+/loadLib.*
+/trimPythia.*
+/*.py
 /*.DAT
 /*.dat
+/*.root
+br.sm1
+br.sm2
 Pdfdata
+*.pyc
+tmpStore*

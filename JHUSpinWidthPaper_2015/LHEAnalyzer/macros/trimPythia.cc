@@ -1,13 +1,10 @@
-//std includes
 #include <iostream>
 #include <utility>
 #include <vector>
-//root includes
 #include "TFile.h"
 #include "TLorentzVector.h"
 #include "TString.h"
 #include "TTree.h"
-//CMSSW includes
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/JetReco/interface/GenJet.h"
 #include "FWCore/Utilities/interface/TypeWithDict.h"
@@ -57,17 +54,18 @@ void trimPythia(TString cinput, TString outdir, int pythiaStep, TString jetAlgor
     TTree* events = (TTree*)f.Get("Events");
     events->SetBranchStatus("*", 0);
 
-    edm::Wrapper< vector<reco::GenJet> >* jetWrapper;
-    edm::Wrapper< vector<reco::GenParticle> >* genparticleWrapper;
-    edm::Wrapper< GenEventInfoProduct >* geneventinfoWrapper;
+    //edm::Wrapper< vector<reco::GenJet> >* jetWrapper;
+    //edm::Wrapper< vector<reco::GenParticle> >* genparticleWrapper;
+    //edm::Wrapper< GenEventInfoProduct >* geneventinfoWrapper;
+    void* jetWrapper;
+    void* genparticleWrapper;
+    void* geneventinfoWrapper;
 
     TString suffix;
     if (pythiaStep == 1) suffix = "SIM";
     else if (pythiaStep == 0) suffix = "GEN";
-    else {
-      cout << "trimPythia should not be called with fileLevel=" << fileLevel << endl;
-      assert(0);
-    }
+    else{ cout << "trimPythia should not be called with pythiaStep=" << pythiaStep << endl; assert(0); }
+
     events->SetBranchStatus("recoGenJets_"+jetAlgorithm+"GenJets__"+suffix+"*", 1);
     events->SetBranchAddress("recoGenJets_"+jetAlgorithm+"GenJets__"+suffix+".", &jetWrapper);
     events->SetBranchStatus("recoGenParticles_genParticles__"+suffix+"*", 1);
@@ -89,12 +87,12 @@ void trimPythia(TString cinput, TString outdir, int pythiaStep, TString jetAlgor
       reco_GenJet_status.clear();
       reco_GenParticle_status.clear();
 
-      const gen::PdfInfo* genpdf = geneventinfoWrapper->product()->pdf();
-      const vector<double> genweights = geneventinfoWrapper->product()->weights();
+      const gen::PdfInfo* genpdf = ((edm::Wrapper< GenEventInfoProduct >*)geneventinfoWrapper)->product()->pdf();
+      const vector<double> genweights = ((edm::Wrapper< GenEventInfoProduct >*)geneventinfoWrapper)->product()->weights();
       for (unsigned int g=0; g<genweights.size(); g++) geneventinfoweights.push_back(genweights.at(g));
 
-      const vector<reco::GenJet>* reco_GenJets = jetWrapper->product();
-      const vector<reco::GenParticle>* reco_GenParticles = genparticleWrapper->product();
+      const vector<reco::GenJet>* reco_GenJets = ((edm::Wrapper< vector<reco::GenJet> >*)jetWrapper)->product();
+      const vector<reco::GenParticle>* reco_GenParticles = ((edm::Wrapper< vector<reco::GenParticle> >*)genparticleWrapper)->product();
 
       for (unsigned int p=0; p<reco_GenParticles->size(); p++){
         const reco::GenParticle& part = reco_GenParticles->at(p);

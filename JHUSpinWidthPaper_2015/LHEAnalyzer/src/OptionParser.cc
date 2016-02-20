@@ -87,8 +87,8 @@ void OptionParser::analyze(){
   if (genHiggsCandidateSelectionScheme>=HiggsComparators::nCandidateSelections){ cerr << "Gen. H selection scheme is invalid!" << endl; if(!hasInvalidOption) hasInvalidOption=true; }
   if (recoHiggsCandidateSelectionScheme>=HiggsComparators::nCandidateSelections){ cerr << "Reco. H selection scheme is invalid!" << endl; if(!hasInvalidOption) hasInvalidOption=true; }
   if (hasGenProdProb && sampleProductionId.first==TVar::ZZGG){ cerr << "sampleProductionId==ZZGG is not a valid option (ME is not implemented). Use decay MEs instead for ZZGG or specify another production." << endl; if (!hasInvalidOption) hasInvalidOption=true; }
-  if (hasJetAlgo && !( ((jetDeltaRIso==0.4 || jetDeltaRIso==0.5 || jetDeltaRIso==0.8) && jetAlgo=="ak") || ((jetDeltaRIso==0.4 || jetDeltaRIso==0.6) && jetAlgo=="kt") ) ){ cerr << "Jet algorithm can only be used with object isolations 0.4, 0.5 or 0.8 for ak, and 0.4 or 0.6 for kt jets at this moment." << endl; if (!hasInvalidOption) hasInvalidOption=true; }
-  else if (hasJetAlgo){ jetAlgo.append(std::to_string(10*jetDeltaRIso)); cout << "Jet algorithm string " << jetAlgo << " has the isolation appended." << endl; }
+  if (!(((jetDeltaRIso==0.4 || jetDeltaRIso==0.5 || jetDeltaRIso==0.8) && jetAlgo=="ak") || ((jetDeltaRIso==0.4 || jetDeltaRIso==0.6) && jetAlgo=="kt"))){ cerr << "Jet algorithm can only be used with object isolations 0.4, 0.5 or 0.8 for ak, and 0.4 or 0.6 for kt jets at this moment." << endl; if (!hasInvalidOption) hasInvalidOption=true; }
+  else{ jetAlgo.append(std::to_string((int)(10*jetDeltaRIso))); if(hasJetAlgo) cout << "Jet algorithm string " << jetAlgo << " has the isolation appended." << endl; }
 
   // Warnings-only
   if (!redefinedOutputFile) cout << "WARNING: No output file specified. Defaulting to " << coutput << "." << endl;
@@ -98,6 +98,14 @@ void OptionParser::analyze(){
   // Print help if needed and abort at this point, nowhere later
   if (hasInvalidOption) printOptionsHelp();
 
+  // Append extra "/" if they do not exist.
+  unsigned int tlen=(unsigned int)indir.length();
+  if (tlen>1 && indir[tlen-1]!='/') indir.append("/");
+  tlen=(unsigned int)outdir.length();
+  if (tlen>1 && outdir[tlen-1]!='/') outdir.append("/");
+  tlen=(unsigned int)tmpDir.length();
+  if (tlen>1 && tmpDir[tlen-1]!='/') tmpDir.append("/");
+  
   // Set isolation
   ParticleComparators::setJetDeltaR(jetDeltaRIso);
 
@@ -284,18 +292,10 @@ void OptionParser::interpretOption(string wish, string value){
   }
 
   else if (wish=="JetAlgorithm" || wish=="jetAlgorithm" || wish=="jetalgorithm") jetAlgo = value;
-  else if (wish=="indir"){
-    indir = value;
-    unsigned int tlen=(unsigned int)indir.length();
-    if (tlen>1 && indir[tlen-1]=='/') indir.append("/");
-  }
-  else if (wish=="outdir"){
-    outdir = value;
-    unsigned int tlen=(unsigned int)outdir.length();
-    if (tlen>1 && outdir[tlen-1]=='/') outdir.append("/");
-  }
-  else if (wish=="outfile") coutput = value;
+  else if (wish=="indir") indir = value;
+  else if (wish=="outdir") outdir = value;
   else if (wish=="tmpDir" || wish=="tempDir") tmpDir = value;
+  else if (wish=="outfile") coutput = value;
   else if (wish=="excludeBranch") splitOptionRecursive(value, excludedBranch, ',');
   else if (wish=="maxevents" || wish=="maxEvents") maxEvents = (int)atoi(value.c_str());
   else if (wish=="skipevents" || wish=="skipEvents") extractSkippedEvents(value);

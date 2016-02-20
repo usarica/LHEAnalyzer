@@ -3,8 +3,8 @@ import os
 import ROOT
 import sys
 
-def trimPythia(cinput, outdir, pythiaStep, jetAlgorithm):
-  pythiaStep = int(pythiaStep)
+def trimPythia(cinput, outdir="./", pythiaLevel=1, jetAlgorithm="ak5"):
+  pythiaLevel = int(pythiaLevel)
   coutput = os.path.join(outdir, "pythiaTemp.root")
 
   ftemp = ROOT.TFile(coutput, "recreate")
@@ -20,21 +20,24 @@ def trimPythia(cinput, outdir, pythiaStep, jetAlgorithm):
   reco_GenParticle_id = ROOT.vector("int")()
   reco_GenParticle_status = ROOT.vector("int")()
 
-  tmpTree.Branch("genWeights", "vector<double>", ROOT.AddressOf(geneventinfoweights))
+  tmpTree_Branch = tmpTree.Branch
+  tmpTree_Fill = tmpTree.Fill
 
-  tmpTree.Branch("reco_GenJet_X", "vector<double>", ROOT.AddressOf(reco_GenJet_FV[0]))
-  tmpTree.Branch("reco_GenJet_Y", "vector<double>", ROOT.AddressOf(reco_GenJet_FV[1]))
-  tmpTree.Branch("reco_GenJet_Z", "vector<double>", ROOT.AddressOf(reco_GenJet_FV[2]))
-  tmpTree.Branch("reco_GenJet_E", "vector<double>", ROOT.AddressOf(reco_GenJet_FV[3]))
-  tmpTree.Branch("reco_GenJet_id", "vector<int>", ROOT.AddressOf(reco_GenJet_id))
-  tmpTree.Branch("reco_GenJet_status", "vector<int>", ROOT.AddressOf(reco_GenJet_status))
+  tmpTree_Branch("genWeights", "vector<double>", ROOT.AddressOf(geneventinfoweights))
 
-  tmpTree.Branch("reco_GenParticle_X", "vector<double>", ROOT.AddressOf(reco_GenParticle_FV[0]))
-  tmpTree.Branch("reco_GenParticle_Y", "vector<double>", ROOT.AddressOf(reco_GenParticle_FV[1]))
-  tmpTree.Branch("reco_GenParticle_Z", "vector<double>", ROOT.AddressOf(reco_GenParticle_FV[2]))
-  tmpTree.Branch("reco_GenParticle_E", "vector<double>", ROOT.AddressOf(reco_GenParticle_FV[3]))
-  tmpTree.Branch("reco_GenParticle_id", "vector<int>", ROOT.AddressOf(reco_GenParticle_id))
-  tmpTree.Branch("reco_GenParticle_status", "vector<int>", ROOT.AddressOf(reco_GenParticle_status))
+  tmpTree_Branch("reco_GenJet_X", "vector<double>", ROOT.AddressOf(reco_GenJet_FV[0]))
+  tmpTree_Branch("reco_GenJet_Y", "vector<double>", ROOT.AddressOf(reco_GenJet_FV[1]))
+  tmpTree_Branch("reco_GenJet_Z", "vector<double>", ROOT.AddressOf(reco_GenJet_FV[2]))
+  tmpTree_Branch("reco_GenJet_E", "vector<double>", ROOT.AddressOf(reco_GenJet_FV[3]))
+  tmpTree_Branch("reco_GenJet_id", "vector<int>", ROOT.AddressOf(reco_GenJet_id))
+  tmpTree_Branch("reco_GenJet_status", "vector<int>", ROOT.AddressOf(reco_GenJet_status))
+
+  tmpTree_Branch("reco_GenParticle_X", "vector<double>", ROOT.AddressOf(reco_GenParticle_FV[0]))
+  tmpTree_Branch("reco_GenParticle_Y", "vector<double>", ROOT.AddressOf(reco_GenParticle_FV[1]))
+  tmpTree_Branch("reco_GenParticle_Z", "vector<double>", ROOT.AddressOf(reco_GenParticle_FV[2]))
+  tmpTree_Branch("reco_GenParticle_E", "vector<double>", ROOT.AddressOf(reco_GenParticle_FV[3]))
+  tmpTree_Branch("reco_GenParticle_id", "vector<int>", ROOT.AddressOf(reco_GenParticle_id))
+  tmpTree_Branch("reco_GenParticle_status", "vector<int>", ROOT.AddressOf(reco_GenParticle_status))
 
 
 
@@ -43,14 +46,15 @@ def trimPythia(cinput, outdir, pythiaStep, jetAlgorithm):
     events = f.Get("Events")
     events.SetBranchStatus("*", 0)
 
-    if pythiaStep == 1: suffix = "SIM"
-    elif pythiaStep == 0: suffix = "GEN"
+    if pythiaLevel == 1: suffix = "SIM"
+    elif pythiaLevel == 0: suffix = "GEN"
     else:
-      print "trimPythia should not be called with pythiaStep=%i" % pythiaStep
+      print "trimPythia should not be called with pythiaLevel=%i" % pythiaLevel
       assert False
-    events.SetBranchStatus("recoGenJets_"+jetAlgorithm+"GenJets__"+suffix+"*", 1)
-    events.SetBranchStatus("recoGenParticles_genParticles__"+suffix+"*", 1)
-    events.SetBranchStatus("GenEventInfoProduct_generator__"+suffix+"*", 1)
+    events_SetBranchStatus = events.SetBranchStatus
+    events_SetBranchStatus("recoGenJets_"+jetAlgorithm+"GenJets__"+suffix+"*", 1)
+    events_SetBranchStatus("recoGenParticles_genParticles__"+suffix+"*", 1)
+    events_SetBranchStatus("GenEventInfoProduct_generator__"+suffix+"*", 1)
 
     for ev in events:
       geneventinfoweights.clear()
@@ -66,7 +70,8 @@ def trimPythia(cinput, outdir, pythiaStep, jetAlgorithm):
       geneventinfoWrapper = getattr(ev, "GenEventInfoProduct_generator__"+suffix+".")
       genpdf = geneventinfoWrapper.product().pdf()
       genweights = geneventinfoWrapper.product().weights()
-      for genweight in genweights: geneventinfoweights.push_back(genweight)
+      #for genweight in genweights: geneventinfoweights.push_back(genweight)
+      map(geneventinfoweights.push_back,genweights)
 
       jetWrapper = getattr(ev, "recoGenJets_"+jetAlgorithm+"GenJets__"+suffix+".")
       genparticleWrapper = getattr(ev, "recoGenParticles_genParticles__"+suffix+".")
@@ -74,12 +79,14 @@ def trimPythia(cinput, outdir, pythiaStep, jetAlgorithm):
       reco_GenParticles = genparticleWrapper.product()
 
       for part in reco_GenParticles:
+        part_pdgId = part.pdgId()
+        part_status = part.status()
         if (
-          ((part.pdgId()==25 or part.pdgId()==32) and part.status()==22) # Generated Higgs
+          ((part_pdgId==25 or part_pdgId==32) and part_status==22) # Generated Higgs
           or
-          ((abs(part.pdgId())>=11 and abs(part.pdgId())<=16) and (part.status()==23 or part.status()==1)) # Generated leptons
+          ((abs(part_pdgId)>=11 and abs(part_pdgId)<=16) and (part_status==23 or part_status==1)) # Generated leptons
           or
-          ((abs(part.pdgId())<=6 or abs(part.pdgId())==21) and (part.status()==21 or part.status()==23 or part.status()==22)) # Generated partons
+          ((abs(part_pdgId)<=6 or abs(part_pdgId)==21) and (part_status==21 or part_status==23 or part_status==22)) # Generated partons
           ):
           reco_GenParticle_FV[0].push_back(part.px())
           reco_GenParticle_FV[1].push_back(part.py())
@@ -128,7 +135,7 @@ def trimPythia(cinput, outdir, pythiaStep, jetAlgorithm):
         reco_GenJet_id.push_back(jet.pdgId())
         reco_GenJet_status.push_back(jet.status())
 
-      tmpTree.Fill()
+      tmpTree_Fill()
     f.Close()
 
   elif f.IsOpen(): f.Close()
