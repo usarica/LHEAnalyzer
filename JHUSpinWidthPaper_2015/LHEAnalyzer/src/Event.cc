@@ -154,8 +154,8 @@ void Event::constructVVCandidates(int isZZ, int fstype){
 
     if (fstype==-1 || fstype==0 || fstype==2 || fstype==3){ // Z->2l
       for (int c=0; c<3; c++){
-        for (int i=0; i<lepPlusMinus[c][0].size(); i++){
-          for (int j=0; j<lepPlusMinus[c][1].size(); j++){
+        for (unsigned int i=0; i<lepPlusMinus[c][0].size(); i++){
+          for (unsigned int j=0; j<lepPlusMinus[c][1].size(); j++){
             TLorentzVector pV = lepPlusMinus[c][0].at(i)->p4+lepPlusMinus[c][1].at(j)->p4;
             Particle* V = new Particle(23, pV);
             V->addDaughter(lepPlusMinus[c][0].at(i));
@@ -167,8 +167,8 @@ void Event::constructVVCandidates(int isZZ, int fstype){
     }
     if (fstype==-1 || fstype==3 || fstype==4 || fstype==5){ // Z->2nu
       for (int c=0; c<3; c++){
-        for (int i=0; i<lepNu[c][0].size(); i++){
-          for (int j=0; j<lepNu[c][1].size(); j++){
+        for (unsigned int i=0; i<lepNu[c][0].size(); i++){
+          for (unsigned int j=0; j<lepNu[c][1].size(); j++){
             TLorentzVector pV = lepNu[c][0].at(i)->p4+lepNu[c][1].at(j)->p4;
             Particle* V = new Particle(23, pV);
             V->addDaughter(lepNu[c][0].at(i));
@@ -180,8 +180,8 @@ void Event::constructVVCandidates(int isZZ, int fstype){
     }
     if (fstype==-1 || fstype==1 || fstype==2 || fstype==4){ // Z->2q
       for (int c=1; c<7; c++){
-        for (int i=0; i<quarkPlusMinus[c][0].size(); i++){
-          for (int j=0; j<quarkPlusMinus[c][1].size(); j++){
+        for (unsigned int i=0; i<quarkPlusMinus[c][0].size(); i++){
+          for (unsigned int j=0; j<quarkPlusMinus[c][1].size(); j++){
             TLorentzVector pV = quarkPlusMinus[c][0].at(i)->p4+quarkPlusMinus[c][1].at(j)->p4;
             Particle* V = new Particle(23, pV);
             V->addDaughter(quarkPlusMinus[c][0].at(i));
@@ -197,8 +197,8 @@ void Event::constructVVCandidates(int isZZ, int fstype){
 
     if (fstype==-1 || fstype==0 || fstype==2){ // W->lnu
       for (int c=0; c<3; c++){
-        for (int i=0; i<lepPlusMinus[c][0].size(); i++){
-          for (int j=0; j<lepNu[c][1].size(); j++){
+        for (unsigned int i=0; i<lepPlusMinus[c][0].size(); i++){
+          for (unsigned int j=0; j<lepNu[c][1].size(); j++){
             TLorentzVector pV = lepPlusMinus[c][0].at(i)->p4+lepNu[c][1].at(j)->p4;
             Particle* V = new Particle(24, pV);
             V->addDaughter(lepPlusMinus[c][0].at(i));
@@ -208,8 +208,8 @@ void Event::constructVVCandidates(int isZZ, int fstype){
         }
       }
       for (int c=0; c<3; c++){
-        for (int i=0; i<lepPlusMinus[c][1].size(); i++){
-          for (int j=0; j<lepNu[c][0].size(); j++){
+        for (unsigned int i=0; i<lepPlusMinus[c][1].size(); i++){
+          for (unsigned int j=0; j<lepNu[c][0].size(); j++){
             TLorentzVector pV = lepPlusMinus[c][1].at(i)->p4+lepNu[c][0].at(j)->p4;
             Particle* V = new Particle(-24, pV);
             V->addDaughter(lepPlusMinus[c][1].at(i));
@@ -223,8 +223,8 @@ void Event::constructVVCandidates(int isZZ, int fstype){
       for (int c=1; c<7; c++){
         for (int d=1; d<7; d++){
           if (d==c) continue;
-          for (int i=0; i<quarkPlusMinus[c][0].size(); i++){
-            for (int j=0; j<quarkPlusMinus[d][1].size(); j++){
+          for (unsigned int i=0; i<quarkPlusMinus[c][0].size(); i++){
+            for (unsigned int j=0; j<quarkPlusMinus[d][1].size(); j++){
               int totalcharge = quarkPlusMinus[c][0].at(i)->charge() + quarkPlusMinus[d][1].at(j)->charge();
               if (abs(totalcharge)!=1) continue;
 
@@ -243,8 +243,8 @@ void Event::constructVVCandidates(int isZZ, int fstype){
 
     if (fstype==-1 || fstype==0){ // H->2l
       for (int c=0; c<3; c++){
-        for (int i=0; i<lepPlusMinus[c][0].size(); i++){
-          for (int j=0; j<lepPlusMinus[c][1].size(); j++){
+        for (unsigned int i=0; i<lepPlusMinus[c][0].size(); i++){
+          for (unsigned int j=0; j<lepPlusMinus[c][1].size(); j++){
             Particle* F1 = lepPlusMinus[c][0].at(i);
             Particle* F2 = lepPlusMinus[c][1].at(j);
 
@@ -264,8 +264,8 @@ void Event::constructVVCandidates(int isZZ, int fstype){
     }
     if (fstype==-1 || fstype==1){ // H->2q
       for (int c=1; c<7; c++){
-        for (int i=0; i<quarkPlusMinus[c][0].size(); i++){
-          for (int j=0; j<quarkPlusMinus[c][1].size(); j++){
+        for (unsigned int i=0; i<quarkPlusMinus[c][0].size(); i++){
+          for (unsigned int j=0; j<quarkPlusMinus[c][1].size(); j++){
             Particle* F1 = quarkPlusMinus[c][0].at(i);
             Particle* F2 = quarkPlusMinus[c][1].at(j);
 
@@ -305,9 +305,9 @@ void Event::constructVVCandidates(int isZZ, int fstype){
     ||
     ((fstype==-1 || fstype==1) && isZZ==2) // H->2j reco.-level
     ){
-    for (int i=0; i<quarkPlusMinus[0][0].size(); i++){
+    for (unsigned int i=0; i<quarkPlusMinus[0][0].size(); i++){
       if (quarkPlusMinus[0][0].at(i)->id!=0) continue;
-      for (int j=i+1; j<quarkPlusMinus[0][0].size(); j++){
+      for (unsigned int j=i+1; j<quarkPlusMinus[0][0].size(); j++){
         if (quarkPlusMinus[0][0].at(j)->id!=0) continue;
         if (isZZ==0 || isZZ==1){
           TLorentzVector pV = quarkPlusMinus[0][0].at(i)->p4+quarkPlusMinus[0][0].at(j)->p4;
@@ -337,8 +337,8 @@ void Event::constructVVCandidates(int isZZ, int fstype){
 
 
 
-  for (int i=0; i<tmpVhandle.size(); i++){
-    for (int j=i; j<tmpVhandle.size(); j++){
+  for (unsigned int i=0; i<tmpVhandle.size(); i++){
+    for (unsigned int j=i; j<tmpVhandle.size(); j++){
       if ((tmpVhandle.at(i)->charge()+tmpVhandle.at(j)->charge())!=0) continue;
       if (tmpVhandle.at(i)==tmpVhandle.at(j)) continue;
       Particle* Vi1 = tmpVhandle.at(i)->getDaughter(0);
@@ -374,7 +374,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
     }
   }
 
-  for (int i=0; i<tmpVhandle.size(); i++) delete tmpVhandle.at(i);
+  for (unsigned int i=0; i<tmpVhandle.size(); i++) delete tmpVhandle.at(i);
   tmpVhandle.clear();
 }
 
@@ -405,7 +405,7 @@ Particle* Event::getParticle(int index)const{
 
 TLorentzVector Event::missingP() const{
   TLorentzVector totalP(0, 0, 0, 0);
-  for (int pp=0; pp<particles.size();pp++){
+  for (unsigned int pp=0; pp<particles.size(); pp++){
     Particle* part = getParticle(pp);
     if (part->passSelection) totalP = totalP + part->p4;
   }

@@ -20,7 +20,7 @@ converter::converter(OptionParser* options_){
 void converter::configure(){
   filename = options->inputfiles();
   string cindir = options->inputDir();
-  for (int f=0; f<filename.size(); f++) filename.at(f).insert(0, cindir);
+  for (unsigned int f=0; f<filename.size(); f++) filename.at(f).insert(0, cindir);
 
   string coutput = options->outputDir();
   coutput.append(options->outputFilename());

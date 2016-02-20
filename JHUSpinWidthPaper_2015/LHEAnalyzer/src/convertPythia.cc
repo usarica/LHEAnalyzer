@@ -35,7 +35,7 @@ void convertPythia::run(){
 
   tree->bookAllBranches(false);
 
-  for (int f=0; f<filename.size(); f++){
+  for (unsigned int f=0; f<filename.size(); f++){
     string cinput = filename.at(f);
     cout << "Processing " << cinput << "..." << endl;
     TFile* fin = 0;
@@ -58,7 +58,7 @@ void convertPythia::run(){
       for (int ev=0; ev<nInputEvents; ev++){
         if (globalNEvents>=maxProcEvents && maxProcEvents>=0) break;
         bool doSkipEvent = false;
-        for (int es=0; es<eventSkipList.size(); es++){
+        for (unsigned int es=0; es<eventSkipList.size(); es++){
           if (
             (eventSkipList.at(es).first<=globalNEvents && eventSkipList.at(es).second>=globalNEvents)
             ||
@@ -86,7 +86,7 @@ void convertPythia::run(){
           if (genSuccess){
             genEvent.setWeight(weight);
             vectorInt hasGenHiggs;
-            for (int p=0; p<genParticleList.size(); p++){
+            for (unsigned int p=0; p<genParticleList.size(); p++){
               Particle* genPart = genParticleList.at(p); // Has mother info from Pythia reading
               if (isAHiggs(genPart->id)){
                 hasGenHiggs.push_back(p);
@@ -101,14 +101,14 @@ void convertPythia::run(){
             }
 
             genEvent.constructVVCandidates(options->doGenHZZdecay(), options->genDecayProducts());
-            for (int p=0; p<genParticleList.size(); p++){
+            for (unsigned int p=0; p<genParticleList.size(); p++){
               Particle* genPart = genParticleList.at(p);
               if (genPart->genStatus==-1) genEvent.addVVCandidateMother(genPart);
             }
             genEvent.addVVCandidateAppendages();
             ZZCandidate* genCand=0;
             if (hasGenHiggs.size()>0){
-              for (int gk=0; gk<hasGenHiggs.size(); gk++){
+              for (unsigned int gk=0; gk<hasGenHiggs.size(); gk++){
                 ZZCandidate* tmpCand = HiggsComparators::matchAHiggsToParticle(genEvent, genParticleList.at(hasGenHiggs.at(gk)));
                 if (tmpCand!=0){
                   if (genCand==0) genCand=tmpCand;
@@ -127,7 +127,7 @@ void convertPythia::run(){
           Event smearedEvent;
           if (smearedSuccess){
             smearedEvent.setWeight(weight);
-            for (int p=0; p<smearedParticleList.size(); p++){
+            for (unsigned int p=0; p<smearedParticleList.size(); p++){
               Particle* smearedPart = smearedParticleList.at(p);
               if (isALepton(smearedPart->id)) smearedEvent.addLepton(smearedPart);
               else if (isANeutrino(smearedPart->id)) smearedEvent.addNeutrino(smearedPart);
@@ -155,20 +155,20 @@ void convertPythia::run(){
           }
         }
 
-        for (int p=0; p<smearedCandList.size(); p++){ // Bookkeeping
+        for (unsigned int p=0; p<smearedCandList.size(); p++){ // Bookkeeping
           ZZCandidate* tmpCand = (ZZCandidate*)smearedCandList.at(p);
           if (tmpCand!=0) delete tmpCand;
         }
-        for (int p=0; p<smearedParticleList.size(); p++){ // Bookkeeping
+        for (unsigned int p=0; p<smearedParticleList.size(); p++){ // Bookkeeping
           Particle* tmpPart = (Particle*)smearedParticleList.at(p);
           if (tmpPart!=0) delete tmpPart;
         }
 
-        for (int p=0; p<genCandList.size(); p++){ // Bookkeeping
+        for (unsigned int p=0; p<genCandList.size(); p++){ // Bookkeeping
           ZZCandidate* tmpCand = (ZZCandidate*)genCandList.at(p);
           if (tmpCand!=0) delete tmpCand;
         }
-        for (int p=0; p<genParticleList.size(); p++){ // Bookkeeping
+        for (unsigned int p=0; p<genParticleList.size(); p++){ // Bookkeeping
           Particle* tmpPart = (Particle*)genParticleList.at(p);
           if (tmpPart!=0) delete tmpPart;
         }
@@ -263,7 +263,7 @@ void convertPythia::readEvent(TTree* tin, int ev, vector<Particle*>& genCollecti
     // Gen. particles
     int motherID[2];
     int mctr=0;
-    for (int a = 0; a < reco_GenParticle_id->size(); a++){
+    for (unsigned int a = 0; a < reco_GenParticle_id->size(); a++){
       int istup = reco_GenParticle_status->at(a);
       if (istup==21 && mctr<2){
         motherID[mctr] = a;
@@ -278,12 +278,12 @@ void convertPythia::readEvent(TTree* tin, int ev, vector<Particle*>& genCollecti
       genCollection.push_back(onePart);
     }
     // Assign the mothers
-    for (int a = 0; a < genCollection.size(); a++){
-      for(int m=0;m<2;m++) genCollection.at(a)->addMother(genCollection.at(motherID[m]));
+    for (unsigned int a = 0; a < genCollection.size(); a++){
+      for (int m=0;m<2;m++) genCollection.at(a)->addMother(genCollection.at(motherID[m]));
     }
     genSuccess=(genCollection.size()>0);
     // Reco. particles
-    for (int a = 0; a < reco_GenJet_id->size(); a++){
+    for (unsigned int a = 0; a < reco_GenJet_id->size(); a++){
       int istup = reco_GenJet_status->at(a);
       int idup = reco_GenJet_id->at(a);
       TLorentzVector partFourVec(reco_GenJet_FV[0]->at(a), reco_GenJet_FV[1]->at(a), reco_GenJet_FV[2]->at(a), reco_GenJet_FV[3]->at(a));
@@ -303,7 +303,7 @@ void convertPythia::readEvent(TTree* tin, int ev, vector<Particle*>& genCollecti
     tin->ResetBranchAddresses();
 
     if (geneventinfoweights!=0 && geneventinfoweights->size()>0){
-      for (int w=0; w<geneventinfoweights->size(); w++) weights.push_back(geneventinfoweights->at(w));
+      for (unsigned int w=0; w<geneventinfoweights->size(); w++) weights.push_back(geneventinfoweights->at(w));
     }
     else if (!smearedSuccess && !genSuccess) weights.push_back(0);
     else weights.push_back(1.);

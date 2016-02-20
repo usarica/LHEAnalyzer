@@ -21,7 +21,7 @@ template<typename returnType> bool Reader::setVariable(const Event* ev, string& 
   returnType result = evalVar(ev, branchname);
   returnType* resultPtr = &result;
   if (dynamic_cast<vectorInt*>(resultPtr)!=0 || dynamic_cast<vectorDouble*>(resultPtr)!=0){
-    for (int el=0; el<result.size(); el++) tree->setVal(branchname, result.at(el));
+    for (unsigned int el=0; el<result.size(); el++) tree->setVal(branchname, result.at(el));
     return true;
   }
   else if (dynamic_cast<Int_t*>(resultPtr)!=0 || dynamic_cast<Float_t*>(resultPtr)!=0){
@@ -34,7 +34,7 @@ template<typename returnType> bool Reader::setVariable(const Event* ev, string& 
 void Reader::bindInputBranches(HVVTree* tin){
   vector<string> inputBranches = tin->getBranchList();
   vector<pair<string, BaseTree::BranchTypes>> unreservedBranches;
-  for (int br=0; br<inputBranches.size(); br++){
+  for (unsigned int br=0; br<inputBranches.size(); br++){
     int pos=-1;
     string branchname = inputBranches.at(br);
 
@@ -45,11 +45,11 @@ void Reader::bindInputBranches(HVVTree* tin){
     if (!outfound && tree->getBranchList().size()==0) unreservedBranches.push_back(pair<string, BaseTree::BranchTypes>(branchname, iBT));
   }
   if (unreservedBranches.size()>0){
-    for (int b=0; b<unreservedBranches.size(); b++) tree->reserveBranch(unreservedBranches.at(b).first, unreservedBranches.at(b).second, false);
+    for (unsigned int b=0; b<unreservedBranches.size(); b++) tree->reserveBranch(unreservedBranches.at(b).first, unreservedBranches.at(b).second, false);
     tree->actuateBranches(false);
   }
 
-  for (int br=0; br<inputBranches.size(); br++){
+  for (unsigned int br=0; br<inputBranches.size(); br++){
     int pos=-1;
     string branchname = inputBranches.at(br);
 
@@ -96,19 +96,19 @@ void Reader::resetBranchBinding(){
   vectorDoubleBranchMap.clear();
 }
 void Reader::synchMappedBranches(){
-  for (int b=0; b<intBranchMap.size(); b++) *(intBranchMap.at(b).second) = *(intBranchMap.at(b).first);
-  for (int b=0; b<floatBranchMap.size(); b++) *(floatBranchMap.at(b).second) = *(floatBranchMap.at(b).first);
-  for (int b=0; b<vectorIntBranchMap.size(); b++){
+  for (unsigned int b=0; b<intBranchMap.size(); b++) *(intBranchMap.at(b).second) = *(intBranchMap.at(b).first);
+  for (unsigned int b=0; b<floatBranchMap.size(); b++) *(floatBranchMap.at(b).second) = *(floatBranchMap.at(b).first);
+  for (unsigned int b=0; b<vectorIntBranchMap.size(); b++){
     vectorInt* inhandle = *(vectorIntBranchMap.at(b).first);
     vectorInt* outhandle = *(vectorIntBranchMap.at(b).second);
-    for (int el=0; el<inhandle->size(); el++){
+    for (unsigned int el=0; el<inhandle->size(); el++){
       outhandle->push_back(inhandle->at(el));
     }
   }
-  for (int b=0; b<vectorDoubleBranchMap.size(); b++){
+  for (unsigned int b=0; b<vectorDoubleBranchMap.size(); b++){
     vectorDouble* inhandle = *(vectorDoubleBranchMap.at(b).first);
     vectorDouble* outhandle = *(vectorDoubleBranchMap.at(b).second);
-    for (int el=0; el<inhandle->size(); el++){
+    for (unsigned int el=0; el<inhandle->size(); el++){
       outhandle->push_back(inhandle->at(el));
     }
   }
@@ -125,7 +125,7 @@ void Reader::run(){
   vector < pair<Int_t, Int_t> > eventSkipList = options->getSkippedEvents();
 
   bool firstFile = true;
-  for (int f=0; f<filename.size(); f++){
+  for (unsigned int f=0; f<filename.size(); f++){
     string cinput = filename.at(f);
     cout << "Processing " << cinput << "..." << endl;
     TFile* fin = new TFile(cinput.c_str(), "read");
@@ -159,7 +159,7 @@ void Reader::run(){
         for (int ev=0; ev<nInputEvents; ev++){
           if (globalNEvents>=maxProcEvents && maxProcEvents>=0) break;
           bool doSkipEvent = false;
-          for (int es=0; es<eventSkipList.size(); es++){
+          for (unsigned int es=0; es<eventSkipList.size(); es++){
             if (
               (eventSkipList.at(es).first<=globalNEvents && eventSkipList.at(es).second>=globalNEvents)
               ||
@@ -217,20 +217,20 @@ void Reader::run(){
             nProcessed++;
           }
 
-          for (int p=0; p<recoCandList.size(); p++){ // Bookkeeping
+          for (unsigned int p=0; p<recoCandList.size(); p++){ // Bookkeeping
             ZZCandidate* tmpCand = (ZZCandidate*)recoCandList.at(p);
             if (tmpCand!=0) delete tmpCand;
           }
-          for (int p=0; p<recoParticleList.size(); p++){ // Bookkeeping
+          for (unsigned int p=0; p<recoParticleList.size(); p++){ // Bookkeeping
             Particle* tmpPart = (Particle*)recoParticleList.at(p);
             if (tmpPart!=0) delete tmpPart;
           }
 
-          for (int p=0; p<genCandList.size(); p++){ // Bookkeeping
+          for (unsigned int p=0; p<genCandList.size(); p++){ // Bookkeeping
             ZZCandidate* tmpCand = (ZZCandidate*)genCandList.at(p);
             if (tmpCand!=0) delete tmpCand;
           }
-          for (int p=0; p<genParticleList.size(); p++){ // Bookkeeping
+          for (unsigned int p=0; p<genParticleList.size(); p++){ // Bookkeeping
             Particle* tmpPart = (Particle*)genParticleList.at(p);
             if (tmpPart!=0) delete tmpPart;
           }
@@ -322,7 +322,7 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
       fvhandle[fv]=*(ref_apartFV[fv]);
       if (fvhandle[fv]->size()!=idhandle->size()) { apart_success=false; break; }
     }
-    for (int el=0; el<idhandle->size(); el++){
+    for (unsigned int el=0; el<idhandle->size(); el++){
       Int_t partId = idhandle->at(el);
       TLorentzVector partFV; partFV.SetPtEtaPhiM(fvhandle[0]->at(el), fvhandle[1]->at(el), fvhandle[2]->at(el), fvhandle[3]->at(el));
       Particle* part = new Particle((int)partId, partFV);
@@ -359,7 +359,7 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
         fvhandle[fv]=*(ref_mpartFV[fv]);
         if (fvhandle[fv]->size()!=idhandle->size()) { mpart_success=false; break; }
       }
-      for (int el=0; el<idhandle->size(); el++){
+      for (unsigned int el=0; el<idhandle->size(); el++){
         Int_t partId = idhandle->at(el);
         TLorentzVector partFV; partFV.SetXYZM(fvhandle[0]->at(el)*cos(fvhandle[2]->at(el)), fvhandle[0]->at(el)*sin(fvhandle[2]->at(el)), fvhandle[1]->at(el), fvhandle[3]->at(el));
         Particle* part = new Particle((int)partId, partFV);
@@ -369,7 +369,7 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
       }
     }
 
-    for (int d=0; d<candFinalDaughters.size(); d++){
+    for (unsigned int d=0; d<candFinalDaughters.size(); d++){
       Particle* part = candFinalDaughters.at(d);
       if (isALepton(part->id)) outEvent.addLepton(part);
       else if (isANeutrino(part->id)) outEvent.addNeutrino(part);
@@ -378,11 +378,11 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
       else outEvent.addParticle(part);
     }
     outEvent.constructVVCandidates(options->doGenHZZdecay(), options->genDecayProducts());
-    for (int p=0; p<motherParticles.size(); p++){
+    for (unsigned int p=0; p<motherParticles.size(); p++){
       Particle* part = motherParticles.at(p);
       outEvent.addVVCandidateMother(part);
     }
-    for (int d=0; d<associatedParticles.size(); d++){
+    for (unsigned int d=0; d<associatedParticles.size(); d++){
       Particle* part = associatedParticles.at(d);
       if (isALepton(part->id)) outEvent.addLepton(part);
       else if (isANeutrino(part->id)) outEvent.addNeutrino(part);
@@ -392,7 +392,7 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
     }
   }
   else{
-    for (int d=0; d<candFinalDaughters.size(); d++){
+    for (unsigned int d=0; d<candFinalDaughters.size(); d++){
       Particle* part = candFinalDaughters.at(d);
       if (isALepton(part->id)) outEvent.addLepton(part);
       else if (isANeutrino(part->id)) outEvent.addNeutrino(part);
@@ -403,7 +403,7 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
 
     if (options->recoSelectionMode()==0){ // Do not find the best combination, leave it to the input tree
       outEvent.constructVVCandidates(options->doRecoHZZdecay(), options->recoDecayProducts());
-      for (int d=0; d<associatedParticles.size(); d++){
+      for (unsigned int d=0; d<associatedParticles.size(); d++){
         Particle* part = associatedParticles.at(d);
         if (isALepton(part->id)) outEvent.addLepton(part);
         else if (isANeutrino(part->id)) outEvent.addNeutrino(part);
@@ -413,7 +413,7 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
       }
     }
     else{ // Find the best combination
-      for (int d=0; d<associatedParticles.size(); d++){
+      for (unsigned int d=0; d<associatedParticles.size(); d++){
         Particle* part = associatedParticles.at(d);
         if (isALepton(part->id)) outEvent.addLepton(part);
         else if (isANeutrino(part->id)) outEvent.addNeutrino(part);

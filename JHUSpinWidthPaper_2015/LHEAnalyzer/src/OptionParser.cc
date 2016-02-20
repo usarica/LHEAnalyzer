@@ -47,7 +47,7 @@ void OptionParser::analyze(){
   bool hasGenProdProb=false;
   bool hasJetAlgo=false;
   char rawdelimiter = '=';
-  for (int opt=1; opt<rawOptions.size(); opt++){
+  for (unsigned int opt=1; opt<rawOptions.size(); opt++){
     string wish, value;
     splitOption(rawOptions.at(opt), wish, value, rawdelimiter);
     interpretOption(wish, value);
@@ -59,7 +59,7 @@ void OptionParser::analyze(){
 
   if (filename.size()==0){ cerr << "You have to specify the input files." << endl; if(!hasInvalidOption) hasInvalidOption=true; }
   else{
-    for (int f=0; f<filename.size(); f++){
+    for (unsigned int f=0; f<filename.size(); f++){
       if ((filename.at(f).find(".lhe")!=string::npos && fileLevel!=0) || (filename.at(f).find(".root")!=string::npos && fileLevel==0)){
         cerr << "Inconsistent file name " << filename.at(f) << " and fileLevel option " << fileLevel << "!" << endl;
         if(!hasInvalidOption) hasInvalidOption=true;
@@ -68,7 +68,7 @@ void OptionParser::analyze(){
   }
 
   if (maxEvents>=0){
-    for (int es=0; es<eventSkipRanges.size(); es++) maxEvents += (eventSkipRanges.at(es).second-eventSkipRanges.at(es).first+1);
+    for (unsigned int es=0; es<eventSkipRanges.size(); es++) maxEvents += (eventSkipRanges.at(es).second-eventSkipRanges.at(es).first+1);
   }
 
   // Check for any invalid options and print an error
@@ -136,7 +136,7 @@ void OptionParser::splitOptionRecursive(string rawoption, vector<string>& splito
 }
 Bool_t OptionParser::isAnExcludedBranch(string branchname){
   bool isExcluded=false;
-  for (int eb=0; eb<excludedBranch.size(); eb++){
+  for (unsigned int eb=0; eb<excludedBranch.size(); eb++){
     if (branchname.find(excludedBranch.at(eb))!=string::npos && !(branchname.find("Gen")!=string::npos && excludedBranch.at(eb).find("Gen")==string::npos)){
       isExcluded=true;
       break;
@@ -147,7 +147,7 @@ Bool_t OptionParser::isAnExcludedBranch(string branchname){
 void OptionParser::extractSkippedEvents(string rawoption){
   vector<string> skipPair;
   splitOptionRecursive(rawoption, skipPair, ',');
-  for (int p=0; p<skipPair.size(); p++){
+  for (unsigned int p=0; p<skipPair.size(); p++){
     string strlow, strhigh;
     splitOption(skipPair.at(p), strlow, strhigh, '.');
 
@@ -234,7 +234,7 @@ void OptionParser::extractMelaGenProdId(string rawoption){
   }
 }
 Bool_t OptionParser::checkListVariable(vector<string>& list, string var){
-  for (int v=0; v<list.size(); v++){
+  for (unsigned int v=0; v<list.size(); v++){
     if (list.at(v)==var) return true; // Look for exact match
   }
   return false;

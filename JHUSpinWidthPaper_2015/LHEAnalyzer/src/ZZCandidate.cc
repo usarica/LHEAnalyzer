@@ -275,11 +275,11 @@ void ZZCandidate::addAssociatedVs(){
   createAssociatedVs(associatedLeptons);
 }
 void ZZCandidate::createAssociatedVs(std::vector<Particle*>& particleArray){
-  for (int i = 0; i<particleArray.size(); i++){
+  for (unsigned int i = 0; i<particleArray.size(); i++){
     double Qi = particleArray.at(i)->charge();
     int id_i = particleArray.at(i)->id;
 
-    for (int j = 1; j<particleArray.size(); j++){
+    for (unsigned int j = 1; j<particleArray.size(); j++){
       if (j<=i) continue;
       double Qj = particleArray.at(j)->charge();
       int id_j = particleArray.at(j)->id;
