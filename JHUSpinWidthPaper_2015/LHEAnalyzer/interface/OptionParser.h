@@ -47,6 +47,9 @@ public:
   Int_t maxEventsToProcess(){ return maxEvents; };
   vector < pair<Int_t, Int_t> > getSkippedEvents(){ return eventSkipRanges; };
 
+  Bool_t hasGlobalRecord(){ return !globalRecordSet.empty(); }
+  vector < pair<string, string> > getGlobalRecordSet(){ return globalRecordSet; }
+
   // MELA-related options
   Double_t mH(){ return mPOLE; }
   Double_t GammaH(){ return wPOLE; }
@@ -66,6 +69,7 @@ public:
 
 protected:
   void extractSkippedEvents(string rawoption);
+  void extractGlobalRecordSet(string rawoption);
 
   void configureMela();
   void deconfigureMela();
@@ -111,6 +115,7 @@ protected:
   vector<string> includeRecoProdProb;
 
   vector < pair<Int_t, Int_t> > eventSkipRanges;
+  vector < pair<string, string> > globalRecordSet;
 };
 
 #endif

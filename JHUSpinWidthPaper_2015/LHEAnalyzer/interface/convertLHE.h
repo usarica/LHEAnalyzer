@@ -14,6 +14,6 @@ public:
 protected:
   void configure(); // Set output file, tree
   void finalizeRun();
-  vector<Particle*> readEvent(ifstream& input_lhe, double& weight);
+  vector<Particle*> readEvent(ifstream& input_lhe, int& fline, double& weight);
 };
 #endif

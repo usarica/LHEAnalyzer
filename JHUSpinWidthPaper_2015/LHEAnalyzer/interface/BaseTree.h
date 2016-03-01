@@ -52,7 +52,7 @@ public:
       else if (varbranchtype==BaseTree::bVectorDouble) vectorDoubleBranches.at(varposition).second->push_back(value);
     }
   }
-  void * getBranchHandleRef(string branchname){
+  void* getBranchHandleRef(string branchname){
     int varposition=-1;
     BaseTree::BranchTypes varbranchtype = searchArray(branchname, varposition);
     if (varposition==-1 || varbranchtype==BaseTree::nBranchTypes){

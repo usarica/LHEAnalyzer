@@ -542,14 +542,14 @@ void HVVTree::fillCandidateDaughters(ZZCandidate* pH, bool isGen){
   if (isGen) strcore.insert(0, "Gen");
   varname = strcore + "Mass"; setVal(varname, (pV1!=0 ? pV1->m() : 0));
   varname = strcore + "Pt"; setVal(varname, (pV1!=0 ? pV1->pt() : 0));
-  varname = strcore + "Eta"; setVal(varname, (pV1!=0 ? pV1->eta() : 0));
-  varname = strcore + "Phi"; setVal(varname, (pV1!=0 ? pV1->phi() : 0));
+  varname = strcore + "Eta"; setVal(varname, (pV1!=0 ? (pV1->t()>0 ? pV1->eta() : 0) : 0));
+  varname = strcore + "Phi"; setVal(varname, (pV1!=0 ? (pV1->pt()>0 ? pV1->phi() : 0) : 0));
   strcore = "Z2";
   if (isGen) strcore.insert(0, "Gen");
   varname = strcore + "Mass"; setVal(varname, (pV2!=0 ? pV2->m() : 0));
   varname = strcore + "Pt"; setVal(varname, (pV2!=0 ? pV2->pt() : 0));
-  varname = strcore + "Eta"; setVal(varname, (pV2!=0 ? pV2->eta() : 0));
-  varname = strcore + "Phi"; setVal(varname, (pV2!=0 ? pV2->phi() : 0));
+  varname = strcore + "Eta"; setVal(varname, (pV2!=0 ? (pV2->t()>0 ? pV2->eta() : 0) : 0));
+  varname = strcore + "Phi"; setVal(varname, (pV2!=0 ? (pV2->pt()>0 ? pV2->phi() : 0) : 0));
 
   TLorentzVector nullVector(0, 0, 0, 0);
   TLorentzVector pZ1alt = (pH!=0 ? pH->getAlternativeVMomentum(0) : nullVector);
@@ -559,14 +559,14 @@ void HVVTree::fillCandidateDaughters(ZZCandidate* pH, bool isGen){
   if (isGen) strcore.insert(0, "Gen");
   varname = strcore + "Mass"; setVal(varname, (pH!=0 ? pZ1alt.M() : 0));
   varname = strcore + "Pt"; setVal(varname, (pH!=0 ? pZ1alt.Pt() : 0));
-  varname = strcore + "Eta"; setVal(varname, (pH!=0 ? pZ1alt.Eta() : 0));
-  varname = strcore + "Phi"; setVal(varname, (pH!=0 ? pZ1alt.Phi() : 0));
+  varname = strcore + "Eta"; setVal(varname, (pH!=0 ? (pZ1alt.T()>0 ? pZ1alt.Eta() : 0) : 0));
+  varname = strcore + "Phi"; setVal(varname, (pH!=0 ? (pZ1alt.Pt()>0 ? pZ1alt.Phi() : 0) : 0));
   strcore = "Zb";
   if (isGen) strcore.insert(0, "Gen");
   varname = strcore + "Mass"; setVal(varname, (pH!=0 ? pZ2alt.M() : 0));
   varname = strcore + "Pt"; setVal(varname, (pH!=0 ? pZ2alt.Pt() : 0));
-  varname = strcore + "Eta"; setVal(varname, (pH!=0 ? pZ2alt.Eta() : 0));
-  varname = strcore + "Phi"; setVal(varname, (pH!=0 ? pZ2alt.Phi() : 0));
+  varname = strcore + "Eta"; setVal(varname, (pH!=0 ? (pZ2alt.T()>0 ? pZ2alt.Eta() : 0) : 0));
+  varname = strcore + "Phi"; setVal(varname, (pH!=0 ? (pZ2alt.Pt()>0 ? pZ2alt.Phi() : 0) : 0));
 }
 void HVVTree::fillDaughterProducts(ZZCandidate* pH, bool isGen){
   string varname;
@@ -606,8 +606,8 @@ void HVVTree::fillDaughterProducts(ZZCandidate* pH, bool isGen){
 
       varname = strcore + strILep + "Mass"; setVal(varname, (lepton!=0 ? lepton->m() : 0));
       varname = strcore + strILep + "Pt"; setVal(varname, (lepton!=0 ? lepton->pt() : 0));
-      varname = strcore + strILep + "Eta"; setVal(varname, (lepton!=0 ? lepton->eta() : 0));
-      varname = strcore + strILep + "Phi"; setVal(varname, (lepton!=0 ? lepton->phi() : 0));
+      varname = strcore + strILep + "Eta"; setVal(varname, (lepton!=0 ? (lepton->t()>0 ? lepton->eta() : 0) : 0));
+      varname = strcore + strILep + "Phi"; setVal(varname, (lepton!=0 ? (lepton->pt()>0 ? lepton->phi() : 0) : 0));
       varname = strcore + strILep + "Id"; setVal(varname, (lepton!=0 ? lepton->id : 0));
 
       if (isNew){ delete lepton; lepton=0; }

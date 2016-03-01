@@ -61,8 +61,9 @@ void angularDistributions_spin0_ggH(string cinput, string coutdir, double g1Re=1
   TString strGenLepId[2]={ "GenLep1Id", "GenLep3Id" };
   int genFinalState=2;
   int GenLepId[2]={ 0 };
+  int Vdecay=(cinput.find("WW")!=string::npos ? -1 : 1);
 
-  ScalarPdfFactory_ggH* someHiggs = new ScalarPdfFactory_ggH(measurables_);
+  ScalarPdfFactory_ggH* someHiggs = new ScalarPdfFactory_ggH(measurables_, false, Vdecay, Vdecay);
   someHiggs->makeParamsConst(false);
   RooRealVar* g1List[8][2];
   RooRealVar* g2List[8][2];
@@ -112,9 +113,12 @@ void angularDistributions_spin0_ggH(string cinput, string coutdir, double g1Re=1
     if ((kd_vars[0]-125.)>=0.02) continue;
     // Only select 4l events
     if (
+      (
       (GenLepId[0]==11 || GenLepId[0]==13 || GenLepId[0]==15)
       &&
       (GenLepId[1]==11 || GenLepId[1]==13 || GenLepId[1]==15)
+      && Vdecay==1
+      ) || Vdecay==-1
       ) reducedTree->Fill();
   }
 

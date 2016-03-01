@@ -12,6 +12,7 @@
 #include "RooBMixDecay.h"
 #include "RooCategory.h"
 #include "RooBinning.h"
+#include "RooRealIntegral.h"
 #include "RooPlot.h"
 #include "TSystem.h"
 #include "TFile.h"
@@ -27,9 +28,8 @@
 using namespace RooFit;
 using namespace std;
 
-void angularDistributions_spin0_VH(string cinput, string coutdir, double sqrts = 13, double g1Re=1, double g2Re=0, double g4Re=0, double g1L1Re=0, double g2Im=0, double g4Im=0, double g1L1Im=0, int isLeptonic=0, int nbins=80, int PDFType=1){
+void angularDistributions_spin0_VH(string cinput, string coutdir, double sqrts = 13, double g1Re=1, double g2Re=0, double g4Re=0, double g1L1Re=0, double g2Im=0, double g4Im=0, double g1L1Im=0, int isLeptonic=0, int nbins=80){
   sqrts *= 1e3;
-  bool bdo3D = (PDFType==1 ? true : false);
 
   int VHmode=-1;
   bool isZH=false;
@@ -82,9 +82,9 @@ void angularDistributions_spin0_VH(string cinput, string coutdir, double sqrts =
   measurables_.Phi1 = Phi1;
   measurables_.Y = Y;
 
-  RooArgSet treeargs(*h1, *h2, *Phi, *hs, *Phi1, *m1);
-  //RooArgSet treeargs(*h1, *h2, *Phi, *hs, *Phi1, *m1, *Y);
-  RooRealVar* measurables[nVars-2]={ h1, h2, Phi, hs, Phi1, m1 };
+  //RooArgSet treeargs(*h1, *h2, *Phi, *hs, *Phi1, *m1);
+  RooArgSet treeargs(*h1, *h2, *Phi, *m1, *Y);
+  RooRealVar* measurables[nVars-3]={ h1, h2, Phi, m1, Y };
 
   m2->setVal(mVPOLE);
   m12->setVal(mHPOLE);
@@ -168,10 +168,17 @@ void angularDistributions_spin0_VH(string cinput, string coutdir, double sqrts =
   foutput->WriteTObject(reducedTree);
 
   RooDataSet* dataSM = new RooDataSet("data", "data", reducedTree, treeargs);
-  for (int plotIndex=0; plotIndex<nVars-2; plotIndex++){
+  for (int plotIndex=0; plotIndex<nVars-3; plotIndex++){
     cout << plotIndex << endl;
 
-    if (plotIndex!=nVars-3) continue;
+    RooArgSet projected;
+    for (int p=0; p<nVars-3; p++){
+      if (p==plotIndex) continue;
+      else projected.add(*(measurables[p]));
+    }
+    RooArgSet depvars(*(measurables[plotIndex]));
+
+    //if (plotIndex!=nVars-3) continue;
     //if (plotIndex!=0) continue;
 
     RooPlot* plot = measurables[plotIndex]->frame(nbins);
@@ -193,6 +200,10 @@ void angularDistributions_spin0_VH(string cinput, string coutdir, double sqrts =
     m2->setConstant(true);
     m12->setConstant(true);
     someHiggs->getPDF()->plotOn(plot, LineColor(kRed), LineWidth(2));
+    //RooRealIntegral* projection = (RooRealIntegral*)someHiggs->getPDF()->createIntegral(projected);
+    //projection->Print("v");
+    //projection->plotOn(plot, LineColor(kRed), LineWidth(2));
+    //cout << projection->createIntegral(depvars)->getVal() << endl;
     m2->setConstant(false);
     m12->setConstant(false);
     m2->setRange(mVPOLE-5.*GaVPOLE, mVPOLE+5.*GaVPOLE);

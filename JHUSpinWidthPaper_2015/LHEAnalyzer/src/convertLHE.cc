@@ -42,8 +42,9 @@ void convertLHE::run(){
     if (fin.good()){
       int nProcessed = 0;
       int ev = 0;
+      int fileLine = 0; // Debugging
       while (!fin.eof()){
-        vector<Particle*> particleList = readEvent(fin, weight);
+        vector<Particle*> particleList = readEvent(fin, fileLine, weight);
         vector<Particle*> smearedParticleList; // Bookkeeping
         vector<ZZCandidate*> candList; // Bookkeeping
         vector<ZZCandidate*> smearedCandList; // Bookkeeping
@@ -166,6 +167,7 @@ void convertLHE::run(){
         particleList.clear();
 
         globalNEvents++;
+        if (globalNEvents % 100000 == 0) cout << "Event " << globalNEvents << "..." << endl;
       }
       fin.close();
       cout << "Processed number of events from the input file (recorded events / sample size observed / cumulative traversed): " << nProcessed << " / " << ev << " / " << globalNEvents << endl;
@@ -174,7 +176,7 @@ void convertLHE::run(){
   finalizeRun();
 }
 
-vector<Particle*> convertLHE::readEvent(ifstream& input_lhe, double& weight){
+vector<Particle*> convertLHE::readEvent(ifstream& input_lhe, int& fline, double& weight){
   string event_beginning = "<event>";
   string event_end = "</event>";
   string file_closing = "</LesHouchesEvents>";
@@ -190,7 +192,7 @@ vector<Particle*> convertLHE::readEvent(ifstream& input_lhe, double& weight){
       weight=0;
       return collection;
     }
-    getline(input_lhe, str_in);
+    getline(input_lhe, str_in); fline++;
     if (str_in.find(file_closing)!=string::npos){
       weight=0;
       return collection;
@@ -200,6 +202,7 @@ vector<Particle*> convertLHE::readEvent(ifstream& input_lhe, double& weight){
   int nparticle, para;
   double m_V, alpha_qed, alpha_s;
 
+  fline++;
   input_lhe >> nparticle >> para >> weight >> m_V >> alpha_qed >> alpha_s;
   for (int a = 0; a < nparticle; a++){
     int idup, istup, mothup[2], icolup[2];
@@ -223,10 +226,11 @@ vector<Particle*> convertLHE::readEvent(ifstream& input_lhe, double& weight){
   }
 
 // Test whether the end of event is reached indeed
-  for(int t=0;t<2;t++) getline(input_lhe, str_in); // Read twice to get rid of the end-of-line
-  while (str_in.find("#")!=string::npos) getline(input_lhe, str_in);
+  str_in = "";
+  while (str_in==""){ getline(input_lhe, str_in); } // Do not count empty lines or e.o.l. in the middle of events
+  while (str_in.find("#")!=string::npos){ getline(input_lhe, str_in); fline++; }
   if (str_in.find(event_end)==string::npos){
-    cerr << "End of event not reached! string is " << str_in << endl;
+    cerr << "End of event not reached! string is " << str_in << " on line " << fline << endl;
     weight=0;
     for (int a = 0; a < collection.size(); a++){
       Particle* tmpPart = collection.at(a);

@@ -173,6 +173,28 @@ void OptionParser::extractSkippedEvents(string rawoption){
     eventSkipRanges.push_back(tmpPair);
   }
 }
+void OptionParser::extractGlobalRecordSet(string rawoption){
+  vector<string> compositePair;
+  splitOptionRecursive(rawoption, compositePair, ',');
+  for (int p=0; p<compositePair.size(); p++){
+    string strname, strvalue;
+    splitOption(compositePair.at(p), strname, strvalue, ':');
+
+    bool firstbracket = true;
+    size_t posFirstBrac=strname.find("[");
+    size_t posLastBrac=strvalue.find("]");
+    if (posFirstBrac==string::npos || posLastBrac==string::npos){
+      cerr << "Invalid global record branch specification. Ignoring..." << endl;
+      continue;
+    }
+
+    strname = strname.substr(posFirstBrac+1);
+    strvalue.erase(strvalue.begin()+posLastBrac, strvalue.end());
+    pair<string, string> tmpPair(strname, strvalue);
+    cout << "OptionParser: Will create branch " << tmpPair.first << " = " << tmpPair.second << " in the globals tree." << endl;
+    globalRecordSet.push_back(tmpPair);
+  }
+}
 
 void OptionParser::configureMela(){
   Int_t needMela = includeGenDecayProb.size()+includeRecoDecayProb.size()+includeGenProdProb.size()+includeRecoProdProb.size();
@@ -276,6 +298,8 @@ void OptionParser::interpretOption(string wish, string value){
   else if (wish=="maxevents" || wish=="maxEvents") maxEvents = (int)atoi(value.c_str());
   else if (wish=="skipevents" || wish=="skipEvents") extractSkippedEvents(value);
 
+  else if (wish=="globalRecord") extractGlobalRecordSet(value);
+
   else if (wish=="mH" || wish=="MH" || wish=="mPOLE") mPOLE = (double)atof(value.c_str());
   else if (wish=="GH" || wish=="GaH" || wish=="GammaH" || wish=="wPOLE") wPOLE = (double)atof(value.c_str());
   else if (wish=="GHSM" || wish=="GaHSM" || wish=="GammaHSM" || wish=="wPOLEStandard") wPOLEStandard = (double)atof(value.c_str());
@@ -327,6 +351,7 @@ void OptionParser::printOptionsHelp(){
 
   cout << "- excludeBranch: Comma-separated list of excluded branches. Default is to include all branches called via HVVTree::bookAllBranches.\n\n";
 
+  cout << "- globalRecord: Global values to set (e.g. cross section). Creates SelectedTree_Globals with a single event. Default=none.\n\tBranches are assigned in the form [name:type_value], and multiple forms can be specified with comma separation. Use C++ type names (e.g. [xsec:float_0.001].\n\n";
 
   cout << endl;
   assert(0);
