@@ -41,19 +41,27 @@ public:
     RooRealVar* gamV;
     RooRealVar* R1Val;
     RooRealVar* R2Val;
+
     RooAbsReal* g1List[8][2];
     RooAbsReal* g2List[8][2];
     RooAbsReal* g3List[8][2];
     RooAbsReal* g4List[8][2];
+
     RooRealVar* Lambda;
     RooRealVar* Lambda_z1;
     RooRealVar* Lambda_z2;
     RooRealVar* Lambda_z3;
     RooRealVar* Lambda_z4;
     RooRealVar* Lambda_Q;
+
+    RooRealVar* Lambda_z1qsq[3];
+    RooRealVar* Lambda_z2qsq[3];
+    RooRealVar* Lambda_z3qsq[3];
+    RooRealVar* Lambda_z4qsq[3];
+    RooRealVar* cLambda_qsq[3];
   };
 
-  RooSpinZero() {};
+  RooSpinZero(){};
   RooSpinZero(
     const char* name, const char* title,
     modelMeasurables _measurables,
@@ -160,6 +168,22 @@ protected:
   RooRealProxy Lambda_z3;
   RooRealProxy Lambda_z4;
   RooRealProxy Lambda_Q;
+
+  RooRealProxy Lambda_z11;
+  RooRealProxy Lambda_z21;
+  RooRealProxy Lambda_z31;
+  RooRealProxy Lambda_z41;
+  RooRealProxy Lambda_z12;
+  RooRealProxy Lambda_z22;
+  RooRealProxy Lambda_z32;
+  RooRealProxy Lambda_z42;
+  RooRealProxy Lambda_z10;
+  RooRealProxy Lambda_z20;
+  RooRealProxy Lambda_z30;
+  RooRealProxy Lambda_z40;
+  RooRealProxy cz_q1sq;
+  RooRealProxy cz_q2sq;
+  RooRealProxy cz_q12sq;
 
   virtual Double_t evaluate() const = 0;
 

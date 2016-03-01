@@ -31,6 +31,9 @@ public:
   virtual ~ScalarPdfFactory();
 
   virtual void makeParamsConst(bool yesNo)=0;
+  virtual void addHypothesis(int ig, int ilam, double iphase=0, double altparam_fracval=0);
+  virtual void resetHypotheses();
+  virtual void resetVdecay(int V1decay_, int V2decay_);
   virtual RooSpinZero* getPDF()=0;
 
 protected:

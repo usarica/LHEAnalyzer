@@ -115,7 +115,26 @@ RooSpinZero::RooSpinZero(
   Lambda_z2("Lambda_z2", "Lambda_z2", this, (RooAbsReal&)*(_parameters.Lambda_z2)),
   Lambda_z3("Lambda_z3", "Lambda_z3", this, (RooAbsReal&)*(_parameters.Lambda_z3)),
   Lambda_z4("Lambda_z4", "Lambda_z4", this, (RooAbsReal&)*(_parameters.Lambda_z4)),
-  Lambda_Q("Lambda_Q", "Lambda_Q", this, (RooAbsReal&)*(_parameters.Lambda_Q))
+  Lambda_Q("Lambda_Q", "Lambda_Q", this, (RooAbsReal&)*(_parameters.Lambda_Q)),
+
+  Lambda_z11("Lambda_z11", "Lambda_z11", this, (RooAbsReal&)*(_parameters.Lambda_z1qsq[0])),
+  Lambda_z21("Lambda_z21", "Lambda_z21", this, (RooAbsReal&)*(_parameters.Lambda_z2qsq[0])),
+  Lambda_z31("Lambda_z31", "Lambda_z31", this, (RooAbsReal&)*(_parameters.Lambda_z3qsq[0])),
+  Lambda_z41("Lambda_z41", "Lambda_z41", this, (RooAbsReal&)*(_parameters.Lambda_z4qsq[0])),
+
+  Lambda_z12("Lambda_z12", "Lambda_z12", this, (RooAbsReal&)*(_parameters.Lambda_z1qsq[1])),
+  Lambda_z22("Lambda_z22", "Lambda_z22", this, (RooAbsReal&)*(_parameters.Lambda_z2qsq[1])),
+  Lambda_z32("Lambda_z32", "Lambda_z32", this, (RooAbsReal&)*(_parameters.Lambda_z3qsq[1])),
+  Lambda_z42("Lambda_z42", "Lambda_z42", this, (RooAbsReal&)*(_parameters.Lambda_z4qsq[1])),
+
+  Lambda_z10("Lambda_z10", "Lambda_z10", this, (RooAbsReal&)*(_parameters.Lambda_z1qsq[2])),
+  Lambda_z20("Lambda_z20", "Lambda_z20", this, (RooAbsReal&)*(_parameters.Lambda_z2qsq[2])),
+  Lambda_z30("Lambda_z30", "Lambda_z30", this, (RooAbsReal&)*(_parameters.Lambda_z3qsq[2])),
+  Lambda_z40("Lambda_z40", "Lambda_z40", this, (RooAbsReal&)*(_parameters.Lambda_z4qsq[2])),
+
+  cz_q1sq("cz_q1sq", "cz_q1sq", this, (RooAbsReal&)*(_parameters.cLambda_qsq[0])),
+  cz_q2sq("cz_q2sq", "cz_q2sq", this, (RooAbsReal&)*(_parameters.cLambda_qsq[1])),
+  cz_q12sq("cz_q12sq", "cz_q12sq", this, (RooAbsReal&)*(_parameters.cLambda_qsq[2]))
 {
   setProxies(_measurables);
 }
@@ -225,18 +244,45 @@ Lambda_z1("Lambda_z1", this, other.Lambda_z1),
 Lambda_z2("Lambda_z2", this, other.Lambda_z2),
 Lambda_z3("Lambda_z3", this, other.Lambda_z3),
 Lambda_z4("Lambda_z4", this, other.Lambda_z4),
-Lambda_Q("Lambda_Q", this, other.Lambda_Q)
+Lambda_Q("Lambda_Q", this, other.Lambda_Q),
+
+Lambda_z11("Lambda_z11", this, other.Lambda_z11),
+Lambda_z21("Lambda_z21", this, other.Lambda_z21),
+Lambda_z31("Lambda_z31", this, other.Lambda_z31),
+Lambda_z41("Lambda_z41", this, other.Lambda_z41),
+
+Lambda_z12("Lambda_z12", this, other.Lambda_z12),
+Lambda_z22("Lambda_z22", this, other.Lambda_z22),
+Lambda_z32("Lambda_z32", this, other.Lambda_z32),
+Lambda_z42("Lambda_z42", this, other.Lambda_z42),
+
+Lambda_z10("Lambda_z10", this, other.Lambda_z10),
+Lambda_z20("Lambda_z20", this, other.Lambda_z20),
+Lambda_z30("Lambda_z30", this, other.Lambda_z30),
+Lambda_z40("Lambda_z40", this, other.Lambda_z40),
+
+cz_q1sq("cz_q1sq", this, other.cz_q1sq),
+cz_q2sq("cz_q2sq", this, other.cz_q2sq),
+cz_q12sq("cz_q12sq", this, other.cz_q12sq)
 {}
 
 void RooSpinZero::calculateAiPhiAi(Double_t& a1Re, Double_t& a1Im, Double_t& a2Re, Double_t& a2Im, Double_t& a3Re, Double_t& a3Im)const{
-  Double_t g1_dyn = g1Val
-    +   g1_primeVal * pow(Lambda_z1, 4)/(pow(Lambda_z1, 2) + pow(m1, 2))/(pow(Lambda_z1, 2) + pow(m2, 2))
+  Double_t s = (pow(m12, 2) - pow(m1, 2) - pow(m2, 2))/2.;
+  if (pow(m1, 2)>pow(m12, 2) || pow(m2, 2)>pow(m12, 2)) s = -s;
+
+  Double_t g1_dyn =
+        g1_primeVal * pow(Lambda_z1, 4)/(pow(Lambda_z1, 2) + pow(m1, 2))/(pow(Lambda_z1, 2) + pow(m2, 2))
     +   g1_prime2Val* (pow(m1, 2) + pow(m2, 2))/pow(Lambda_z1, 2)
     +   g1_prime3Val* (pow(m1, 2) - pow(m2, 2))/pow(Lambda_z1, 2)
     +   g1_prime4Val* (m12*m12)/pow(Lambda_Q, 2)
     +   g1_prime5Val* (pow(m1, 4) + pow(m2, 4))/pow(Lambda_z1, 4)
     +   g1_prime6Val* (pow(m1, 4) - pow(m2, 4))/pow(Lambda_z1, 4)
     +   g1_prime7Val* (pow(m1, 2) * pow(m2, 2))/pow(Lambda_z1, 4);
+
+  if (cz_q1sq!=0.) g1_dyn *= 1./(1.+ cz_q1sq*pow(m1/Lambda_z11, 2));
+  if (cz_q2sq!=0.) g1_dyn *= 1./(1.+ cz_q2sq*pow(m2/Lambda_z12, 2));
+  if (cz_q12sq!=0.) g1_dyn *= 1./(1.+ cz_q12sq*pow(m12/Lambda_z10, 2));
+  g1_dyn += g1Val;
 
   Double_t g2_dyn = g2Val
     +   g2_primeVal * pow(Lambda_z2, 4)/(pow(Lambda_z2, 2) + pow(m1, 2))/(pow(Lambda_z2, 2) + pow(m2, 2))
@@ -247,6 +293,10 @@ void RooSpinZero::calculateAiPhiAi(Double_t& a1Re, Double_t& a1Im, Double_t& a2R
     +   g2_prime6Val* (pow(m1, 4) - pow(m2, 4))/pow(Lambda_z2, 4)
     +   g2_prime7Val* (pow(m1, 2) * pow(m2, 2))/pow(Lambda_z2, 4);
 
+  if (cz_q1sq!=0.) g2_dyn *= 1./(1.+ cz_q1sq*pow(m1/Lambda_z21, 2));
+  if (cz_q2sq!=0.) g2_dyn *= 1./(1.+ cz_q2sq*pow(m2/Lambda_z22, 2));
+  if (cz_q12sq!=0.) g2_dyn *= 1./(1.+ cz_q12sq*pow(m12/Lambda_z20, 2));
+
   Double_t g3_dyn = g3Val
     +   g3_primeVal * pow(Lambda_z3, 4)/(pow(Lambda_z3, 2) + pow(m1, 2))/(pow(Lambda_z3, 2) + pow(m2, 2))
     +   g3_prime2Val* (pow(m1, 2) + pow(m2, 2))/pow(Lambda_z3, 2)
@@ -255,6 +305,10 @@ void RooSpinZero::calculateAiPhiAi(Double_t& a1Re, Double_t& a1Im, Double_t& a2R
     +   g3_prime5Val* (pow(m1, 4) + pow(m2, 4))/pow(Lambda_z3, 4)
     +   g3_prime6Val* (pow(m1, 4) - pow(m2, 4))/pow(Lambda_z3, 4)
     +   g3_prime7Val* (pow(m1, 2) * pow(m2, 2))/pow(Lambda_z3, 4);
+
+  if (cz_q1sq!=0.) g3_dyn *= 1./(1.+ cz_q1sq*pow(m1/Lambda_z31, 2));
+  if (cz_q2sq!=0.) g3_dyn *= 1./(1.+ cz_q2sq*pow(m2/Lambda_z32, 2));
+  if (cz_q12sq!=0.) g3_dyn *= 1./(1.+ cz_q12sq*pow(m12/Lambda_z30, 2));
 
   Double_t g4_dyn = g4Val
     +   g4_primeVal * pow(Lambda_z4, 4)/(pow(Lambda_z4, 2) + pow(m1, 2))/(pow(Lambda_z4, 2) + pow(m2, 2))
@@ -265,14 +319,23 @@ void RooSpinZero::calculateAiPhiAi(Double_t& a1Re, Double_t& a1Im, Double_t& a2R
     +   g4_prime6Val* (pow(m1, 4) - pow(m2, 4))/pow(Lambda_z4, 4)
     +   g4_prime7Val* (pow(m1, 2) * pow(m2, 2))/pow(Lambda_z4, 4);
 
-  Double_t g1_dynIm = g1ValIm
-    +   g1_primeValIm * pow(Lambda_z1, 4)/(pow(Lambda_z1, 2) + pow(m1, 2))/(pow(Lambda_z1, 2) + pow(m2, 2))
+  if (cz_q1sq!=0.) g4_dyn *= 1./(1.+ cz_q1sq*pow(m1/Lambda_z41, 2));
+  if (cz_q2sq!=0.) g4_dyn *= 1./(1.+ cz_q2sq*pow(m2/Lambda_z42, 2));
+  if (cz_q12sq!=0.) g4_dyn *= 1./(1.+ cz_q12sq*pow(m12/Lambda_z40, 2));
+
+  Double_t g1_dynIm = 
+        g1_primeValIm * pow(Lambda_z1, 4)/(pow(Lambda_z1, 2) + pow(m1, 2))/(pow(Lambda_z1, 2) + pow(m2, 2))
     +   g1_prime2ValIm* (pow(m1, 2) + pow(m2, 2))/pow(Lambda_z1, 2)
     +   g1_prime3ValIm* (pow(m1, 2) - pow(m2, 2))/pow(Lambda_z1, 2)
     +   g1_prime4ValIm* (m12*m12)/pow(Lambda_Q, 2)
     +   g1_prime5ValIm* (pow(m1, 4) + pow(m2, 4))/pow(Lambda_z1, 4)
     +   g1_prime6ValIm* (pow(m1, 4) - pow(m2, 4))/pow(Lambda_z1, 4)
     +   g1_prime7ValIm* (pow(m1, 2) * pow(m2, 2))/pow(Lambda_z1, 4);
+
+  if (cz_q1sq!=0.) g1_dynIm *= 1./(1.+ cz_q1sq*pow(m1/Lambda_z11, 2));
+  if (cz_q2sq!=0.) g1_dynIm *= 1./(1.+ cz_q2sq*pow(m2/Lambda_z12, 2));
+  if (cz_q12sq!=0.) g1_dynIm *= 1./(1.+ cz_q12sq*pow(m12/Lambda_z10, 2));
+  g1_dynIm += g1ValIm;
 
   Double_t g2_dynIm = g2ValIm
     +   g2_primeValIm * pow(Lambda_z2, 4)/(pow(Lambda_z2, 2) + pow(m1, 2))/(pow(Lambda_z2, 2) + pow(m2, 2))
@@ -283,6 +346,10 @@ void RooSpinZero::calculateAiPhiAi(Double_t& a1Re, Double_t& a1Im, Double_t& a2R
     +   g2_prime6ValIm* (pow(m1, 4) - pow(m2, 4))/pow(Lambda_z2, 4)
     +   g2_prime7ValIm* (pow(m1, 2) * pow(m2, 2))/pow(Lambda_z2, 4);
 
+  if (cz_q1sq!=0.) g2_dynIm *= 1./(1.+ cz_q1sq*pow(m1/Lambda_z21, 2));
+  if (cz_q2sq!=0.) g2_dynIm *= 1./(1.+ cz_q2sq*pow(m2/Lambda_z22, 2));
+  if (cz_q12sq!=0.) g2_dynIm *= 1./(1.+ cz_q12sq*pow(m12/Lambda_z20, 2));
+
   Double_t g3_dynIm = g3ValIm
     +   g3_primeValIm * pow(Lambda_z3, 4)/(pow(Lambda_z3, 2) + pow(m1, 2))/(pow(Lambda_z3, 2) + pow(m2, 2))
     +   g3_prime2ValIm* (pow(m1, 2) + pow(m2, 2))/pow(Lambda_z3, 2)
@@ -291,6 +358,10 @@ void RooSpinZero::calculateAiPhiAi(Double_t& a1Re, Double_t& a1Im, Double_t& a2R
     +   g3_prime5ValIm* (pow(m1, 4) + pow(m2, 4))/pow(Lambda_z3, 4)
     +   g3_prime6ValIm* (pow(m1, 4) - pow(m2, 4))/pow(Lambda_z3, 4)
     +   g3_prime7ValIm* (pow(m1, 2) * pow(m2, 2))/pow(Lambda_z3, 4);
+
+  if (cz_q1sq!=0.) g3_dynIm *= 1./(1.+ cz_q1sq*pow(m1/Lambda_z31, 2));
+  if (cz_q2sq!=0.) g3_dynIm *= 1./(1.+ cz_q2sq*pow(m2/Lambda_z32, 2));
+  if (cz_q12sq!=0.) g3_dynIm *= 1./(1.+ cz_q12sq*pow(m12/Lambda_z30, 2));
 
   Double_t g4_dynIm = g4ValIm
     +   g4_primeValIm * pow(Lambda_z4, 4)/(pow(Lambda_z4, 2) + pow(m1, 2))/(pow(Lambda_z4, 2) + pow(m2, 2))
@@ -301,16 +372,25 @@ void RooSpinZero::calculateAiPhiAi(Double_t& a1Re, Double_t& a1Im, Double_t& a2R
     +   g4_prime6ValIm* (pow(m1, 4) - pow(m2, 4))/pow(Lambda_z4, 4)
     +   g4_prime7ValIm* (pow(m1, 2) * pow(m2, 2))/pow(Lambda_z4, 4);
 
-  Double_t s = (pow(m12, 2) - pow(m1, 2) - pow(m2, 2))/2.;
-  if (pow(m1, 2)>pow(m12, 2) || pow(m2, 2)>pow(m12, 2)) s = -s;
-  Double_t kappa = s/pow(Lambda,2);
+  if (cz_q1sq!=0.) g4_dynIm *= 1./(1.+ cz_q1sq*pow(m1/Lambda_z41, 2));
+  if (cz_q2sq!=0.) g4_dynIm *= 1./(1.+ cz_q2sq*pow(m2/Lambda_z42, 2));
+  if (cz_q12sq!=0.) g4_dynIm *= 1./(1.+ cz_q12sq*pow(m12/Lambda_z40, 2));
 
-  a1Re = g1_dyn*pow(mV/m12, 2) + g2_dyn*2.*s/pow(m12, 2) + g3_dyn*kappa*s/pow(m12, 2);
-  a2Re = -2.*g2_dyn - g3_dyn*kappa;
+  /*
+  cout << "g1: " << g1_dyn << " " << g1_dynIm << '\t';
+  cout << "g2: " << g2_dyn << " " << g2_dynIm << '\t';
+  cout << "g3: " << g3_dyn << " " << g3_dynIm << '\t';
+  cout << "g4: " << g4_dyn << " " << g4_dynIm << '\t';
+  cout << endl;
+  */
+
+  Double_t kappa = s/pow(Lambda,2);
   a3Re = -2.*g4_dyn;
-  a1Im = g1_dynIm*pow(mV/m12, 2) + g2_dynIm*2.*s/pow(m12, 2) + g3_dynIm*kappa*s/pow(m12, 2);
-  a2Im = -2.*g2_dynIm - g3_dynIm*kappa;
+  a2Re = -(2.*g2_dyn + g3_dyn*kappa);
+  a1Re = g1_dyn*pow(mV/m12, 2) - a2Re*s/pow(m12, 2);
   a3Im = -2.*g4_dynIm;
+  a2Im = -(2.*g2_dynIm + g3_dynIm*kappa);
+  a1Im = g1_dynIm*pow(mV/m12, 2) - a2Im*s/pow(m12, 2);
 }
 void RooSpinZero::calculateAmplitudes(Double_t& A00Re, Double_t& A00Im, Double_t& AppRe, Double_t& AppIm, Double_t& AmmRe, Double_t& AmmIm)const{
   Double_t a1Re, a2Re, a3Re, a1Im, a2Im, a3Im;

@@ -134,6 +134,105 @@ void ScalarPdfFactory::initVdecayParams(){
     parameters.R2Val = new RooRealVar("R2Val", "R2Val", 0); // gamma
     break;
   }
+
+  parameters.mV->removeRange();
+  parameters.gamV->removeRange();
+  parameters.R1Val->removeRange();
+  parameters.R2Val->removeRange();
+}
+void ScalarPdfFactory::resetVdecay(int V1decay_, int V2decay_){
+  if ((V1decay_>0 && V2decay_<0) || (V1decay_<0 && V2decay_>0)){ cerr << "ScalarPdfFactory::resetVdecayParams: V1 and V2 decays are inconsistent!" << endl; return; }
+
+  V1decay=V1decay_;
+  V2decay=V2decay_;
+
+  bool is_mvconst = parameters.mV->isConstant();
+  bool is_gamvconst = parameters.gamV->isConstant();
+  bool is_r1const = parameters.R1Val->isConstant();
+  bool is_r2const = parameters.R2Val->isConstant();
+  parameters.mV->setConstant(false);
+  parameters.gamV->setConstant(false);
+  parameters.R1Val->setConstant(false);
+  parameters.R2Val->setConstant(false);
+
+  if (V1decay_>0){
+    parameters.mV->setVal(91.1876);
+    parameters.gamV->setVal(2.4952);
+  }
+  else if (V1decay_<0){
+    parameters.mV->setVal(80.399);
+    parameters.gamV->setVal(2.085);
+  }
+  else{
+    parameters.mV->setVal(0);
+    parameters.gamV->setVal(0);
+  }
+
+  double atomicT3 = 0.5;
+  double atomicCharge = 1.;
+  double sin2t = 0.23119;
+
+  double gV_up = atomicT3 - 2.*(2.*atomicCharge/3.)*sin2t;
+  double gV_dn = -atomicT3 - 2.*(-atomicCharge/3.)*sin2t;
+  double gV_l = -atomicT3 - 2.*(-atomicCharge)*sin2t;
+  double gV_nu = atomicT3;
+
+  double gA_up = atomicT3;
+  double gA_dn = -atomicT3;
+  double gA_l = -atomicT3;
+  double gA_nu = atomicT3;
+
+  switch (V1decay_){
+  case 3:
+    parameters.R1Val->setVal(0.5*((2.*gV_up*gA_up)/(pow(gV_up, 2)+pow(gA_up, 2))+(2.*gV_dn*gA_dn)/(pow(gV_dn, 2)+pow(gA_dn, 2)))); // Z->uu+dd avg.
+    break;
+  case 5:
+    parameters.R1Val->setVal((2.*gV_dn*gA_dn)/(pow(gV_dn, 2)+pow(gA_dn, 2))); // Z->dd
+    break;
+  case 4:
+    parameters.R1Val->setVal((2.*gV_up*gA_up)/(pow(gV_up, 2)+pow(gA_up, 2))); // Z->uu
+    break;
+  case 2:
+    parameters.R1Val->setVal((2.*gV_nu*gA_nu)/(pow(gV_nu, 2)+pow(gA_nu, 2))); // Z->nunu
+    break;
+  case 1:
+    parameters.R1Val->setVal((2.*gV_l*gA_l)/(pow(gV_l, 2)+pow(gA_l, 2))); // Z->ll
+    break;
+  case -1:
+    parameters.R1Val->setVal(1); // W
+    break;
+  default:
+    parameters.R1Val->setVal(0); // gamma
+    break;
+  }
+  switch (V2decay_){
+  case 3:
+    parameters.R2Val->setVal(0.5*((2.*gV_up*gA_up)/(pow(gV_up, 2)+pow(gA_up, 2))+(2.*gV_dn*gA_dn)/(pow(gV_dn, 2)+pow(gA_dn, 2)))); // Z->uu+dd avg.
+    break;
+  case 5:
+    parameters.R2Val->setVal((2.*gV_dn*gA_dn)/(pow(gV_dn, 2)+pow(gA_dn, 2))); // Z->dd
+    break;
+  case 4:
+    parameters.R2Val->setVal((2.*gV_up*gA_up)/(pow(gV_up, 2)+pow(gA_up, 2))); // Z->uu
+    break;
+  case 2:
+    parameters.R2Val->setVal((2.*gV_nu*gA_nu)/(pow(gV_nu, 2)+pow(gA_nu, 2))); // Z->nunu
+    break;
+  case 1:
+    parameters.R2Val->setVal((2.*gV_l*gA_l)/(pow(gV_l, 2)+pow(gA_l, 2))); // Z->ll
+    break;
+  case -1:
+    parameters.R2Val->setVal(1); // W
+    break;
+  default:
+    parameters.R2Val->setVal(0); // gamma
+    break;
+  }
+
+  parameters.mV->setConstant(is_mvconst);
+  parameters.gamV->setConstant(is_gamvconst);
+  parameters.R1Val->setConstant(is_r1const);
+  parameters.R2Val->setConstant(is_r2const);
 }
 void ScalarPdfFactory::initFractionsPhases(){
   for (int v=0; v<4; v++){
@@ -309,6 +408,33 @@ void ScalarPdfFactory::initGVals(){
   parameters.Lambda_z4 = new RooRealVar("Lambda_z4", "Lambda_z4", 10000.);
   parameters.Lambda_Q = new RooRealVar("Lambda_Q", "Lambda_Q", 10000.);
 
+  for (int v=0; v<3; v++){
+    TString strcore;
+    double initval = 100.;
+
+    strcore = "Lambda_z1";
+    strcore.Append(Form("%i", (v!=3 ? v+1 : 0)));
+    parameters.Lambda_z1qsq[v] = new RooRealVar(strcore, strcore, initval, 0., 1e15);
+    parameters.Lambda_z1qsq[v]->removeMax();
+    strcore = "Lambda_z2";
+    strcore.Append(Form("%i", (v!=3 ? v+1 : 0)));
+    parameters.Lambda_z2qsq[v] = new RooRealVar(strcore, strcore, initval, 0., 1e15);
+    parameters.Lambda_z2qsq[v]->removeMax();
+    strcore = "Lambda_z3";
+    strcore.Append(Form("%i", (v!=3 ? v+1 : 0)));
+    parameters.Lambda_z3qsq[v] = new RooRealVar(strcore, strcore, initval, 0., 1e15);
+    parameters.Lambda_z3qsq[v]->removeMax();
+    strcore = "Lambda_z4";
+    strcore.Append(Form("%i", (v!=3 ? v+1 : 0)));
+    parameters.Lambda_z4qsq[v] = new RooRealVar(strcore, strcore, initval, 0., 1e15);
+    parameters.Lambda_z4qsq[v]->removeMax();
+
+    initval=0;
+    strcore = "cz_q";
+    strcore.Append(Form("%i%s", (v!=3 ? v+1 : 12),"sq"));
+    parameters.cLambda_qsq[v] = new RooRealVar(strcore, strcore, initval, -1., 1.);
+  }
+
   if (parameterization==0){
     for (int v=0; v<8; v++){
       for (int im=0; im<2; im++){
@@ -397,12 +523,117 @@ void ScalarPdfFactory::destroyGVals(){
     }
   }
   if (parameterization!=0) destroyFractionsPhases();
+  for (int v=0; v<3; v++){
+    delete parameters.Lambda_z1qsq[v];
+    delete parameters.Lambda_z2qsq[v];
+    delete parameters.Lambda_z3qsq[v];
+    delete parameters.Lambda_z4qsq[v];
+    delete parameters.cLambda_qsq[v];
+  }
   delete parameters.Lambda;
   delete parameters.Lambda_z1;
   delete parameters.Lambda_z2;
   delete parameters.Lambda_z3;
   delete parameters.Lambda_z4;
   delete parameters.Lambda_Q;
+}
+
+void ScalarPdfFactory::addHypothesis(int ig, int ilam, double iphase, double altparam_fracval){
+  if (ig>=4 || ig<0) cerr << "Invalid g" << ig << endl;
+  if (ilam>=8 || ilam<0) cerr << "Out-of-range g" << ig << "_prime" << ilam << endl;
+  if (parameterization==0){
+    // Good guesses of c-constants
+    Double_t initval=1.;
+    if (ilam>0){
+      if (ig==0){ // g1_dyn
+        if (ilam>=1 && ilam<=3) initval = pow(parameters.Lambda_z1->getVal()/parameters.mV->getVal(), 2);
+        if (ilam>=5 && ilam<=7) initval = pow(parameters.Lambda_z1->getVal()/parameters.mV->getVal(), 4);
+        if (ilam==4) initval = pow(parameters.Lambda_Q->getVal()/parameters.mX->getVal(), 2);
+      }
+      else if (ig==1){ // g2_dyn
+        if (ilam>=1 && ilam<=3) initval = pow(parameters.Lambda_z2->getVal()/parameters.mV->getVal(), 2);
+        if (ilam>=5 && ilam<=7) initval = pow(parameters.Lambda_z2->getVal()/parameters.mV->getVal(), 4);
+        if (ilam==4) initval = pow(parameters.Lambda_Q->getVal()/parameters.mX->getVal(), 2);
+      }
+      else if (ig==2){ // g3_dyn
+        if (ilam>=1 && ilam<=3) initval = pow(parameters.Lambda_z3->getVal()/parameters.mV->getVal(), 2);
+        if (ilam>=5 && ilam<=7) initval = pow(parameters.Lambda_z3->getVal()/parameters.mV->getVal(), 4);
+        if (ilam==4) initval = pow(parameters.Lambda_Q->getVal()/parameters.mX->getVal(), 2);
+      }
+      else if (ig==3){ // g4_dyn
+        if (ilam>=1 && ilam<=3) initval = pow(parameters.Lambda_z4->getVal()/parameters.mV->getVal(), 2);
+        if (ilam>=5 && ilam<=7) initval = pow(parameters.Lambda_z4->getVal()/parameters.mV->getVal(), 4);
+        if (ilam==4) initval = pow(parameters.Lambda_Q->getVal()/parameters.mX->getVal(), 2);
+      }
+    }
+    if (ig==2) initval *= fabs(pow(parameters.Lambda->getVal(), 2)/(pow(parameters.mX->getVal(), 2) - pow(parameters.mV->getVal(), 2)));
+
+    if (ig==0){
+      ((RooRealVar*)parameters.g1List[ilam][0])->setVal(initval*cos(iphase));
+      ((RooRealVar*)parameters.g1List[ilam][1])->setVal(initval*sin(iphase));
+    }
+    else if (ig==1){
+      ((RooRealVar*)parameters.g2List[ilam][0])->setVal(initval*cos(iphase));
+      ((RooRealVar*)parameters.g2List[ilam][1])->setVal(initval*sin(iphase));
+    }
+    else if (ig==2){
+      ((RooRealVar*)parameters.g3List[ilam][0])->setVal(initval*cos(iphase));
+      ((RooRealVar*)parameters.g3List[ilam][1])->setVal(initval*sin(iphase));
+    }
+    else if (ig==3){
+      ((RooRealVar*)parameters.g4List[ilam][0])->setVal(initval*cos(iphase));
+      ((RooRealVar*)parameters.g4List[ilam][1])->setVal(initval*sin(iphase));
+    }
+  }
+  else{
+    if (ig==0 && ilam==0) cerr << "Cannot set fa1! Try to set everything else." << endl;
+    else{
+      if (ig==0){
+        g1Frac[ilam-1]->setVal(altparam_fracval);
+        g1Phase[ilam-1]->setVal(iphase);
+      }
+      else if (ig==1){
+        g2Frac[ilam]->setVal(altparam_fracval);
+        g2Phase[ilam]->setVal(iphase);
+      }
+      else if (ig==2){
+        g3Frac[ilam]->setVal(altparam_fracval);
+        g3Phase[ilam]->setVal(iphase);
+      }
+      else if (ig==3){
+        g4Frac[ilam]->setVal(altparam_fracval);
+        g4Phase[ilam]->setVal(iphase);
+      }
+    }
+  }
+}
+void ScalarPdfFactory::resetHypotheses(){
+  for (int ilam=0; ilam<8; ilam++){
+    if (parameterization==0){
+      ((RooRealVar*)parameters.g1List[ilam][0])->setVal(0.); // This is different from setting the fractions!
+      ((RooRealVar*)parameters.g1List[ilam][1])->setVal(0.);
+      ((RooRealVar*)parameters.g2List[ilam][0])->setVal(0.);
+      ((RooRealVar*)parameters.g2List[ilam][1])->setVal(0.);
+      ((RooRealVar*)parameters.g3List[ilam][0])->setVal(0.);
+      ((RooRealVar*)parameters.g3List[ilam][1])->setVal(0.);
+      ((RooRealVar*)parameters.g4List[ilam][0])->setVal(0.);
+      ((RooRealVar*)parameters.g4List[ilam][1])->setVal(0.);
+    }
+    else{
+      if (ilam>0){
+        g1Frac[ilam-1]->setVal(0.);
+        g1Phase[ilam-1]->setVal(0.);
+      }
+      else{
+        g2Frac[ilam]->setVal(0.);
+        g2Phase[ilam]->setVal(0.);
+        g3Frac[ilam]->setVal(0.);
+        g3Phase[ilam]->setVal(0.);
+        g4Frac[ilam]->setVal(0.);
+        g4Phase[ilam]->setVal(0.);
+      }
+    }
+  }
 }
 
 
