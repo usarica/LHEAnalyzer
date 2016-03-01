@@ -32,6 +32,8 @@ public:
   Bool_t processRecoInfo(){ bool doProcess=true; if (includeRecoInfo==0) doProcess=false; return doProcess; }
   Bool_t isAnExcludedBranch(string branchname);
   Int_t analysisLevel(){ return fileLevel; }
+  Int_t pythiaType(){ return pythiaStep; }
+  string jetAlgorithm(){ return jetAlgo; }
   Int_t doGenHZZdecay(){ return isGenHZZ; }
   Int_t doRecoHZZdecay(){ return isRecoHZZ; }
   Int_t genDecayProducts(){ return genDecayMode; }
@@ -90,6 +92,7 @@ protected:
   Int_t computeVBFAngles;
   Int_t computeVHAngles;
   Int_t fileLevel;
+  Int_t pythiaStep;
   Int_t isGenHZZ;
   Int_t isRecoHZZ;
   Int_t genDecayMode;
@@ -98,6 +101,9 @@ protected:
   Int_t recoSmearBehaviour;
   HiggsComparators::CandidateSelection genHiggsCandidateSelectionScheme;
   HiggsComparators::CandidateSelection recoHiggsCandidateSelectionScheme;
+  Double_t jetDeltaRIso;
+
+  string jetAlgo;
 
   string indir;
   string outdir;

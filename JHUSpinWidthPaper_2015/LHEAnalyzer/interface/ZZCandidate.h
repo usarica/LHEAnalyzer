@@ -7,7 +7,7 @@ class ZZCandidate : public Particle{
 public:
   ZZCandidate(int id_, TLorentzVector p4_) : Particle(id_, p4_) {};
 
-  ~ZZCandidate(){ for (int i=0; i<sortedVs.size(); i++) delete sortedVs.at(i); sortedVs.clear(); sortedDaughters.clear(); associatedJets.clear(); associatedLeptons.clear(); };
+  ~ZZCandidate(){ for (unsigned int i=0; i<sortedVs.size(); i++) delete sortedVs.at(i); sortedVs.clear(); sortedDaughters.clear(); associatedJets.clear(); associatedLeptons.clear(); };
 
 
   // Member functions

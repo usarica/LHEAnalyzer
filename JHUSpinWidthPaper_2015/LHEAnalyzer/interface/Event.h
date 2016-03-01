@@ -63,7 +63,7 @@ protected:
 
   void addZZCandidate(ZZCandidate* myParticle); // Protected to avoid adding external ZZCandidates and DELETING THEM TWICE!
 
-  template<typename ParticleType> void wipeArray(std::vector<ParticleType*>& particleArray, bool doDelete=true){ if (doDelete){ for (int i=0; i<particleArray.size(); i++){ ParticleType* delpar = particleArray.at(i); delete delpar; } } particleArray.clear(); };
+  template<typename ParticleType> void wipeArray(std::vector<ParticleType*>& particleArray, bool doDelete=true){ if (doDelete){ for (unsigned int i=0; i<particleArray.size(); i++){ ParticleType* delpar = particleArray.at(i); delete delpar; } } particleArray.clear(); };
   void wipeAll(){ leptons.clear(); neutrinos.clear(); jets.clear(); wipeArray(ZZcandidates, true); wipeArray(intermediates, false); wipeArray(particles, false); };
 
   void applyLeptonSelection();
