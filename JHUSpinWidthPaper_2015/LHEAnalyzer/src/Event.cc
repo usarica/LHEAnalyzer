@@ -7,6 +7,7 @@ using namespace ParticleComparators;
 void Event::applyParticleSelection(){
   applyLeptonSelection();
   applyNeutrinoSelection();
+  applyPhotonSelection();
   applyJetSelection();
   applyZZSelection(); // Order matters here
 }
@@ -26,6 +27,9 @@ void Event::applyLeptonSelection(){
 }
 void Event::applyNeutrinoSelection(){
   for (std::vector<Particle*>::iterator it = neutrinos.begin(); it<neutrinos.end(); it++) (*it)->setSelected(false);
+}
+void Event::applyPhotonSelection(){
+  for (std::vector<Particle*>::iterator it = photons.begin(); it<photons.end(); it++) (*it)->setSelected(true); // For now...
 }
 void Event::applyJetSelection(){
   for (std::vector<Particle*>::iterator it = jets.begin(); it<jets.end(); it++){
@@ -96,22 +100,22 @@ void Event::addZZCandidate(ZZCandidate* myParticle){
 
 void Event::constructVVCandidates(int isZZ, int fstype){
   /*
-  ZZ==1 / WW==0 / Yukawa==2
-  fstype=0: 4l / lnulnu / 2l
-  fstype=1: 4q / 4q / 2q
-  fstype=2: 2l2q / lnu2q / -
-  fstype=3: 2l2nu / - / -
-  fstype=4: 2q2nu / - / -
-  fstype=5: 4nu / - / -
-  fstype=-1: Any / Any / Any
+  fstype  / ZZ==1 / WW==0  / Yukawa==2 / Zgam=3 / gamgam=4
+  fstype=0: 4l    / lnulnu / 2l        / 2l     / gam
+  fstype=1: 4q    / 4q     / 2q        / 2q     / -
+  fstype=2: 2l2q  / lnu2q  / -         / -      / -
+  fstype=3: 2l2nu / -      / -         / -      / -
+  fstype=4: 2q2nu / -      / -         / -      / -
+  fstype=5: 4nu   / -      / -         / 2nu    / -
+  fstype=-1: Any
   */
 
-  if ((isZZ<=0 && fstype>2) || (isZZ==1 && fstype>5) || (isZZ==2 && fstype>1) || isZZ>2){
+  if ((isZZ<=0 && fstype>2) || (isZZ==1 && fstype>5) || (isZZ==2 && fstype>1) || (isZZ==2 && (fstype>1 && fstype!=5)) || (isZZ==3 && fstype>0) || isZZ>4){
     if (isZZ<0) std::cerr << "No " << "undecayed" << " candidate with final state " << fstype << " is possible!" << std::endl;
     else if (isZZ==0) std::cerr << "No " << "WW" << " candidate with final state " << fstype << " is possible!" << std::endl;
     else if (isZZ==1) std::cerr << "No " << "ZZ" << " candidate with final state " << fstype << " is possible!" << std::endl;
     else if (isZZ==2) std::cerr << "No " << "f-fbar" << " candidate with final state " << fstype << " is possible!" << std::endl;
-    else if (isZZ>2) std::cerr << "Unknown candidate with final state " << fstype << "!" << std::endl;
+    else if (isZZ>3) std::cerr << "Unknown candidate with final state " << fstype << "!" << std::endl;
     return;
   }
 
@@ -150,9 +154,9 @@ void Event::constructVVCandidates(int isZZ, int fstype){
 
   std::vector<Particle*> tmpVhandle;
 
-  if (isZZ==1){ // ZZ
+  if (isZZ==1 || isZZ==3){ // ZZ
 
-    if (fstype==-1 || fstype==0 || fstype==2 || fstype==3){ // Z->2l
+    if (fstype==-1 || (isZZ==1 && (fstype==0 || fstype==2 || fstype==3)) || (isZZ==3 && fstype==0)){ // Z->2l
       for (int c=0; c<3; c++){
         for (unsigned int i=0; i<lepPlusMinus[c][0].size(); i++){
           for (unsigned int j=0; j<lepPlusMinus[c][1].size(); j++){
@@ -165,7 +169,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
         }
       }
     }
-    if (fstype==-1 || fstype==3 || fstype==4 || fstype==5){ // Z->2nu
+    if (fstype==-1 || (isZZ==1 && (fstype==3 || fstype==4 || fstype==5)) || (isZZ==3 && fstype==5)){ // Z->2nu
       for (int c=0; c<3; c++){
         for (unsigned int i=0; i<lepNu[c][0].size(); i++){
           for (unsigned int j=0; j<lepNu[c][1].size(); j++){
@@ -178,7 +182,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
         }
       }
     }
-    if (fstype==-1 || fstype==1 || fstype==2 || fstype==4){ // Z->2q
+    if (fstype==-1 || (isZZ==1 && (fstype==1 || fstype==2 || fstype==4)) || (isZZ==3 && fstype==1)){ // Z->2q
       for (int c=1; c<7; c++){
         for (unsigned int i=0; i<quarkPlusMinus[c][0].size(); i++){
           for (unsigned int j=0; j<quarkPlusMinus[c][1].size(); j++){
@@ -300,16 +304,31 @@ void Event::constructVVCandidates(int isZZ, int fstype){
     }
   }
 
+  if (debugVars::debugFlag) std::cout << "Number of V/ZZ before sorting photons: " << tmpVhandle.size() << " " << getNZZCandidates() << std::endl;
+
+  if (isZZ==3 || isZZ==4){
+    for (int i=0; i<photons.size(); i++){ // Copy the photons
+      TLorentzVector pV = photons.at(i)->p4;
+      Particle* V = new Particle(photons.at(i)->id, pV);
+      V->addDaughter(photons.at(i)); // Photon is its own daughter!
+      tmpVhandle.push_back(V);
+    }
+  }
+
+  if (debugVars::debugFlag) std::cout << "Number of V/ZZ after sorting photons: " << tmpVhandle.size() << " " << getNZZCandidates() << std::endl;
+
   if (
     ((fstype==-1 || fstype==1 || fstype==2 || fstype==4) && (isZZ==0 || isZZ==1)) // W/Z->2j reco.-level
     ||
     ((fstype==-1 || fstype==1) && isZZ==2) // H->2j reco.-level
+    ||
+    ((fstype==-1 || fstype==1) && isZZ==3) // H->Zgam with Z->2j
     ){
     for (unsigned int i=0; i<quarkPlusMinus[0][0].size(); i++){
       if (quarkPlusMinus[0][0].at(i)->id!=0) continue;
       for (unsigned int j=i+1; j<quarkPlusMinus[0][0].size(); j++){
         if (quarkPlusMinus[0][0].at(j)->id!=0) continue;
-        if (isZZ==0 || isZZ==1){
+        if (isZZ==0 || isZZ==1 || isZZ==3){
           TLorentzVector pV = quarkPlusMinus[0][0].at(i)->p4+quarkPlusMinus[0][0].at(j)->p4;
           Particle* V = new Particle(0, pV);
           V->addDaughter(quarkPlusMinus[0][0].at(i));
@@ -333,14 +352,16 @@ void Event::constructVVCandidates(int isZZ, int fstype){
         }
       }
     }
+    if (debugVars::debugFlag) std::cout << "Number of V/ZZ after sorting reco. jets: " << tmpVhandle.size() << " " << getNZZCandidates() << std::endl;
   }
 
 
 
   for (unsigned int i=0; i<tmpVhandle.size(); i++){
     for (unsigned int j=i; j<tmpVhandle.size(); j++){
-      if ((tmpVhandle.at(i)->charge()+tmpVhandle.at(j)->charge())!=0) continue;
       if (tmpVhandle.at(i)==tmpVhandle.at(j)) continue;
+      if ((tmpVhandle.at(i)->charge()+tmpVhandle.at(j)->charge())!=0) continue;
+
       Particle* Vi1 = tmpVhandle.at(i)->getDaughter(0);
       Particle* Vi2 = tmpVhandle.at(i)->getDaughter(1);
       Particle* Vj1 = tmpVhandle.at(j)->getDaughter(0);
@@ -353,28 +374,43 @@ void Event::constructVVCandidates(int isZZ, int fstype){
       */
       if (Vi1==Vj1 || Vi2==Vj2) continue;
 
-      TLorentzVector pH = Vi1->p4+Vi2->p4+Vj1->p4+Vj2->p4;
+      if (debugVars::debugFlag){
+        if (Vi1!=0) std::cout << "Vi1 not zero. Id: " << Vi1->id << std::endl;
+        if (Vi2!=0) std::cout << "Vi2 not zero. Id: " << Vi2->id << std::endl;
+        if (Vj1!=0) std::cout << "Vj1 not zero. Id: " << Vj1->id << std::endl;
+        if (Vj2!=0) std::cout << "Vj2 not zero. Id: " << Vj2->id << std::endl;
+      }
+
+      TLorentzVector pH(0, 0, 0, 0);
+      if (Vi1!=0) pH = pH + Vi1->p4;
+      if (Vi2!=0) pH = pH + Vi2->p4;
+      if (Vj1!=0) pH = pH + Vj1->p4;
+      if (Vj2!=0) pH = pH + Vj2->p4;
       ZZCandidate* cand = new ZZCandidate(25, pH);
-      cand->addDaughter(Vi1);
-      cand->addDaughter(Vi2);
-      cand->addDaughter(Vj1);
-      cand->addDaughter(Vj2);
+
+      if (Vi1!=0) cand->addDaughter(Vi1);
+      if (Vi2!=0) cand->addDaughter(Vi2);
+      if (Vj1!=0) cand->addDaughter(Vj1);
+      if (Vj2!=0) cand->addDaughter(Vj2);
 
       double defaultHVVmass = HVVmass;
-      if (isZZ==0){
-        setHVVmass(Wmass);
-      }
-      else{
-        setHVVmass(Zmass);
-      }
+      if (isZZ==0) setHVVmass(Wmass);
+      else if (isZZ!=4) setHVVmass(Zmass);
+      else setHVVmass(Zeromass);
+
+      if (debugVars::debugFlag) std::cout << "Sorting daughters..." << std::endl;
       cand->sortDaughters();
+      if (debugVars::debugFlag) std::cout << "Sorted daughters successfully!" << std::endl;
       setHVVmass(defaultHVVmass);
 
       addZZCandidate(cand);
+
+      if (debugVars::debugFlag) std::cout << "Added candidate for V" << i << " V" << j << std::endl;
     }
   }
 
   for (unsigned int i=0; i<tmpVhandle.size(); i++) delete tmpVhandle.at(i);
+  if (debugVars::debugFlag) std::cout << "tmpVhandle deletion step is done." << std::endl;
   tmpVhandle.clear();
 }
 
@@ -390,7 +426,10 @@ Particle* Event::getNeutrino(int index)const{
   if ((int)neutrinos.size()>index) return neutrinos.at(index);
   else return 0;
 }
-Particle* Event::getJet(int index)const{
+Particle* Event::getPhoton(int index)const{
+  if ((int)photons.size()>index) return photons.at(index);
+  else return 0;
+}Particle* Event::getJet(int index)const{
   if ((int)jets.size()>index) return jets.at(index);
   else return 0;
 }
@@ -421,6 +460,7 @@ void Event::addVVCandidateAppendages(){
   for (std::vector<ZZCandidate*>::iterator it = ZZcandidates.begin(); it<ZZcandidates.end(); it++){
     for (std::vector<Particle*>::iterator iL = leptons.begin(); iL<leptons.end(); iL++){ if ((*iL)->passSelection) (*it)->addAssociatedLeptons(*iL); }
     for (std::vector<Particle*>::iterator iL = neutrinos.begin(); iL<neutrinos.end(); iL++){ if ((*iL)->passSelection) (*it)->addAssociatedNeutrinos(*iL); }
+    for (std::vector<Particle*>::iterator iP = photons.begin(); iP<photons.end(); iP++){ if ((*iP)->passSelection) (*it)->addAssociatedPhotons(*iP); }
     for (std::vector<Particle*>::iterator iJ = jets.begin(); iJ<jets.end(); iJ++){ if ((*iJ)->passSelection) (*it)->addAssociatedJets(*iJ); }
     (*it)->addAssociatedVs();
   }

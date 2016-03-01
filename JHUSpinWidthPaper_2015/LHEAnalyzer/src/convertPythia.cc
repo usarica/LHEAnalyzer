@@ -95,6 +95,7 @@ void convertPythia::run(){
               if (genPart->genStatus==1){
                 if (isALepton(genPart->id)) genEvent.addLepton(genPart);
                 else if (isANeutrino(genPart->id)) genEvent.addNeutrino(genPart);
+                else if (isAPhoton(genPart->id)) genEvent.addPhoton(genPart);
                 else if (isAGluon(genPart->id) || isAQuark(genPart->id)) genEvent.addJet(genPart);
               }
               else if (genPart->genStatus==-1) tree->fillMotherInfo(genPart);
@@ -131,6 +132,7 @@ void convertPythia::run(){
               Particle* smearedPart = smearedParticleList.at(p);
               if (isALepton(smearedPart->id)) smearedEvent.addLepton(smearedPart);
               else if (isANeutrino(smearedPart->id)) smearedEvent.addNeutrino(smearedPart);
+              else if (isAPhoton(smearedPart->id)) smearedEvent.addPhoton(smearedPart);
               else if (smearedPart->id==0) smearedEvent.addJet(smearedPart);
               else smearedEvent.addParticle(smearedPart);
             }

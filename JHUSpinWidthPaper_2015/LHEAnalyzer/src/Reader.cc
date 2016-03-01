@@ -291,6 +291,7 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
 
       Int_t partId = *ref_partId;
       TLorentzVector partFV; partFV.SetPtEtaPhiM(*(ref_partFV[0]), *(ref_partFV[1]), *(ref_partFV[2]), *(ref_partFV[3]));
+      if (partId==0 && partFV.P()==0 && partFV.T()==0) continue; // Not a real record
       Particle* part = new Particle((int)partId, partFV);
       if(isGen) part->setGenStatus(1);
       particles.push_back(part);
@@ -373,6 +374,7 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
       Particle* part = candFinalDaughters.at(d);
       if (isALepton(part->id)) outEvent.addLepton(part);
       else if (isANeutrino(part->id)) outEvent.addNeutrino(part);
+      else if (isAPhoton(part->id)) outEvent.addPhoton(part);
       else if (isAGluon(part->id) || isAQuark(part->id)) outEvent.addJet(part);
       else if (part->id==0) outEvent.addJet(part);
       else outEvent.addParticle(part);
@@ -386,6 +388,7 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
       Particle* part = associatedParticles.at(d);
       if (isALepton(part->id)) outEvent.addLepton(part);
       else if (isANeutrino(part->id)) outEvent.addNeutrino(part);
+      else if (isAPhoton(part->id)) outEvent.addPhoton(part);
       else if (isAGluon(part->id) || isAQuark(part->id)) outEvent.addJet(part);
       else if (part->id==0) outEvent.addJet(part);
       else outEvent.addParticle(part);
@@ -396,6 +399,7 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
       Particle* part = candFinalDaughters.at(d);
       if (isALepton(part->id)) outEvent.addLepton(part);
       else if (isANeutrino(part->id)) outEvent.addNeutrino(part);
+      else if (isAPhoton(part->id)) outEvent.addPhoton(part);
       else if (isAGluon(part->id) || isAQuark(part->id)) outEvent.addJet(part);
       else if (part->id==0) outEvent.addJet(part);
       else outEvent.addParticle(part);
@@ -407,6 +411,7 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
         Particle* part = associatedParticles.at(d);
         if (isALepton(part->id)) outEvent.addLepton(part);
         else if (isANeutrino(part->id)) outEvent.addNeutrino(part);
+        else if (isAPhoton(part->id)) outEvent.addPhoton(part);
         else if (isAGluon(part->id) || isAQuark(part->id)) outEvent.addJet(part);
         else if (part->id==0) outEvent.addJet(part);
         else outEvent.addParticle(part);
@@ -417,6 +422,7 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
         Particle* part = associatedParticles.at(d);
         if (isALepton(part->id)) outEvent.addLepton(part);
         else if (isANeutrino(part->id)) outEvent.addNeutrino(part);
+        else if (isAPhoton(part->id)) outEvent.addPhoton(part);
         else if (isAGluon(part->id) || isAQuark(part->id)) outEvent.addJet(part);
         else if (part->id==0) outEvent.addJet(part);
         else outEvent.addParticle(part);

@@ -1,8 +1,11 @@
 #include "../interface/ZZCandidate.h"
 
 void ZZCandidate::sortDaughters(){
+  if (debugVars::debugFlag) std::cout << "Starting ZZCandidate::sortDaughtersInitial" << std::endl;
   sortDaughtersInitial();
+  if (debugVars::debugFlag) std::cout << "Starting ZZCandidate::sortDaughtersByBestZ1" << std::endl;
   sortDaughtersByBestZ1();
+  if (debugVars::debugFlag) std::cout << "Starting ZZCandidate::createSortedVs" << std::endl;
   createSortedVs();
 }
 
@@ -20,6 +23,10 @@ Particle* ZZCandidate::getAssociatedLepton(int index)const{
 }
 Particle* ZZCandidate::getAssociatedNeutrino(int index)const{
   if ((int)associatedNeutrinos.size()>index) return associatedNeutrinos.at(index);
+  else return 0;
+}
+Particle* ZZCandidate::getAssociatedPhoton(int index)const{
+  if ((int)associatedPhotons.size()>index) return associatedPhotons.at(index);
   else return 0;
 }
 Particle* ZZCandidate::getAssociatedJet(int index)const{
@@ -77,6 +84,13 @@ void ZZCandidate::sortDaughtersInitial(){
     ds[0] = ds[1];
     ds[1] = dtmp;
   }
+  if (df[1]==0 && df[0]!=0 && ds[0]!=0 && ds[1]!=0){
+    for (int ip=0; ip<2; ip++){
+      Particle* dtmp = ds[ip];
+      ds[ip] = df[ip];
+      df[ip] = dtmp;
+    }
+  }
   for (int i=0; i<2; i++){
     if (df[i]!=0) sortedDaughters.push_back(df[i]);
   }
@@ -90,25 +104,32 @@ void ZZCandidate::sortDaughtersByBestZ1(){
   TLorentzVector pZ1(0, 0, 0, 0);
   TLorentzVector pZ2(0, 0, 0, 0);
   if (sortedDaughters.size()>2){ // WW, ZZ, ZG
-    for (int d=0; d<2; d++){
+    if (debugVars::debugFlag) std::cout << "Ndaughters>2" << std::endl;
+
+    for (int d=0; d<std::min(2, (int)sortedDaughters.size()); d++){
       if (sortedDaughters.at(d)!=0) pZ1 = pZ1 + sortedDaughters.at(d)->p4;
     }
-    for (int d=2; d<4; d++){
+    for (int d=std::min(2, (int)sortedDaughters.size()); d<std::min(4, (int)sortedDaughters.size()); d++){
       if (sortedDaughters.at(d)!=0) pZ2 = pZ2 + sortedDaughters.at(d)->p4;
     }
+
+    if (debugVars::debugFlag) std::cout << "Preliminary pZ1 and pZ2 calculated!" << std::endl;
+
     if (
       (std::abs(pZ1.M() - PDGHelpers::HVVmass)<std::abs(pZ2.M() - PDGHelpers::HVVmass) && (PDGHelpers::HVVmass==PDGHelpers::Zmass || PDGHelpers::HVVmass==PDGHelpers::Zeromass)) // Z1 / Z2
       ||
       ((sortedDaughters.at(0)!=0 && sortedDaughters.at(1)!=0 && PDGHelpers::HVVmass==PDGHelpers::Wmass) && sortedDaughters.at(0)->charge()+sortedDaughters.at(1)->charge()>0) // W+ / W-
       ){
+      if (debugVars::debugFlag) std::cout << "pZ1 is closer to HVVmass " << PDGHelpers::HVVmass << std::endl;
       orderedDs[0][0]=sortedDaughters.at(0);
       orderedDs[0][1]=sortedDaughters.at(1);
-      orderedDs[1][0]=sortedDaughters.at(2);
-      orderedDs[1][1]=sortedDaughters.at(3);
+      orderedDs[1][0]=((int)sortedDaughters.size()>2 ? sortedDaughters.at(2) : 0);
+      orderedDs[1][1]=((int)sortedDaughters.size()>3 ? sortedDaughters.at(3) : 0);
     }
     else{
-      orderedDs[0][0]=sortedDaughters.at(2);
-      orderedDs[0][1]=sortedDaughters.at(3);
+      if (debugVars::debugFlag) std::cout << "pZ2 is closer to HVVmass " << PDGHelpers::HVVmass << std::endl;
+      orderedDs[0][0]=((int)sortedDaughters.size()>2 ? sortedDaughters.at(2) : 0);
+      orderedDs[0][1]=((int)sortedDaughters.size()>3 ? sortedDaughters.at(3) : 0);
       orderedDs[1][0]=sortedDaughters.at(0);
       orderedDs[1][1]=sortedDaughters.at(1);
       TLorentzVector ptmp = pZ1;
@@ -117,6 +138,8 @@ void ZZCandidate::sortDaughtersByBestZ1(){
     }
   }
   else if (sortedDaughters.size()==2){ // GG, ffbar
+    if (debugVars::debugFlag) std::cout << "Ndaughters==2" << std::endl;
+
     if (sortedDaughters.at(0)!=0) pZ1 = pZ1 + sortedDaughters.at(0)->p4;
     if (sortedDaughters.at(1)!=0) pZ2 = pZ2 + sortedDaughters.at(1)->p4;
     orderedDs[0][0]=sortedDaughters.at(0);
@@ -137,6 +160,8 @@ void ZZCandidate::sortDaughtersByBestZ1(){
     (orderedDs[1][0]->id == orderedDs[0][0]->id)
     )
     ){
+    if (debugVars::debugFlag) std::cout << "Checking alternative pairings." << std::endl;
+
     Particle* orderedDps[2][2]={ { 0 } };
 
     TLorentzVector pZ1p(0, 0, 0, 0);
@@ -175,6 +200,7 @@ void ZZCandidate::sortDaughtersByBestZ1(){
       if (orderedDs[i][j]!=0) sortedDaughters.push_back(orderedDs[i][j]);
     }
   }
+  if (debugVars::debugFlag) std::cout << "Final number of daughters in sortedDaughters: " << sortedDaughters.size() << std::endl;
 }
 void ZZCandidate::createSortedVs(){
   int VID = 23;
@@ -253,6 +279,9 @@ void ZZCandidate::addAssociatedNeutrinos(Particle* myParticle){
     addByHighestPt(myParticle, associatedLeptons); // Neutrinos are leptons at the ZZ candidate level
     addByHighestPt(myParticle, associatedNeutrinos);
   }
+}
+void ZZCandidate::addAssociatedPhotons(Particle* myParticle){
+  if (!checkDaughtership(myParticle)) addByHighestPt(myParticle, associatedPhotons);
 }
 void ZZCandidate::addAssociatedJets(Particle* myParticle){
   if (!checkDaughtership(myParticle)) addByHighestPt(myParticle, associatedJets);

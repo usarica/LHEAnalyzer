@@ -79,6 +79,7 @@ void convertLHE::run(){
             if (genPart->genStatus==1){
               if (isALepton(genPart->id)) genEvent.addLepton(genPart);
               else if (isANeutrino(genPart->id)) genEvent.addNeutrino(genPart);
+              else if (isAPhoton(genPart->id)) genEvent.addPhoton(genPart);
               else if (isAGluon(genPart->id) || isAQuark(genPart->id)) genEvent.addJet(genPart);
 
               Particle* smearedPart; // Has no mother info
@@ -92,6 +93,7 @@ void convertLHE::run(){
               smearedParticleList.push_back(smearedPart);
               if (isALepton(smearedPart->id)) smearedEvent.addLepton(smearedPart);
               else if (isANeutrino(smearedPart->id)) smearedEvent.addNeutrino(smearedPart);
+              else if (isAPhoton(smearedPart->id)) smearedEvent.addPhoton(smearedPart);
               else if (isAGluon(smearedPart->id) || isAQuark(smearedPart->id)){
                 smearedPart->id=0; // Wipe id from reco. quark/gluon
                 smearedEvent.addJet(smearedPart);
@@ -101,13 +103,17 @@ void convertLHE::run(){
             else if (genPart->genStatus==-1) tree->fillMotherInfo(genPart);
           }
 
+          if (debugVars::debugFlag) cout << "Starting to construct gen. VV candidates." << endl;
           genEvent.constructVVCandidates(options->doGenHZZdecay(), options->genDecayProducts());
+          if (debugVars::debugFlag) cout << "Successfully constructed gen. VV candidates." << endl;
           for (unsigned int p=0; p<particleList.size(); p++){
             Particle* genPart = particleList.at(p);
             if (genPart->genStatus==-1) genEvent.addVVCandidateMother(genPart);
           }
+          if (debugVars::debugFlag) cout << "Starting to add gen. VV candidate appendages." << endl;
           genEvent.addVVCandidateAppendages();
           ZZCandidate* genCand=0;
+          if (debugVars::debugFlag) cout << "Number of gen. Higgs candidates directly from the LHE: " << hasGenHiggs.size() << endl;
           if (hasGenHiggs.size()>0){
             for (unsigned int gk=0; gk<hasGenHiggs.size(); gk++){
               ZZCandidate* tmpCand = HiggsComparators::matchAHiggsToParticle(genEvent, particleList.at(hasGenHiggs.at(gk)));

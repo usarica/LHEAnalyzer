@@ -25,6 +25,7 @@ namespace PDGHelpers{
   bool isALepton(int id);
   bool isANeutrino(int id);
   bool isAGluon(int id);
+  bool isAPhoton(int id);
   bool isAZBoson(int id);
   bool isAWBoson(int id);
   bool isAHiggs(int id);

@@ -28,6 +28,10 @@ bool PDGHelpers::isAGluon(int id){
   if (std::abs(id)==21) return true;
   else return false;
 }
+bool PDGHelpers::isAPhoton(int id){
+  if (std::abs(id)==22) return true;
+  else return false;
+}
 bool PDGHelpers::isAZBoson(int id){
   if (std::abs(id)==23) return true;
   else return false;
