@@ -4,6 +4,10 @@ namespace PDGHelpers{
    double HVVmass = Zmass;
 }
 
+bool PDGHelpers::isAJet(int id){
+  if (id==0 || PDGHelpers::isAQuark(id) || PDGHelpers::isAGluon(id)) return true;
+  else return false;
+}
 bool PDGHelpers::isAQuark(int id){
   if (std::abs(id)<=6 && std::abs(id)>0) return true;
   else return false;

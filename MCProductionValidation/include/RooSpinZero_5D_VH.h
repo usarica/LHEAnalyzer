@@ -16,7 +16,8 @@ public:
   RooSpinZero_5D_VH(
     const char *name, const char *title,
     modelMeasurables _measurables,
-    modelParameters _parameters
+    modelParameters _parameters,
+    int _Vdecay1=1, int _Vdecay2=1
     );
 
   RooSpinZero_5D_VH(const RooSpinZero_5D_VH& other, const char* name=0);
@@ -26,10 +27,11 @@ public:
   Int_t getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* rangeName=0) const;
   Double_t analyticalIntegral(Int_t code, const char* rangeName=0) const;
 
-
 protected:
 
   Double_t evaluate() const;
+
+  void evaluatePolarizationTerms(Double_t& A00term, Double_t& Appterm, Double_t& Ammterm, Double_t& A00ppterm, Double_t& A00mmterm, Double_t& Appmmterm, const Int_t code, bool isGammaV1=false, bool isGammaV2=false) const {}
 
 };
  

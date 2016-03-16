@@ -28,7 +28,7 @@
 using namespace RooFit;
 using namespace std;
 
-void angularDistributions_spin0_VH(string cinput, string coutdir, double sqrts = 13, double g1Re=1, double g2Re=0, double g4Re=0, double g1L1Re=0, double g2Im=0, double g4Im=0, double g1L1Im=0, int isLeptonic=0, int nbins=80){
+void angularDistributions_spin0_VH(string cinput, double sqrts = 13, double g1Re=1, double g2Re=0, double g4Re=0, double g1L1Re=0, double g2Im=0, double g4Im=0, double g1L1Im=0, int isLeptonic=0, int nbins=80){
   sqrts *= 1e3;
 
   int VHmode=-1;
@@ -121,10 +121,11 @@ void angularDistributions_spin0_VH(string cinput, string coutdir, double sqrts =
   m12->setRange(mHPOLE-5.*GaHPOLE, mHPOLE+5.*GaHPOLE);
 
   size_t lastSlash = cinput.find_last_of("/\\");
-  string finName = cinput.substr(lastSlash+1);
-  finName = finName.substr(0,finName.find(".root"));
-  finName = finName + "/";
-  string coutput = coutdir + finName;
+  string finName;
+  finName=cinput;
+  finName.resize(lastSlash+1);
+  string coutput = finName + "Validation/";
+  cout << "Output folder is " << coutput << endl;
   string strCmd = "mkdir -p ";
   strCmd.append(coutput);
   gSystem->Exec(strCmd.c_str());

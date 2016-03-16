@@ -5,6 +5,7 @@
 #include <cmath>
 #include <string>
 #include <algorithm>
+#include <utility>
 #include "RooRealVar.h"
 #include "RooDataSet.h"
 #include "RooGaussModel.h"
@@ -21,12 +22,25 @@
 #include "TGaxis.h"
 #include "TString.h"
 #include "TChain.h"
-#include "include/ScalarPdfFactory_ggH.h"
+#include "include/TensorPdfFactory_HVV.h"
 
 using namespace RooFit;
 using namespace std;
 
-void angularDistributions_spin0_ggH(string cinput, double g1Re=1, double g2Re=0, double g4Re=0, double g1L1Re=0, double g2Im=0, double g4Im=0, double g1L1Im=0, int nbins=80, double mPOLE = 125.){
+const double my_bList[10][2]={ // For production
+  { 1, 0 }, // b1
+  { 0, 0 }, // b2
+  { 0, 0 }, // b3
+  { 0, 0 }, // b4
+  { 1, 0 }, // b5
+  { 0, 0 }, // b6
+  { 0, 0 }, // b7
+  { 0, 0 }, // b8
+  { 0, 0 }, // b9
+  { 0, 0 }  // b10
+};
+
+void angularDistributions_spin2_XVV(string cinput, double fz1, double fz2, int nbins=80, double mPOLE = 125.){
   RooRealVar* mzz = new RooRealVar("GenHMass", "M_{ZZ} (GeV)", mPOLE, mPOLE-0.02, mPOLE+0.02);
   RooRealVar* z1mass = new RooRealVar("GenZ1Mass", "m_{Z1} (GeV)", 0.0, min(120., mPOLE));
   RooRealVar* z2mass = new RooRealVar("GenZ2Mass", "m_{Z2} (GeV)", 0.0, min(120., (mPOLE-90.)*20./35.+55.));
@@ -37,7 +51,7 @@ void angularDistributions_spin0_ggH(string cinput, double g1Re=1, double g2Re=0,
   RooRealVar* Phi1 = new RooRealVar("GenphistarZ1", "#Phi_{Z1}", -TMath::Pi(), TMath::Pi());
   RooRealVar* Y = new RooRealVar("GenY", "Y", 0);
 
-  RooSpinZero::modelMeasurables measurables_;
+  RooSpinTwo::modelMeasurables measurables_;
   measurables_.h1 = h1;
   measurables_.h2 = h2;
   measurables_.Phi = Phi;
@@ -46,7 +60,7 @@ void angularDistributions_spin0_ggH(string cinput, double g1Re=1, double g2Re=0,
   measurables_.m12 = mzz;
   measurables_.hs = hs;
   measurables_.Phi1 = Phi1;
-  measurables_.Y = Y;
+  //measurables_.Y = Y;
 
   const int nVars = 8;
   const int nPlots=nVars-1;
@@ -97,33 +111,13 @@ void angularDistributions_spin0_ggH(string cinput, double g1Re=1, double g2Re=0,
   if (Vdecay2==0){ z2mass->setVal(0); z2mass->setConstant(true); }
 
   cout << "Decay modes found are " << Vdecay1 << '\t' << Vdecay2 << endl;
-  ScalarPdfFactory_ggH* someHiggs = new ScalarPdfFactory_ggH(measurables_, false, Vdecay1, Vdecay2);
+  TensorPdfFactory_HVV* someHiggs = new TensorPdfFactory_HVV(measurables_, Vdecay1, Vdecay2);
   someHiggs->makeParamsConst(false);
-
-  if ((Vdecay1==0 || Vdecay2==0) && !(Vdecay1==0 && Vdecay2==0)){
-    ((RooRealVar*)someHiggs->parameters.gzgs1List[0][0])->setVal(g1L1Re);
-    ((RooRealVar*)someHiggs->parameters.gzgs2List[0][0])->setVal(g2Re);
-    ((RooRealVar*)someHiggs->parameters.gzgs4List[0][0])->setVal(g4Re);
-    ((RooRealVar*)someHiggs->parameters.gzgs1List[0][1])->setVal(g1L1Im);
-    ((RooRealVar*)someHiggs->parameters.gzgs2List[0][1])->setVal(g2Im);
-    ((RooRealVar*)someHiggs->parameters.gzgs4List[0][1])->setVal(g4Im);
+  for (int gg=0; gg<10; gg++){
+    for (int im=0; im<2; im++){ ((RooRealVar*)someHiggs->parameters.bList[gg][im])->setVal(my_bList[gg][im]); }
   }
-  else if (!(Vdecay1==0 && Vdecay2==0)){
-    ((RooRealVar*)someHiggs->parameters.g1List[0][0])->setVal(g1Re);
-    ((RooRealVar*)someHiggs->parameters.g1List[2][0])->setVal(g1L1Re);
-    ((RooRealVar*)someHiggs->parameters.g2List[0][0])->setVal(g2Re);
-    ((RooRealVar*)someHiggs->parameters.g4List[0][0])->setVal(g4Re);
-    ((RooRealVar*)someHiggs->parameters.g1List[0][1])->setVal(0);
-    ((RooRealVar*)someHiggs->parameters.g1List[2][1])->setVal(g1L1Im);
-    ((RooRealVar*)someHiggs->parameters.g2List[0][1])->setVal(g2Im);
-    ((RooRealVar*)someHiggs->parameters.g4List[0][1])->setVal(g4Im);
-  }
-  else{
-    ((RooRealVar*)someHiggs->parameters.ggsgs2List[0][0])->setVal(g2Re);
-    ((RooRealVar*)someHiggs->parameters.ggsgs4List[0][0])->setVal(g4Re);
-    ((RooRealVar*)someHiggs->parameters.ggsgs2List[0][1])->setVal(g2Im);
-    ((RooRealVar*)someHiggs->parameters.ggsgs4List[0][1])->setVal(g4Im);
-  }
+  ((RooRealVar*)someHiggs->parameters.f_spinz1)->setVal(fz1);
+  ((RooRealVar*)someHiggs->parameters.f_spinz2)->setVal(fz2);
   someHiggs->makeParamsConst(true);
 
   size_t lastSlash = cinput.find_last_of("/\\");
@@ -178,14 +172,13 @@ void angularDistributions_spin0_ggH(string cinput, double g1Re=1, double g2Re=0,
         continue; // Don't bother to recalculate angles etc.
       }
       if (GenLepId[0]==GenLepId[2] && GenLepId[1]==GenLepId[3] && Vdecay1!=0 && Vdecay2!=0) continue;
-      //if (!(GenLepId[0]==15 || GenLepId[2]==15)) continue;
       reducedTree->Fill();
       nRecorded++;
     }
   }
   cout << "Number of entries recorded: " << nRecorded << '/' << tree->GetEntries() << endl;
 
-  RooDataSet* dataSM = new RooDataSet("data", "data", reducedTree, treeargs);
+  RooDataSet* data = new RooDataSet("data", "data", reducedTree, treeargs);
   for (int plotIndex=0; plotIndex<(int)treeargs.getSize(); plotIndex++){
     cout << plotIndex << endl;
 
@@ -200,8 +193,8 @@ void angularDistributions_spin0_ggH(string cinput, double g1Re=1, double g2Re=0,
     plot->GetXaxis()->SetNdivisions(-505);
     plot->SetTitle(m_name.c_str());
 
-    dataSM->plotOn(plot, MarkerColor(kRed), MarkerStyle(3), MarkerSize(1.2), LineWidth(0), XErrorSize(0), DataError(RooAbsData::Poisson));
-    RooSpinZero_7DComplex_withAccep_ggH* pdf = (RooSpinZero_7DComplex_withAccep_ggH*)someHiggs->getPDF();
+    data->plotOn(plot, MarkerColor(kRed), MarkerStyle(3), MarkerSize(1.2), LineWidth(0), XErrorSize(0), DataError(RooAbsData::Poisson));
+    RooSpinTwo_7DComplex_HVV* pdf = (RooSpinTwo_7DComplex_HVV*)someHiggs->getPDF();
     pdf->plotOn(plot, LineColor(kRed), LineWidth(2));
 
     TGaxis::SetMaxDigits(3);
@@ -225,7 +218,7 @@ void angularDistributions_spin0_ggH(string cinput, double g1Re=1, double g2Re=0,
     can->Close();
   }
 
-  delete dataSM;
+  delete data;
   delete reducedTree;
   delete tree;
   delete someHiggs;
@@ -239,12 +232,3 @@ void angularDistributions_spin0_ggH(string cinput, double g1Re=1, double g2Re=0,
   delete Phi1;
   delete Y;
 }
-
-/*
-// Example commands
-angularDistributions_spin0_ggH("/scratch0/hep/usarical/ggH-JHUGEN125/LHC_13TeV_HZZ4l/0+m/GGtoH125toZZ4l_13TeV.root");
-angularDistributions_spin0_ggH("/scratch0/hep/usarical/ggH-JHUGEN125/LHC_13TeV_HZZ4l/0+h/GGtoH125toZZ4l_13TeV.root",0,1);
-angularDistributions_spin0_ggH("/scratch0/hep/usarical/ggH-JHUGEN125/LHC_13TeV_HZZ4l/0+L1/GGtoH125toZZ4l_13TeV.root",0,0,0,10000);
-angularDistributions_spin0_ggH("/scratch0/hep/usarical/ggH-JHUGEN125/LHC_13TeV_HZZ4l/0-/GGtoH125toZZ4l_13TeV.root"0,0,1,0);
-*/
-

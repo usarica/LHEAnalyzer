@@ -21,7 +21,8 @@ public:
     const char *name, const char *title,
     modelMeasurables _measurables,
     modelParameters _parameters,
-    Double_t _sqrts
+    Double_t _sqrts,
+    int _Vdecay1=1, int _Vdecay2=1
     );
 
   RooSpinZero_3D_pp_VH(const RooSpinZero_3D_pp_VH& other, const char* name=0);
@@ -34,6 +35,8 @@ public:
 protected:
 
   Double_t evaluate() const;
+
+  void evaluatePolarizationTerms(Double_t& A00term, Double_t& Appterm, Double_t& Ammterm, Double_t& A00ppterm, Double_t& A00mmterm, Double_t& Appmmterm, const Int_t code, bool isGammaV1=false, bool isGammaV2=false) const {}
 
   double partonicLuminosity(double mVal, double YVal, double sqrts) const;
 

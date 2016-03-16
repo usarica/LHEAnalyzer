@@ -21,8 +21,12 @@ public:
   virtual RooSpinTwo* getPDF()=0;
 
 protected:
+  RooSpinTwo* PDF_base;
+
   int V1decay;
   int V2decay;
+
+  virtual double getRValue(int Vdecay);
 
   virtual void initMeasurables(RooSpinTwo::modelMeasurables measurables_);
   virtual void initMassPole();

@@ -12,7 +12,8 @@ public:
   RooSpinTwo_7DComplex_HVV(
     const char *name, const char *title,
     modelMeasurables _measurables,
-    modelParameters _parameters
+    modelParameters _parameters,
+    int _Vdecay1=1, int _Vdecay2=1
     );
   RooSpinTwo_7DComplex_HVV(const RooSpinTwo_7DComplex_HVV& other, const char* name=0);
   virtual TObject* clone(const char* newname) const { return new RooSpinTwo_7DComplex_HVV(*this, newname); }
@@ -24,6 +25,11 @@ public:
 protected:
 
   Double_t evaluate() const;
+
+  Double_t evaluateH1Factor(Int_t i1, Int_t j1, Int_t helicity, Int_t code) const;
+  Double_t evaluateH2Factor(Int_t i2, Int_t j2, Int_t helicity, Int_t code) const;
+  Double_t evaluatePhi1PhiFactor(Int_t i1, Int_t i2, Int_t j1, Int_t j2, Int_t code, Double_t extraPhase1, Double_t extraPhase2) const;
+  void evaluatePolarizationTerms(std::vector<Double_t>& Axxyyterm, const Int_t code, bool isGammaV1=false, bool isGammaV2=false) const;
 
 };
 

@@ -8,8 +8,8 @@ ScalarPdfFactory(measurables_, acceptance_, V1decay_, V2decay_)
   makeParamsConst(true);
   initPDF();
 }
-ScalarPdfFactory_ggH::ScalarPdfFactory_ggH(RooSpinZero::modelMeasurables measurables_, double gRatio_[4][8], bool pmf_applied_, bool acceptance_, int V1decay_, int V2decay_) :
-ScalarPdfFactory(measurables_, gRatio_, pmf_applied_, acceptance_, V1decay_, V2decay_)
+ScalarPdfFactory_ggH::ScalarPdfFactory_ggH(RooSpinZero::modelMeasurables measurables_, double gRatio_[4][8], double gZGsRatio_[4][1], double gGsGsRatio_[3][1], bool pmf_applied_, bool acceptance_, int V1decay_, int V2decay_) :
+ScalarPdfFactory(measurables_, gRatio_, gZGsRatio_, gGsGsRatio_, pmf_applied_, acceptance_, V1decay_, V2decay_)
 {
   measurables.Y=0;
   initAcceptanceParams();
@@ -144,6 +144,7 @@ void ScalarPdfFactory_ggH::destroyAcceptanceParams(){
 
 void ScalarPdfFactory_ggH::makeParamsConst(bool yesNo){
   parameters.Lambda->setConstant(true);
+  parameters.Lambda_zgs1->setConstant(true);
   parameters.Lambda_z1->setConstant(true);
   parameters.Lambda_z2->setConstant(true);
   parameters.Lambda_z3->setConstant(true);
@@ -246,8 +247,10 @@ void ScalarPdfFactory_ggH::initPDF(){
     "PDF", "PDF",
     measurables,
     parameters,
-    accepParams
+    accepParams,
+    V1decay,V2decay
     );
+  PDF_base = (RooSpinZero*)PDF;
 }
 
 

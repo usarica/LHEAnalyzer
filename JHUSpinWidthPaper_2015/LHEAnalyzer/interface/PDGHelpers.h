@@ -19,11 +19,12 @@ namespace PDGHelpers{
 
   extern double HVVmass;
 
+  bool isALepton(int id);
+  bool isANeutrino(int id);
+  bool isAJet(int id);
   bool isAQuark(int id);
   bool isUpTypeQuark(int id);
   bool isDownTypeQuark(int id);
-  bool isALepton(int id);
-  bool isANeutrino(int id);
   bool isAGluon(int id);
   bool isAPhoton(int id);
   bool isAZBoson(int id);

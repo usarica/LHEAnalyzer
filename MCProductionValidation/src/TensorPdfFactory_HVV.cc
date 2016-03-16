@@ -27,8 +27,10 @@ void TensorPdfFactory_HVV::initPDF(){
   PDF = new RooSpinTwo_7DComplex_HVV(
     "PDF", "PDF",
     measurables,
-    parameters
+    parameters,
+    V1decay, V2decay
     );
+  PDF_base = (RooSpinTwo*)PDF;
 }
 
 

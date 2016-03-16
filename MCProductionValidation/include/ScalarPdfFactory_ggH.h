@@ -9,7 +9,7 @@ public:
   RooSpinZero_7DComplex_withAccep_ggH::accepParameters accepParams;
 
   ScalarPdfFactory_ggH(RooSpinZero::modelMeasurables measurables_, bool acceptance_=false, int V1decay_=1, int V2decay_=1);
-  ScalarPdfFactory_ggH(RooSpinZero::modelMeasurables measurables_, double gRatio_[4][8], bool pmf_applied_=false, bool acceptance_=false, int V1decay_=1, int V2decay_=1);
+  ScalarPdfFactory_ggH(RooSpinZero::modelMeasurables measurables_, double gRatio_[4][8], double gZGsRatio_[4][1], double gGsGsRatio_[3][1], bool pmf_applied_=false, bool acceptance_=false, int V1decay_=1, int V2decay_=1);
   ~ScalarPdfFactory_ggH();
 
   void makeParamsConst(bool yesNo=true);

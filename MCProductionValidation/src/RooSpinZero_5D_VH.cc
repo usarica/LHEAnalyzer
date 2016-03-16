@@ -3,11 +3,13 @@
 RooSpinZero_5D_VH::RooSpinZero_5D_VH(
   const char *name, const char *title,
   modelMeasurables _measurables,
-  modelParameters _parameters
+  modelParameters _parameters,
+  int _Vdecay1, int _Vdecay2
   ) : RooSpinZero(
   name, title,
   _measurables,
-  _parameters
+  _parameters,
+  _Vdecay1, _Vdecay2
   )
 {}
 
@@ -19,6 +21,9 @@ RooSpinZero_5D_VH::RooSpinZero_5D_VH(
 
 
 Double_t RooSpinZero_5D_VH::evaluate() const{
+  if (m1 <= 0.0 || (m2 <= 0.0 && Vdecay2!=0) || Vdecay1==0) return 1e-15;
+  // No need to set m1_ or m2_
+
   Double_t A00Re, A00Im, AppRe, AppIm, AmmRe, AmmIm;
   calculateAmplitudes(A00Re, A00Im, AppRe, AppIm, AmmRe, AmmIm);
 
@@ -51,6 +56,9 @@ Int_t RooSpinZero_5D_VH::getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& an
 }
 
 Double_t RooSpinZero_5D_VH::analyticalIntegral(Int_t code, const char* /*rangeName*/) const{
+  if (m1 <= 0.0 || (m2 <= 0.0 && Vdecay2!=0) || Vdecay1==0) return 1e-10;
+  // No need to set m1_ or m2_
+
   Double_t A00Re, A00Im, AppRe, AppIm, AmmRe, AmmIm;
   calculateAmplitudes(A00Re, A00Im, AppRe, AppIm, AmmRe, AmmIm);
 

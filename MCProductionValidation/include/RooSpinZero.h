@@ -26,12 +26,12 @@ public:
   struct modelMeasurables{
     RooRealVar* h1;
     RooRealVar* h2;
+    RooRealVar* hs;
     RooRealVar* Phi;
+    RooRealVar* Phi1;
     RooRealVar* m1;
     RooRealVar* m2;
     RooRealVar* m12;
-    RooRealVar* hs;
-    RooRealVar* Phi1;
     RooRealVar* Y;
   };
   struct modelParameters{
@@ -47,7 +47,16 @@ public:
     RooAbsReal* g3List[8][2];
     RooAbsReal* g4List[8][2];
 
+    RooAbsReal* gzgs1List[1][2]; // ghzgs_prime2
+    RooAbsReal* gzgs2List[1][2];
+    RooAbsReal* gzgs3List[1][2];
+    RooAbsReal* gzgs4List[1][2];
+    RooAbsReal* ggsgs2List[1][2];
+    RooAbsReal* ggsgs3List[1][2];
+    RooAbsReal* ggsgs4List[1][2];
+
     RooRealVar* Lambda;
+    RooRealVar* Lambda_zgs1;
     RooRealVar* Lambda_z1;
     RooRealVar* Lambda_z2;
     RooRealVar* Lambda_z3;
@@ -65,7 +74,8 @@ public:
   RooSpinZero(
     const char* name, const char* title,
     modelMeasurables _measurables,
-    modelParameters _parameters
+    modelParameters _parameters,
+    int _Vdecay1=1, int _Vdecay2=1
     );
 
   RooSpinZero(const RooSpinZero& other, const char* name=0);
@@ -77,7 +87,24 @@ public:
 
   virtual void setProxy(RooRealProxy& proxy, RooAbsReal* objectPtr);
 
+  virtual void setDecayModes(int Vdecay1_, int Vdecay2_){ Vdecay1=Vdecay1_; Vdecay2=Vdecay2_; }
+
 protected:
+
+  enum{
+    prime_h1=2,
+    prime_h2=3,
+    prime_hs=5,
+    prime_Phi=7,
+    prime_Phi1=11,
+    prime_m1=13,
+    prime_m2=17,
+    prime_m12=19,
+    prime_Y=23
+  };
+
+  Int_t Vdecay1;
+  Int_t Vdecay2;
 
   RooRealProxy h1;
   RooRealProxy h2;
@@ -129,6 +156,15 @@ protected:
   RooRealProxy g3_prime7Val;
   RooRealProxy g4_prime7Val;
 
+  RooRealProxy gzgs1_prime2Val;
+  RooRealProxy gzgs2Val;
+  RooRealProxy gzgs3Val;
+  RooRealProxy gzgs4Val;
+  RooRealProxy ggsgs2Val;
+  RooRealProxy ggsgs3Val;
+  RooRealProxy ggsgs4Val;
+
+
   RooRealProxy g1ValIm;
   RooRealProxy g2ValIm;
   RooRealProxy g3ValIm;
@@ -162,7 +198,17 @@ protected:
   RooRealProxy g3_prime7ValIm;
   RooRealProxy g4_prime7ValIm;
 
+  RooRealProxy gzgs1_prime2ValIm;
+  RooRealProxy gzgs2ValIm;
+  RooRealProxy gzgs3ValIm;
+  RooRealProxy gzgs4ValIm;
+  RooRealProxy ggsgs2ValIm;
+  RooRealProxy ggsgs3ValIm;
+  RooRealProxy ggsgs4ValIm;
+
+
   RooRealProxy Lambda;
+  RooRealProxy Lambda_zgs1;
   RooRealProxy Lambda_z1;
   RooRealProxy Lambda_z2;
   RooRealProxy Lambda_z3;
@@ -187,8 +233,12 @@ protected:
 
   virtual Double_t evaluate() const = 0;
 
-  virtual void calculateAiPhiAi(Double_t& a1Re, Double_t& a1Im, Double_t& a2Re, Double_t& a2Im, Double_t& a3Re, Double_t& a3Im) const;
-  virtual void calculateAmplitudes(Double_t& A00Re, Double_t& A00Im, Double_t& AppRe, Double_t& AppIm, Double_t& AmmRe, Double_t& AmmIm) const;
+  virtual void evaluatePolarizationTerms(Double_t& A00term, Double_t& Appterm, Double_t& Ammterm, Double_t& A00ppterm, Double_t& A00mmterm, Double_t& Appmmterm, const Int_t code, bool isGammaV1=false, bool isGammaV2=false) const = 0;
+
+  virtual void calculateAi(Double_t& a1Re, Double_t& a1Im, Double_t& a2Re, Double_t& a2Im, Double_t& a3Re, Double_t& a3Im, bool isGammaV1=false, bool isGammaV2=false) const;
+  virtual void calculatePropagator(Double_t& propRe, Double_t& propIm, Double_t mass, bool useGamma=false) const;
+  virtual void calculateAmplitudeScale(bool isGammaV1=false, bool isGammaV2=false) const;
+  virtual void calculateAmplitudes(Double_t& A00Re, Double_t& A00Im, Double_t& AppRe, Double_t& AppIm, Double_t& AmmRe, Double_t& AmmIm, bool isGammaV1=false, bool isGammaV2=false) const;
 
   virtual void setProxies(modelMeasurables _measurables);
 };

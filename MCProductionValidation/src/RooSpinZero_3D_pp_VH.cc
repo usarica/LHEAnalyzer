@@ -5,11 +5,13 @@ RooSpinZero_3D_pp_VH::RooSpinZero_3D_pp_VH(
   const char *name, const char *title,
   modelMeasurables _measurables,
   modelParameters _parameters,
-  Double_t _sqrts
+  Double_t _sqrts,
+  int _Vdecay1, int _Vdecay2
   ) : RooSpinZero(
   name, title,
   _measurables,
-  _parameters
+  _parameters,
+  _Vdecay1, _Vdecay2
   ),
   sqrts(_sqrts)
 {}
@@ -24,17 +26,21 @@ RooSpinZero_3D_pp_VH::RooSpinZero_3D_pp_VH(
 
 
 Double_t RooSpinZero_3D_pp_VH::evaluate() const{
-  if (m1 <= 0.0 || m2 <= 0.0) return 1e-15;
+  Double_t epsilon=1e-15;
+  if (m1 <= 0.0 || (m2 <= 0.0 && Vdecay2!=0) || Vdecay1==0) return epsilon;
+  Double_t m2_=m2; if (Vdecay2==0) m2_=0;
+
   // Get phasespace factor (arxiv 9306270 Eq. 2)
-  double phaseSpaceBetaSq = (1.-pow((m2+m12)/m1, 2))*(1.-pow((m2-m12)/m1, 2));
+  double phaseSpaceBetaSq = (1.-pow((m2_+m12)/m1, 2))*(1.-pow((m2_-m12)/m1, 2));
   if (phaseSpaceBetaSq < 0.) return 1e-15;
   double phaseSpaceBeta = sqrt(phaseSpaceBetaSq);
-  double sigma_psf = phaseSpaceBeta*(phaseSpaceBetaSq + 12.*pow(m2/m1, 2))/pow((1.-pow(m2/m1, 2))*m1, 2);
+  double sigma_psf = phaseSpaceBeta*(phaseSpaceBetaSq + 12.*pow(m2_/m1, 2))/pow((1.-pow(m2_/m1, 2))*m1, 2);
   Double_t plumi = partonicLuminosity(m1, Y, sqrts);
 
   Double_t eta1 = m1 / m12;
-  Double_t eta2 = m2 / m12;
-  Double_t eta1p2 = eta1*eta2;
+  Double_t eta2 = m2_ / m12;
+  Double_t eta1p2 = eta1;
+  if (Vdecay2!=0) eta1p2 *= eta2;
   Double_t etas = (1. - pow(eta1, 2) - pow(eta2, 2))/2.;
   //if (pow(eta1+eta2, 2)>1.) etas = -etas;
   double SMfactor = (pow(etas/eta1p2, 2) + 2.)*pow(mV/m12,4);
@@ -65,7 +71,7 @@ Double_t RooSpinZero_3D_pp_VH::evaluate() const{
   value *= plumi;
   value *= sigma_psf;
   value /= SMfactor;
-  if (value<=0) value = 1e-15;
+  if (value<=0) value = epsilon;
   return value;
 }
 
@@ -78,18 +84,22 @@ Int_t RooSpinZero_3D_pp_VH::getAnalyticalIntegral(RooArgSet& allVars, RooArgSet&
 }
 
 Double_t RooSpinZero_3D_pp_VH::analyticalIntegral(Int_t code, const char* /*rangeName*/) const{
-  if (m1 <= 0.0 || m2 <= 0.0) return 1e-10;
+  Double_t epsilon=1e-10;
+  if (m1 <= 0.0 || (m2 <= 0.0 && Vdecay2!=0) || Vdecay1==0) return epsilon;
+  Double_t m2_=m2; if (Vdecay2==0) m2_=0;
+
   // Get phasespace factor (arxiv 9306270 Eq. 2)
-  double phaseSpaceBetaSq = (1.-pow((m2+m12)/m1, 2))*(1.-pow((m2-m12)/m1, 2));
+  double phaseSpaceBetaSq = (1.-pow((m2_+m12)/m1, 2))*(1.-pow((m2_-m12)/m1, 2));
   if (phaseSpaceBetaSq < 0.) return 1e-15;
   double phaseSpaceBeta = sqrt(phaseSpaceBetaSq);
-  double sigma_psf = phaseSpaceBeta*(phaseSpaceBetaSq + 12.*pow(m2/m1, 2))/pow((1.-pow(m2/m1, 2))*m1, 2);
+  double sigma_psf = phaseSpaceBeta*(phaseSpaceBetaSq + 12.*pow(m2_/m1, 2))/pow((1.-pow(m2_/m1, 2))*m1, 2);
   Double_t plumi = partonicLuminosity(m1, Y, sqrts);
   Double_t Pi = TMath::Pi();
 
   Double_t eta1 = m1 / m12;
-  Double_t eta2 = m2 / m12;
-  Double_t eta1p2 = eta1*eta2;
+  Double_t eta2 = m2_ / m12;
+  Double_t eta1p2 = eta1;
+  if (Vdecay2!=0) eta1p2 *= eta2;
   Double_t etas = (1. - pow(eta1, 2) - pow(eta2, 2))/2.;
   //if (pow(eta1+eta2, 2)>1.) etas = -etas;
   double SMfactor = (pow(etas/eta1p2, 2) + 2.)*pow(mV/m12, 4);
@@ -134,7 +144,7 @@ Double_t RooSpinZero_3D_pp_VH::analyticalIntegral(Int_t code, const char* /*rang
   value *= plumi;
   value *= sigma_psf;
   value /= SMfactor;
-  if (value<=0) value = 1e-10;
+  if (value<=0) value = epsilon;
   return value;
 }
 
