@@ -145,14 +145,14 @@ Double_t RooSpinTwo_7DComplex_HVV::evaluatePhi1PhiFactor(Int_t i1, Int_t i2, Int
   }
   else if ((code % prime_Phi)==0){
     if (i1==j1 && i2==j2) result = 2.*Pi;
-    else{
+    else if (phasePhi==0.){
       phase = Phi1*phasePhi1+extraPhase1-extraPhase2;
       result = cos(phase)*2.*Pi;
     }
   }
   else if ((code % prime_Phi1)==0){
     if (i1==j1 && i2==j2) result = 2.*Pi;
-    else{
+    else if (phasePhi1==0.){
       phase = Phi*phasePhi+extraPhase1-extraPhase2;
       result = cos(phase)*2.*Pi;
     }

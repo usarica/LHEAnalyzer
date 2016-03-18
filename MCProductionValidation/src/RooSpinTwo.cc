@@ -349,7 +349,7 @@ void RooSpinTwo::calculateAmplitudes(
   Double_t A0m_0p_m0_p0_c7factor = 4.*pow(xxp, 1.5); // x+-i
 
   A0mRe_tmp =
-    pow(m12, 4)*eta2*
+    pow(m12, 4)*
     (
     c1Re*A0m_0p_c1factor
     + c42Re*A0m_0p_m0_p0_c4factor
@@ -358,7 +358,7 @@ void RooSpinTwo::calculateAmplitudes(
     );
 
   A0mIm_tmp =
-    pow(m12, 4)*eta2*
+    pow(m12, 4)*
     (
     c1Im*A0m_0p_c1factor
     + c42Im*A0m_0p_m0_p0_c4factor
@@ -366,10 +366,12 @@ void RooSpinTwo::calculateAmplitudes(
     + c7Re*A0m_0p_m0_p0_c7factor
     );
 
+  if (m2_!=0) { A0mIm_tmp *= eta2; A0mRe_tmp *= eta2; }
+
   //-----------------------------------------------------------------------
 
   Am0Re_tmp =
-    pow(m12, 4)*eta1*
+    pow(m12, 4)*
     (
     c1Re*Am0_p0_c1factor
     + c41Re*A0m_0p_m0_p0_c4factor
@@ -378,7 +380,7 @@ void RooSpinTwo::calculateAmplitudes(
     );
 
   Am0Im_tmp =
-    pow(m12, 4)*eta1*
+    pow(m12, 4)*
     (
     c1Im*Am0_p0_c1factor
     + c41Im*A0m_0p_m0_p0_c4factor
@@ -386,10 +388,12 @@ void RooSpinTwo::calculateAmplitudes(
     + c7Re*A0m_0p_m0_p0_c7factor
     );
 
+  if (m1_!=0) { Am0Im_tmp *= eta1; Am0Re_tmp *= eta1; }
+
   //-----------------------------------------------------------------------
 
   A0pRe_tmp =
-    pow(m12, 4)*eta2*
+    pow(m12, 4)*
     (
     c1Re*A0m_0p_c1factor
     + c42Re*A0m_0p_m0_p0_c4factor
@@ -398,7 +402,7 @@ void RooSpinTwo::calculateAmplitudes(
     );
 
   A0pIm_tmp =
-    pow(m12, 4)*eta2*
+    pow(m12, 4)*
     (
     c1Im*A0m_0p_c1factor
     + c42Im*A0m_0p_m0_p0_c4factor
@@ -406,10 +410,12 @@ void RooSpinTwo::calculateAmplitudes(
     - c7Re*A0m_0p_m0_p0_c7factor
     );
 
+  if (m2_!=0) { A0pIm_tmp *= eta2; A0pRe_tmp *= eta2; }
+
   //-----------------------------------------------------------------------
 
   Ap0Re_tmp =
-    pow(m12, 4)*eta1*
+    pow(m12, 4)*
     (
     c1Re*Am0_p0_c1factor
     + c41Re*A0m_0p_m0_p0_c4factor
@@ -418,13 +424,15 @@ void RooSpinTwo::calculateAmplitudes(
     );
 
   Ap0Im_tmp =
-    pow(m12, 4)*eta1*
+    pow(m12, 4)*
     (
     c1Im*Am0_p0_c1factor
     + c41Im*A0m_0p_m0_p0_c4factor
     - c6Re*Am0_p0_c6factor
     - c7Re*A0m_0p_m0_p0_c7factor
     );
+
+  if (m1_!=0) { Ap0Im_tmp *= eta1; Ap0Re_tmp *= eta1; }
 
   //-----------------------------------------------------------------------
   // No m1_/m2_ singularities in A+- or A-+
