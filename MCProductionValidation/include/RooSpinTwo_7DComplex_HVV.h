@@ -26,6 +26,7 @@ protected:
 
   Double_t evaluate() const;
 
+  Double_t evaluateHSFactor(Int_t di, Int_t dj, Int_t code) const;
   Double_t evaluateH1Factor(Int_t i1, Int_t j1, Int_t helicity, Int_t code) const;
   Double_t evaluateH2Factor(Int_t i2, Int_t j2, Int_t helicity, Int_t code) const;
   Double_t evaluatePhi1PhiFactor(Int_t i1, Int_t i2, Int_t j1, Int_t j2, Int_t code, Double_t extraPhase1, Double_t extraPhase2) const;

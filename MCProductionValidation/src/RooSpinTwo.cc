@@ -123,7 +123,7 @@ void RooSpinTwo::calculateCi(std::vector<Double_t>& ciRe, std::vector<Double_t>&
     Double_t c42Re = -b1Val - b2Val*kappa - (b2Val*m2sq+b3Val*m1sq+2.*b6Val*mVsq)*kappa/s; ciRe.push_back(c42Re);
     Double_t c5Re = 2.*b8Val*kappa*(m12sq)/s; ciRe.push_back(c5Re);
     Double_t c6Re = b9Val*kappa*mVsq/s; ciRe.push_back(c6Re);
-    Double_t c7Re = b10Val*kappa*kappa*(m12sq*mVsq)/(s*s); ciRe.push_back(c7Re);
+    Double_t c7Re = b10Val*m12sq*mVsq*pow(kappa/s, 2); ciRe.push_back(c7Re);
 
     Double_t c1Im = 2.*(b1ValIm + b2ValIm*kappa*(1.+m1sq/s)*(1.+m2sq/s) + b5ValIm*mVsq/s); ciIm.push_back(c1Im);
     Double_t c2Im = -0.5*b1ValIm + b3ValIm*kappa*(1.-(m1sq+m2sq)/(2*s)) + 2.*b4ValIm*kappa + b7ValIm*kappa*mVsq/s; ciIm.push_back(c2Im);
@@ -132,7 +132,7 @@ void RooSpinTwo::calculateCi(std::vector<Double_t>& ciRe, std::vector<Double_t>&
     Double_t c42Im = -b1ValIm - b2ValIm*kappa - (b2ValIm*m2sq+b3ValIm*m1sq+2.*b6ValIm*mVsq)*kappa/s; ciIm.push_back(c42Im);
     Double_t c5Im = 2.*b8ValIm*kappa*(m12sq)/s; ciIm.push_back(c5Im);
     Double_t c6Im = b9ValIm*kappa*mVsq/s; ciIm.push_back(c6Im);
-    Double_t c7Im = b10ValIm*kappa*kappa*(m12sq*mVsq)/(s*s); ciIm.push_back(c7Im);
+    Double_t c7Im = b10ValIm*m12sq*mVsq*pow(kappa/s, 2); ciIm.push_back(c7Im);
   }
   //else if ((!isGammaV1 || !isGammaV2) && !(Vdecay1==0 && Vdecay2==0)){ // ZGs/ZG
   //???
@@ -215,11 +215,13 @@ void RooSpinTwo::calculateAmplitudes(
 
   Double_t eta1sq = eta1*eta1;
   Double_t eta2sq = eta2*eta2;
+  Double_t eta1p2sq = pow(eta1p2, 2);
 
-  Double_t etas = (1. - pow(eta1, 2) - pow(eta2, 2))/2.;
+  Double_t etas = (1. - eta1sq - eta2sq)/2.;
   if (pow(eta1+eta2, 2)>1.) etas = -etas;
   Double_t x = etas;
-  Double_t xxp = (pow(etas, 2)-pow(eta1p2, 2));
+  Double_t xsq = x*x;
+  Double_t xxp = (pow(etas, 2)-eta1p2sq);
   if (xxp<0) xxp=0;
 
   Double_t A00Re_tmp=0, A00Im_tmp=0,
@@ -230,8 +232,19 @@ void RooSpinTwo::calculateAmplitudes(
   A00Re_tmp =
     pow(m12, 4)*sqrt(2./3.)*
     (
-    c1Re/4.*(1.-pow(eta1sq-eta2sq, 2))*(1.-pow(eta1sq+eta2sq, 2))
-    -c2Re*4.*(1.-pow(eta1sq+eta2sq, 2))
+    c1Re*(
+    eta1p2sq * (xsq - eta1p2sq/4.)
+    - (pow(eta1, 4)+pow(eta2, 4)) * xsq/2.
+    + (pow(eta1, 8)+pow(eta2, 8))/8.
+    + xsq/2.
+    - (pow(eta1, 4)+pow(eta2, 4))/4.
+    + 1.0/8.
+    )
+    + c2Re*2.*xxp*(
+    (pow(eta1, 4) + pow(eta2, 4))
+    - 2.*(eta1p2sq + 2.*xxp)
+    - 1.
+    )
     -c3Re*8.*pow(xxp, 2)
     + c41Re*2.*xxp*(1.+eta1sq-eta2sq)
     + c42Re*2.*xxp*(1.-eta1sq+eta2sq)
@@ -240,8 +253,19 @@ void RooSpinTwo::calculateAmplitudes(
   A00Im_tmp =
     pow(m12, 4)*sqrt(2./3.)*
     (
-    c1Im/4.*(1.-pow(eta1sq-eta2sq, 2))*(1.-pow(eta1sq+eta2sq, 2))
-    -c2Im*4.*(1.-pow(eta1sq+eta2sq, 2))
+    c1Im*(
+    eta1p2sq * (xsq - eta1p2sq/4.)
+    - (pow(eta1, 4)+pow(eta2, 4)) * xsq/2.
+    + (pow(eta1, 8)+pow(eta2, 8))/8.
+    + xsq/2.
+    - (pow(eta1, 4)+pow(eta2, 4))/4.
+    + 1.0/8.
+    )
+    + c2Im*2.*xxp*(
+    (pow(eta1, 4) + pow(eta2, 4))
+    - 2.*(eta1p2sq + 2.*xxp)
+    - 1.
+    )
     -c3Im*8.*pow(xxp, 2)
     + c41Im*2.*xxp*(1.+eta1sq-eta2sq)
     + c42Im*2.*xxp*(1.-eta1sq+eta2sq)
@@ -253,7 +277,9 @@ void RooSpinTwo::calculateAmplitudes(
   AmmRe_tmp =
     pow(m12, 4)/sqrt(6.)*
     (
-    c1Re/2.*(1.-pow(eta1sq+eta2sq, 2))
+    c1Re/4.*(
+    1. + 4.*xxp - pow(eta1sq-eta2sq, 2)
+    )
     + c2Re*8.*xxp
     + c5Im*8.*pow(xxp, 1.5)
     - c6Im*4.*sqrt(xxp)
@@ -262,7 +288,9 @@ void RooSpinTwo::calculateAmplitudes(
   AmmIm_tmp =
     pow(m12, 4)/sqrt(6.)*
     (
-    c1Im/2.*(1.-pow(eta1sq+eta2sq, 2))
+    c1Im/4.*(
+    1. + 4.*xxp - pow(eta1sq-eta2sq, 2)
+    )
     + c2Im*8.*xxp
     - c5Re*8.*pow(xxp, 1.5)
     + c6Re*4.*sqrt(xxp)
@@ -277,7 +305,9 @@ void RooSpinTwo::calculateAmplitudes(
   AppRe_tmp =
     pow(m12, 4)/sqrt(6.)*
     (
-    c1Re/2.*(1.-pow(eta1sq+eta2sq, 2))
+    c1Re/4.*(
+    1. + 4.*xxp - pow(eta1sq-eta2sq, 2)
+    )
     + c2Re*8.*xxp
     - c5Im*8.*pow(xxp, 1.5)
     + c6Im*4.*sqrt(xxp)
@@ -286,7 +316,9 @@ void RooSpinTwo::calculateAmplitudes(
   AppIm_tmp =
     pow(m12, 4)/sqrt(6.)*
     (
-    c1Im/2.*(1.-pow(eta1sq+eta2sq, 2))
+    c1Im/4.*(
+    1. + 4.*xxp - pow(eta1sq-eta2sq, 2)
+    )
     + c2Im*8.*xxp
     + c5Re*8.*pow(xxp, 1.5)
     - c6Re*4.*sqrt(xxp)
@@ -297,8 +329,20 @@ void RooSpinTwo::calculateAmplitudes(
 
   //-----------------------------------------------------------------------
 
-  Double_t A0m_0p_c1factor = (1.-pow(eta1sq+eta2sq, 2))*(1.+eta1sq-eta2sq)/4.;
-  Double_t Am0_p0_c1factor = (1.-pow(eta1sq+eta2sq, 2))*(1.-eta1sq+eta2sq)/4.;
+  Double_t A0m_0p_c1factor = (
+    -(pow(eta1, 6)-pow(eta2, 6))/8.
+    + (eta1sq-eta2sq)*(3.*eta1p2sq + 4.*xxp)/8.
+    - pow(eta1sq-eta2sq, 2)/8.
+    + xxp/2.
+    + (1. + (eta1sq-eta2sq))/8.
+    );
+  Double_t Am0_p0_c1factor = (
+    (pow(eta1, 6)-pow(eta2, 6))/8.
+    - (eta1sq-eta2sq)*(3.*eta1p2sq + 4.*xxp)/8.
+    - pow(eta1sq-eta2sq, 2)/8.
+    + xxp/2.
+    + (1. - (eta1sq-eta2sq))/8.
+    );
   Double_t A0m_0p_m0_p0_c4factor = 2.*xxp;
   Double_t A0m_0p_c6factor = sqrt(xxp)*(1.+eta1sq-eta2sq); // x+-i
   Double_t Am0_p0_c6factor = sqrt(xxp)*(1.-eta1sq+eta2sq); // x+-i
@@ -333,7 +377,7 @@ void RooSpinTwo::calculateAmplitudes(
     - c7Im*A0m_0p_m0_p0_c7factor
     );
 
-  Am0Re_tmp =
+  Am0Im_tmp =
     pow(m12, 4)*eta1*
     (
     c1Im*Am0_p0_c1factor
@@ -353,7 +397,7 @@ void RooSpinTwo::calculateAmplitudes(
     + c7Im*A0m_0p_m0_p0_c7factor
     );
 
-  A0pRe_tmp =
+  A0pIm_tmp =
     pow(m12, 4)*eta2*
     (
     c1Im*A0m_0p_c1factor
@@ -385,8 +429,8 @@ void RooSpinTwo::calculateAmplitudes(
   //-----------------------------------------------------------------------
   // No m1_/m2_ singularities in A+- or A-+
 
-  AmpRe_tmp = -pow(m12, 4)*c1Re/2.*(1.-pow(eta1sq+eta2sq, 2));
-  AmpIm_tmp = -pow(m12, 4)*c1Im/2.*(1.-pow(eta1sq+eta2sq, 2));
+  AmpRe_tmp = pow(m12, 4)*(c1Re/4.*(1.+4.*xxp-pow(eta1sq-eta2sq, 2)));
+  AmpIm_tmp = pow(m12, 4)*(c1Im/4.*(1.+4.*xxp-pow(eta1sq-eta2sq, 2)));
   if (m1_!=0) { AmpIm_tmp *= eta1; AmpRe_tmp *= eta1; }
   if (m2_!=0) { AmpIm_tmp *= eta2; AmpRe_tmp *= eta2; }
   ApmRe_tmp = AmpRe_tmp;

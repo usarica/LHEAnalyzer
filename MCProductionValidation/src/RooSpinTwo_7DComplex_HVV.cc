@@ -26,18 +26,18 @@ Double_t RooSpinTwo_7DComplex_HVV::evaluateH1Factor(Int_t i1, Int_t j1, Int_t he
   Double_t dHel = (Double_t)helicity;
   Double_t result = 0;
   if ((code % prime_h1)==0){
-    if (i1==0 && j1==0) result = 4./3.; // 15 amps
+    if ((i1==0 && j1==0) || (i1==-1 && j1==1) || (i1==1 && j1==-1)) result = 4./3.; // 15 amps
     else if (i1==1 && j1==1) result = 8./3.; // 6 amps
     else if (i1==-1 && j1==-1) result = 8./3.; // 6 amps
     else if ((i1==0 && j1==1) || (i1==1 && j1==0)) result = Pi*dHel/2.; // 9 amps
-    else if ((i1==0 && j1==-1) || (i1==-1 && j1==0)) result = -Pi*dHel/2.; // 9 amps
+    else if ((i1==0 && j1==-1) || (i1==-1 && j1==0)) result = Pi*dHel/2.; // 9 amps
   }
   else{
-    if (i1==0 && j1==0) result = 1.-pow(h1, 2); // 15 amps
+    if ((i1==0 && j1==0) || (i1==-1 && j1==1) || (i1==1 && j1==-1)) result = 1.-pow(h1, 2); // 15 amps
     else if (i1==1 && j1==1) result = 1.+pow(h1, 2)+2.*h1*dHel; // 6 amps
     else if (i1==-1 && j1==-1) result = 1.+pow(h1, 2)-2.*h1*dHel; // 6 amps
     else if ((i1==0 && j1==1) || (i1==1 && j1==0)) result = sqrt(fabs(1.-pow(h1, 2)))*(h1+dHel); // 9 amps
-    else if ((i1==0 && j1==-1) || (i1==-1 && j1==0)) result = sqrt(fabs(1.-pow(h1, 2)))*(h1-dHel); // 9 amps
+    else if ((i1==0 && j1==-1) || (i1==-1 && j1==0)) result = sqrt(fabs(1.-pow(h1, 2)))*(dHel-h1); // 9 amps
   }
   return result;
 }
@@ -46,83 +46,25 @@ Double_t RooSpinTwo_7DComplex_HVV::evaluateH2Factor(Int_t i2, Int_t j2, Int_t he
   Double_t dHel = (Double_t)helicity;
   Double_t result = 0;
   if ((code % prime_h2)==0){
-    if (i2==0 && j2==0) result = 4./3.; // 15 amps
+    if ((i2==0 && j2==0) || (i2==-1 && j2==1) || (i2==1 && j2==-1)) result = 4./3.; // 15 amps
     else if (i2==1 && j2==1) result = 8./3.; // 6 amps
     else if (i2==-1 && j2==-1) result = 8./3.; // 6 amps
     else if ((i2==0 && j2==1) || (i2==1 && j2==0)) result = Pi*dHel/2.; // 9 amps
-    else if ((i2==0 && j2==-1) || (i2==-1 && j2==0)) result = -Pi*dHel/2.; // 9 amps
+    else if ((i2==0 && j2==-1) || (i2==-1 && j2==0)) result = Pi*dHel/2.; // 9 amps
   }
   else{
-    if (i2==0 && j2==0) result = 1.-pow(h2, 2); // 15 amps
+    if ((i2==0 && j2==0) || (i2==-1 && j2==1) || (i2==1 && j2==-1)) result = 1.-pow(h2, 2); // 15 amps
     else if (i2==1 && j2==1) result = 1.+pow(h2, 2)+2.*h2*dHel; // 6 amps
     else if (i2==-1 && j2==-1) result = 1.+pow(h2, 2)-2.*h2*dHel; // 6 amps
     else if ((i2==0 && j2==1) || (i2==1 && j2==0)) result = sqrt(fabs(1.-pow(h2, 2)))*(h2+dHel); // 9 amps
-    else if ((i2==0 && j2==-1) || (i2==-1 && j2==0)) result = sqrt(fabs(1.-pow(h2, 2)))*(h2-dHel); // 9 amps
+    else if ((i2==0 && j2==-1) || (i2==-1 && j2==0)) result = sqrt(fabs(1.-pow(h2, 2)))*(dHel-h2); // 9 amps
   }
   return result;
 }
-Double_t RooSpinTwo_7DComplex_HVV::evaluatePhi1PhiFactor(Int_t i1, Int_t i2, Int_t j1, Int_t j2, Int_t code, Double_t extraPhase1, Double_t extraPhase2) const{
-  const Double_t Pi = TMath::Pi();
-
-  Double_t result = 0;
-  Double_t phase = 0;
-  Double_t phasePhi = 0;
-  Double_t phasePhi1 = 0;
-
-  phasePhi1 += -i1;
-  phasePhi1 += i2;
-  phasePhi += i2;
-
-  phasePhi1 += j1;
-  phasePhi1 += -j2;
-  phasePhi += -j2;
-
-  if ((code % prime_Phi)==0 && (code % prime_Phi1)==0){
-    if(i1==j1 && i2==j2) result = 4.*pow(Pi, 2);
-    // Everything else is 0!
-  }
-  else if ((code % prime_Phi)==0){
-    if (i1==j1 && i2==j2) result = 2.*Pi;
-    else{
-      phase = Phi1*phasePhi1+extraPhase1-extraPhase2;
-      result = cos(phase)*2.*Pi;
-    }
-  }
-  else if ((code % prime_Phi1)==0){
-    if (i1==j1 && i2==j2) result = 2.*Pi;
-    else{
-      phase = Phi*phasePhi+extraPhase1-extraPhase2;
-      result = cos(phase)*2.*Pi;
-    }
-  }
-  else{
-    phase = Phi1*phasePhi1+Phi*phasePhi+extraPhase1-extraPhase2;
-    result = cos(phase);
-  }
-  return result;
-}
-
-void RooSpinTwo_7DComplex_HVV::evaluatePolarizationTerms(std::vector<Double_t>& Axxyyterm, const Int_t code, bool isGammaV1, bool isGammaV2) const{
-  const Double_t Pi = TMath::Pi();
+Double_t RooSpinTwo_7DComplex_HVV::evaluateHSFactor(Int_t di, Int_t dj, Int_t code) const{
   Double_t f_spinz0 = 1. - f_spinz1 - f_spinz2;
   if (f_spinz0<0) f_spinz0=0;
   Double_t hsneg = -hs; if (fabs(hsneg)>1.) hsneg *= 1./fabs(hsneg);
-
-  Double_t
-    A00Re, A00Im,
-    AppRe, AppIm,
-    A0pRe, A0pIm, Ap0Re, Ap0Im,
-    AmmRe, AmmIm, A0mRe, A0mIm, Am0Re, Am0Im,
-    ApmRe, ApmIm, AmpRe, AmpIm;
-
-  calculateAmplitudes(
-    A00Re, A00Im,
-    AppRe, AppIm,
-    A0pRe, A0pIm, Ap0Re, Ap0Im,
-    AmmRe, AmmIm, A0mRe, A0mIm, Am0Re, Am0Im,
-    ApmRe, ApmIm, AmpRe, AmpIm,
-    isGammaV1, isGammaV2
-    );
 
   Double_t AF200 = 0;
   Double_t AF201 = 0;
@@ -148,19 +90,96 @@ void RooSpinTwo_7DComplex_HVV::evaluatePolarizationTerms(std::vector<Double_t>& 
     AF2m22 = 16./15.*(6*f_spinz0 - 4*f_spinz1 + f_spinz2)/16.; // 1
   }
   else{
-    AF200 = ((2.*f_spinz0 + 3.*f_spinz2) - 6.*(2.*f_spinz0 - 2.  *f_spinz1 + f_spinz2)*pow(hsneg, 2) +3.*(6.*f_spinz0 - 4.*f_spinz1 + f_spinz2)*pow(hsneg, 4))/8.; // 6 // F(2)00*8
-    AF201 = (-hsneg*sqrt(1 - pow(hsneg, 2))*((2.*f_spinz0 - 2.*f_spinz1 + f_spinz2) - (6.*f_spinz0 - 4.*f_spinz1 + f_spinz2)*pow(hsneg, 2)))*sqrt(6.)/8.; // 12 // F(2)01*(8/sqrt(6))
-    AF202 = ((1. - pow(hsneg, 2))*((2.*f_spinz0 - f_spinz2) - (6.*f_spinz0 - 4.*f_spinz1 + f_spinz2)*pow(hsneg, 2)))*(-sqrt(3./2.)/8.); // 6 // F(2)02*(-8*sqrt(2/3))
+    AF200 = ((2.*f_spinz0 + 3.*f_spinz2) - 6.*(2.*f_spinz0 - 2.*f_spinz1 + f_spinz2)*pow(hsneg, 2) +3.*(6.*f_spinz0 - 4.*f_spinz1 + f_spinz2)*pow(hsneg, 4))/8.; // 6 // F(2)00
+    AF201 = (hsneg*sqrt(1 - pow(hsneg, 2))*((2.*f_spinz0 - 2.*f_spinz1 + f_spinz2) - (6.*f_spinz0 - 4.*f_spinz1 + f_spinz2)*pow(hsneg, 2)))*(-sqrt(6.)/8.); // 12 // F(2)01
+    AF202 = ((1. - pow(hsneg, 2))*((2.*f_spinz0 - f_spinz2) - (6.*f_spinz0 - 4.*f_spinz1 + f_spinz2)*pow(hsneg, 2)))*(-sqrt(3./2.)/8.); // 6 // F(2)02
 
-    AF211 = ((f_spinz1 + f_spinz2) + 3.*(2.*f_spinz0 - f_spinz1)*pow(hsneg, 2) - (6.*f_spinz0 - 4.*f_spinz1 + f_spinz2)*pow(hsneg, 4))/4.; // 6 // F(2)11*4
-    AF2m11 = ((1. - pow(hsneg, 2))*((f_spinz1 - f_spinz2) + (6.*f_spinz0 - 4.*f_spinz1 + f_spinz2)*pow(hsneg, 2)))/(-4.); // 4 // F(2)-11*(-4)
+    AF211 = ((f_spinz1 + f_spinz2) + 3.*(2.*f_spinz0 - f_spinz1)*pow(hsneg, 2) - (6.*f_spinz0 - 4.*f_spinz1 + f_spinz2)*pow(hsneg, 4))/4.; // 6 // F(2)11
+    AF2m11 = ((1. - pow(hsneg, 2))*((f_spinz1 - f_spinz2) + (6.*f_spinz0 - 4.*f_spinz1 + f_spinz2)*pow(hsneg, 2)))/(-4.); // 4 // F(2)-11
 
-    AF212 = (-hsneg*sqrt(1 - pow(hsneg, 2))*((6.*f_spinz0 - 3.*f_spinz2) - (6.*f_spinz0 - 4.*f_spinz1 + f_spinz2)*pow(hsneg, 2)))/(-8.); // 4 // F(2)12*(-8)
-    AF2m12 = ((6*f_spinz0 - 4*f_spinz1 + f_spinz2)*hsneg*pow(1 - pow(hsneg, 2), 1.5))/(-8.); // 4 // F(2)22 // F(2)-12*(-8)
+    AF212 = (hsneg*sqrt(1 - pow(hsneg, 2))*((6.*f_spinz0 - 3.*f_spinz2) - (6.*f_spinz0 - 4.*f_spinz1 + f_spinz2)*pow(hsneg, 2)))/(-8.); // 4 // F(2)12
+    AF2m12 = ((6*f_spinz0 - 4*f_spinz1 + f_spinz2)*hsneg*pow(1. - pow(hsneg, 2), 1.5))/(-8.); // 4 // F(2)-12
 
-    AF222 = ((6.*f_spinz0 + 4.*f_spinz1 + f_spinz2) - 6.*(2.*f_spinz0 - f_spinz2)*pow(hsneg, 2) + (6.*f_spinz0 - 4.*f_spinz1 + f_spinz2)*pow(hsneg, 4))/16.; // 2 // F(2)22*16
-    AF2m22 = ((6*f_spinz0 - 4*f_spinz1 + f_spinz2)*pow(-1. + pow(hsneg, 2), 2))/16.; // 1 // F(2)-22*16
+    AF222 = ((6.*f_spinz0 + 4.*f_spinz1 + f_spinz2) - 6.*(2.*f_spinz0 - f_spinz2)*pow(hsneg, 2) + (6.*f_spinz0 - 4.*f_spinz1 + f_spinz2)*pow(hsneg, 4))/16.; // 2 // F(2)22
+    AF2m22 = ((6*f_spinz0 - 4*f_spinz1 + f_spinz2)*pow(1. - pow(hsneg, 2), 2))/16.; // 1 // F(2)-22
   }
+
+  Double_t result = 0;
+  if (di==0 && dj==0) result = AF200;
+  else if ((di==1 && dj==1) || (di==-1 && dj==-1)) result = AF211;
+  else if ((di==2 && dj==2) || (di==-2 && dj==-2)) result = AF222;
+
+  else if ((di==1 && dj==0) || (di==0 && dj==1)) result = AF201;
+  else if ((di==-1 && dj==0) || (di==0 && dj==-1)) result = -AF201;
+  else if ((di==1 && dj==2) || (di==2 && dj==1)) result = AF212;
+  else if ((di==-1 && dj==-2) || (di==-2 && dj==-1)) result = -AF212;
+
+  else if ((di==2 && dj==0) || (di==0 && dj==2) || (di==-2 && dj==0) || (di==0 && dj==-2)) result = AF202;
+  else if ((di==1 && dj==-1) || (di==-1 && dj==1)) result = AF2m11;
+
+  else if ((di==-1 && dj==2) || (di==2 && dj==-1)) result = AF2m12;
+  else if ((di==-2 && dj==1) || (di==1 && dj==-2)) result = -AF2m12;
+
+  else if ((di==-2 && dj==2) || (di==2 && dj==-2)) result = AF2m22;
+  return result;
+}
+Double_t RooSpinTwo_7DComplex_HVV::evaluatePhi1PhiFactor(Int_t i1, Int_t i2, Int_t j1, Int_t j2, Int_t code, Double_t extraPhase1, Double_t extraPhase2) const{
+  const Double_t Pi = TMath::Pi();
+
+  Double_t result = 0;
+  Double_t phase = 0;
+  Double_t phasePhi = 0;
+  Double_t phasePhi1 = 0;
+
+  phasePhi1 += -i1;
+  phasePhi1 += i2;
+  phasePhi += i2;
+
+  phasePhi1 += j1;
+  phasePhi1 += -j2;
+  phasePhi += -j2;
+
+  if ((code % prime_Phi)==0 && (code % prime_Phi1)==0){
+    if (i1==j1 && i2==j2) result = 4.*pow(Pi, 2);
+    // Everything else is 0!
+  }
+  else if ((code % prime_Phi)==0){
+    if (i1==j1 && i2==j2) result = 2.*Pi;
+    else{
+      phase = Phi1*phasePhi1+extraPhase1-extraPhase2;
+      result = cos(phase)*2.*Pi;
+    }
+  }
+  else if ((code % prime_Phi1)==0){
+    if (i1==j1 && i2==j2) result = 2.*Pi;
+    else{
+      phase = Phi*phasePhi+extraPhase1-extraPhase2;
+      result = cos(phase)*2.*Pi;
+    }
+  }
+  else{
+    phase = Phi1*phasePhi1+Phi*phasePhi+extraPhase1-extraPhase2;
+    result = cos(phase);
+  }
+  return result;
+}
+
+void RooSpinTwo_7DComplex_HVV::evaluatePolarizationTerms(std::vector<Double_t>& Axxyyterm, const Int_t code, bool isGammaV1, bool isGammaV2) const{
+  Double_t
+    A00Re, A00Im,
+    AppRe, AppIm,
+    A0pRe, A0pIm, Ap0Re, Ap0Im,
+    AmmRe, AmmIm, A0mRe, A0mIm, Am0Re, Am0Im,
+    ApmRe, ApmIm, AmpRe, AmpIm;
+
+  calculateAmplitudes(
+    A00Re, A00Im,
+    AppRe, AppIm,
+    A0pRe, A0pIm, Ap0Re, Ap0Im,
+    AmmRe, AmmIm, A0mRe, A0mIm, Am0Re, Am0Im,
+    ApmRe, ApmIm, AmpRe, AmpIm,
+    isGammaV1, isGammaV2
+    );
 
   std::vector<Double_t> ARexy, AImxy;
   std::vector<Int_t> index_x,index_y;
@@ -204,7 +223,7 @@ void RooSpinTwo_7DComplex_HVV::evaluatePolarizationTerms(std::vector<Double_t>& 
   for (unsigned int ii=0; ii<index_x.size(); ii++){
     Int_t i1 = index_x.at(ii);
     Int_t i2 = index_y.at(ii);
-    Int_t i21 = i2-i1;
+    Int_t i12 = i1-i2;
     Double_t ARexyi = ARexy.at(ii);
     Double_t AImxyi = AImxy.at(ii);
 
@@ -214,7 +233,7 @@ void RooSpinTwo_7DComplex_HVV::evaluatePolarizationTerms(std::vector<Double_t>& 
     for (unsigned int jj=ii; jj<index_x.size(); jj++){
       Int_t j1 = index_x.at(jj);
       Int_t j2 = index_y.at(jj);
-      Int_t j21 = j2-j1;
+      Int_t j12 = j1-j2;
       Double_t ARexyj = ARexy.at(jj);
       Double_t AImxyj = AImxy.at(jj);
 
@@ -227,31 +246,22 @@ void RooSpinTwo_7DComplex_HVV::evaluatePolarizationTerms(std::vector<Double_t>& 
       if (phifactor==0) continue;
       Double_t h1h2factor[4]={ 0 };
       for (int ih1=0; ih1<2; ih1++){ // (LL, LR), (RL, RR)
+        Int_t hh1 = 1-2*ih1; // L/R
+        Double_t h1factor = evaluateH1Factor(i1, j1, hh1, code);
         for (int ih2=0; ih2<2; ih2++){
-          Int_t h1 = 1-2*ih1; // L/R
-          Int_t h2 = 1-2*ih2; // L/R
-          Double_t fraction = (1.+((Double_t)h1)*R1Val+((Double_t)h2)*R2Val+((Double_t)h1)*R1Val*((Double_t)h2)*R2Val)/4.;
-          h1h2factor[2*ih1+ih2] = fraction*evaluateH1Factor(i1, j1, h1, code)*evaluateH2Factor(i2, j2, h2, code);
+          Int_t hh2 = 1-2*ih2; // L/R
+          Double_t h2factor = evaluateH2Factor(i2, j2, hh2, code);
+
+          Double_t fraction = (1.+((Double_t)hh1)*R1Val+((Double_t)hh2)*R2Val+((Double_t)hh1)*R1Val*((Double_t)hh2)*R2Val)/4.;
+          h1h2factor[2*ih1+ih2] = fraction*h1factor*h2factor;
         }
       }
-
-      Double_t hsfactor=0;
-      if (i21==0 && j21==0) hsfactor = AF200;
-      else if ((i21==1 && j21==0) || (i21==0 && j21==1) || (i21==-1 && j21==0) || (i21==0 && j21==-1)) hsfactor = AF201;
-      else if ((i21==2 && j21==0) || (i21==0 && j21==2) || (i21==-2 && j21==0) || (i21==0 && j21==-2)) hsfactor = AF202;
-      else if ((i21==1 && j21==1) || (i21==-1 && j21==-1)) hsfactor = AF211;
-      else if ((i21==1 && j21==-1) || (i21==-1 && j21==1)) hsfactor = AF2m11;
-      else if ((i21==1 && j21==2) || (i21==2 && j21==1) || (i21==-1 && j21==-2) || (i21==-2 && j21==-1)) hsfactor = AF212;
-      else if ((i21==-1 && j21==2) || (i21==2 && j21==-1) || (i21==-2 && j21==1) || (i21==1 && j21==-2)) hsfactor = AF2m12;
-      else if ((i21==2 && j21==2) || (i21==-2 && j21==-2)) hsfactor = AF222;
-      else if ((i21==-2 && j21==2) || (i21==2 && j21==-2)) hsfactor = AF2m22;
+      Double_t hsfactor=evaluateHSFactor(i12, j12, code);
 
       globalFactor *= Axyi*Axyj*phifactor*hsfactor;
       Double_t result = 0;
       for (int ih1=0; ih1<2; ih1++){ // (LL, LR), (RL, RR)
-        for (int ih2=0; ih2<2; ih2++){
-          result += globalFactor*h1h2factor[2*ih1+ih2];
-        }
+        for (int ih2=0; ih2<2; ih2++) result += globalFactor*h1h2factor[2*ih1+ih2];
       }
       if (result!=0.) Axxyyterm.push_back(result);
     }
