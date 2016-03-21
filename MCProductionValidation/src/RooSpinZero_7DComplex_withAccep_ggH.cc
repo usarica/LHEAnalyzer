@@ -115,11 +115,11 @@ void RooSpinZero_7DComplex_withAccep_ggH::evaluatePolarizationTerms(Double_t& A0
   Appmmterm = sqrt(Amm*App)*Ammpp_prefactor;
 
   if ((code % prime_h1)==0){
-    Double_t A00_h1int = -4.*aH1/3. - 4.*bH1/15. - 4.*cH1/35. - 4.*dH1/63. - 4.*eH1/99.;
+    Double_t A00_h1int = 4.*aH1/3. + 4.*bH1/15. + 4.*cH1/35. + 4.*dH1/63. + 4.*eH1/99.;
     Double_t Ammpp_h1int = 8.*aH1/3. + 16.*bH1/15. + 24.*cH1/35. + 32.*dH1/63. + 40.*eH1/99.;
-    Double_t A0m_h1int = -(128.*aH1 + 32.*bH1 + 16.*cH1 + 10.*dH1 + 7.*eH1)*Pi/256.*R1Val;
+    Double_t A0m_h1int = (128.*aH1 + 32.*bH1 + 16.*cH1 + 10.*dH1 + 7.*eH1)*Pi/256.*R1Val;
     Double_t A0p_h1int = (128.*aH1 + 32.*bH1 + 16.*cH1 + 10.*dH1 + 7.*eH1)*Pi/256.*R1Val;
-    Double_t Amp_h1int = -4.*aH1/3. - 4.*bH1/15. - 4.*cH1/35. - 4.*dH1/63. - 4.*eH1/99.;
+    Double_t Amp_h1int = 4.*aH1/3. + 4.*bH1/15. + 4.*cH1/35. + 4.*dH1/63. + 4.*eH1/99.;
 
     if (A00term!=0) A00term *= A00_h1int;
     if (Appterm!=0) Appterm *= Ammpp_h1int;
@@ -131,20 +131,20 @@ void RooSpinZero_7DComplex_withAccep_ggH::evaluatePolarizationTerms(Double_t& A0
   else{
     Double_t common_fac = (aH1 + bH1*pow(h1, 2) + cH1*pow(h1, 4) +dH1*pow(h1, 6) + eH1*pow(h1, 8));
 
-    if (A00term!=0) A00term *= (-1 + pow(h1, 2))*common_fac;
-    if (Appterm!=0) Appterm *= (1 + pow(h1, 2) + 2*h1*R1Val)*common_fac;
-    if (Ammterm!=0) Ammterm *= (1 + pow(h1, 2) - 2*h1*R1Val)*common_fac;
-    if (A00ppterm!=0) A00ppterm *= sqrt(1 - pow(h1, 2))*(h1 + R1Val)*common_fac;
-    if (A00mmterm!=0) A00mmterm *= sqrt(1 - pow(h1, 2))*(h1 - R1Val)*common_fac;
-    if (Appmmterm!=0) Appmmterm *= (-1 + pow(h1, 2))*common_fac;
+    if (A00term!=0) A00term *= (1. - pow(h1, 2))*common_fac;
+    if (Appterm!=0) Appterm *= (1. + pow(h1, 2) + 2.*h1*R1Val)*common_fac;
+    if (Ammterm!=0) Ammterm *= (1. + pow(h1, 2) - 2.*h1*R1Val)*common_fac;
+    if (A00ppterm!=0) A00ppterm *= sqrt(1. - pow(h1, 2))*(R1Val + h1)*common_fac;
+    if (A00mmterm!=0) A00mmterm *= sqrt(1. - pow(h1, 2))*(R1Val - h1)*common_fac;
+    if (Appmmterm!=0) Appmmterm *= (1. - pow(h1, 2))*common_fac;
   }
 
   if ((code % prime_h2)==0){
-    Double_t A00_h2int = -4.*aH2/3. - 4.*bH2/15. - 4.*cH2/35. - 4.*dH2/63. - 4.*eH2/99.;
+    Double_t A00_h2int = 4.*aH2/3. + 4.*bH2/15. + 4.*cH2/35. + 4.*dH2/63. + 4.*eH2/99.;
     Double_t Ammpp_h2int = 8.*aH2/3. + 16.*bH2/15. + 24.*cH2/35. + 32.*dH2/63. + 40.*eH2/99.;
-    Double_t A0m_h2int = -(128.*aH2 + 32.*bH2 + 16.*cH2 + 10.*dH2 + 7.*eH2)*Pi/256.*R2Val;
+    Double_t A0m_h2int = (128.*aH2 + 32.*bH2 + 16.*cH2 + 10.*dH2 + 7.*eH2)*Pi/256.*R2Val;
     Double_t A0p_h2int = (128.*aH2 + 32.*bH2 + 16.*cH2 + 10.*dH2 + 7.*eH2)*Pi/256.*R2Val;
-    Double_t Amp_h2int = -4.*aH2/3. - 4.*bH2/15. - 4.*cH2/35. - 4.*dH2/63. - 4.*eH2/99.;
+    Double_t Amp_h2int = 4.*aH2/3. + 4.*bH2/15. + 4.*cH2/35. + 4.*dH2/63. + 4.*eH2/99.;
 
     if (A00term!=0) A00term *= A00_h2int;
     if (Appterm!=0) Appterm *= Ammpp_h2int;
@@ -156,12 +156,12 @@ void RooSpinZero_7DComplex_withAccep_ggH::evaluatePolarizationTerms(Double_t& A0
   else{
     Double_t common_fac = (aH2 + bH2*pow(h2, 2) + cH2*pow(h2, 4) +dH2*pow(h2, 6) + eH2*pow(h2, 8));
 
-    if (A00term!=0) A00term *= (-1 + pow(h2, 2))*common_fac;
-    if (Appterm!=0) Appterm *= (1 + pow(h2, 2) + 2*h2*R2Val)*common_fac;
-    if (Ammterm!=0) Ammterm *= (1 + pow(h2, 2) - 2*h2*R2Val)*common_fac;
-    if (A00ppterm!=0) A00ppterm *= sqrt(1 - pow(h2, 2))*(h2 + R2Val)*common_fac;
-    if (A00mmterm!=0) A00mmterm *= sqrt(1 - pow(h2, 2))*(h2 - R2Val)*common_fac;
-    if (Appmmterm!=0) Appmmterm *= (-1 + pow(h2, 2))*common_fac;
+    if (A00term!=0) A00term *= (1. - pow(h2, 2))*common_fac;
+    if (Appterm!=0) Appterm *= (1. + pow(h2, 2) + 2.*h2*R2Val)*common_fac;
+    if (Ammterm!=0) Ammterm *= (1. + pow(h2, 2) - 2.*h2*R2Val)*common_fac;
+    if (A00ppterm!=0) A00ppterm *= sqrt(1. - pow(h2, 2))*(R2Val + h2)*common_fac;
+    if (A00mmterm!=0) A00mmterm *= sqrt(1. - pow(h2, 2))*(R2Val - h2)*common_fac;
+    if (Appmmterm!=0) Appmmterm *= (1. - pow(h2, 2))*common_fac;
   }
 
   if ((code % prime_hs)==0){

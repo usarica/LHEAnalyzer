@@ -34,10 +34,10 @@ void angularDistributions_spin0_VH(string cinput, double sqrts = 13, double g1Re
   int VHmode=-1;
   bool isZH=false;
   if (cinput.find("ZH")!=string::npos){
-    VHmode=3;
+    VHmode=5;
     isZH = true;
   }
-  int Vdecaymode = 3;
+  int Vdecaymode = 5;
   if (isLeptonic==1) Vdecaymode = 1;
   else if (isLeptonic==2) Vdecaymode = 2;
   
@@ -82,9 +82,9 @@ void angularDistributions_spin0_VH(string cinput, double sqrts = 13, double g1Re
   measurables_.Phi1 = Phi1;
   measurables_.Y = Y;
 
-  //RooArgSet treeargs(*h1, *h2, *Phi, *hs, *Phi1, *m1);
-  RooArgSet treeargs(*h1, *h2, *Phi, *m1, *Y);
-  RooRealVar* measurables[nVars-3]={ h1, h2, Phi, m1, Y };
+  RooArgSet treeargs(*m1, *m2, *h1, *h2, *Phi, *Y, *hs, *Phi1);
+  //RooArgSet treeargs(*h1, *h2, *Phi, *m1, *Y);
+  RooRealVar* measurables[nVars-2]={ m1, m2, Phi, h1, h2, Y };
 
   m2->setVal(mVPOLE);
   m12->setVal(mHPOLE);
@@ -169,16 +169,17 @@ void angularDistributions_spin0_VH(string cinput, double sqrts = 13, double g1Re
   foutput->WriteTObject(reducedTree);
 
   RooDataSet* dataSM = new RooDataSet("data", "data", reducedTree, treeargs);
-  for (int plotIndex=0; plotIndex<nVars-3; plotIndex++){
+  for (int plotIndex=0; plotIndex<nVars-2; plotIndex++){
     cout << plotIndex << endl;
 
+    /*
     RooArgSet projected;
     for (int p=0; p<nVars-3; p++){
       if (p==plotIndex) continue;
       else projected.add(*(measurables[p]));
     }
     RooArgSet depvars(*(measurables[plotIndex]));
-
+    */
     //if (plotIndex!=nVars-3) continue;
     //if (plotIndex!=0) continue;
 
@@ -193,23 +194,25 @@ void angularDistributions_spin0_VH(string cinput, double sqrts = 13, double g1Re
     plot->SetTitle(m_name.c_str());
 
     dataSM->plotOn(plot, MarkerColor(kRed), MarkerStyle(3), MarkerSize(1.2), LineWidth(0), XErrorSize(0), DataError(RooAbsData::Poisson));
-
+    /*
     m2->setVal(mVPOLE);
     m12->setVal(mHPOLE);
     m2->setRange(mVPOLE, mVPOLE);
     m12->setRange(mHPOLE, mHPOLE);
     m2->setConstant(true);
     m12->setConstant(true);
+    */
     someHiggs->getPDF()->plotOn(plot, LineColor(kRed), LineWidth(2));
     //RooRealIntegral* projection = (RooRealIntegral*)someHiggs->getPDF()->createIntegral(projected);
     //projection->Print("v");
     //projection->plotOn(plot, LineColor(kRed), LineWidth(2));
     //cout << projection->createIntegral(depvars)->getVal() << endl;
+    /*
     m2->setConstant(false);
     m12->setConstant(false);
     m2->setRange(mVPOLE-5.*GaVPOLE, mVPOLE+5.*GaVPOLE);
     m12->setRange(mHPOLE-5.*GaHPOLE, mHPOLE+5.*GaHPOLE);
-
+    */
     TGaxis::SetMaxDigits(3);
 
     TCanvas* can = new TCanvas("can", "can", 600, 600);

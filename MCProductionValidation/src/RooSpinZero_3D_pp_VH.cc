@@ -24,29 +24,11 @@ RooSpinZero_3D_pp_VH::RooSpinZero_3D_pp_VH(
 {}
 
 
-
-Double_t RooSpinZero_3D_pp_VH::evaluate() const{
-  Double_t epsilon=1e-15;
-  if (m1 <= 0.0 || (m2 <= 0.0 && Vdecay2!=0) || Vdecay1==0) return epsilon;
-  Double_t m2_=m2; if (Vdecay2==0) m2_=0;
-
-  // Get phasespace factor (arxiv 9306270 Eq. 2)
-  double phaseSpaceBetaSq = (1.-pow((m2_+m12)/m1, 2))*(1.-pow((m2_-m12)/m1, 2));
-  if (phaseSpaceBetaSq < 0.) return 1e-15;
-  double phaseSpaceBeta = sqrt(phaseSpaceBetaSq);
-  double sigma_psf = phaseSpaceBeta*(phaseSpaceBetaSq + 12.*pow(m2_/m1, 2))/pow((1.-pow(m2_/m1, 2))*m1, 2);
-  Double_t plumi = partonicLuminosity(m1, Y, sqrts);
-
-  Double_t eta1 = m1 / m12;
-  Double_t eta2 = m2_ / m12;
-  Double_t eta1p2 = eta1;
-  if (Vdecay2!=0) eta1p2 *= eta2;
-  Double_t etas = (1. - pow(eta1, 2) - pow(eta2, 2))/2.;
-  //if (pow(eta1+eta2, 2)>1.) etas = -etas;
-  double SMfactor = (pow(etas/eta1p2, 2) + 2.)*pow(mV/m12,4);
+void RooSpinZero_3D_pp_VH::evaluatePolarizationTerms(Double_t& A00term, Double_t& Appterm, Double_t& Ammterm, Double_t& A00ppterm, Double_t& A00mmterm, Double_t& Appmmterm, const Int_t code, bool isGammaV1, bool isGammaV2) const{
+  const Double_t Pi = TMath::Pi();
 
   Double_t A00Re, A00Im, AppRe, AppIm, AmmRe, AmmIm;
-  calculateAmplitudes(A00Re, A00Im, AppRe, AppIm, AmmRe, AmmIm);
+  calculateAmplitudes(A00Re, A00Im, AppRe, AppIm, AmmRe, AmmIm, isGammaV1, isGammaV2);
 
   Double_t A00 = A00Im*A00Im + A00Re*A00Re;
   Double_t App = AppIm*AppIm + AppRe*AppRe;
@@ -56,99 +38,175 @@ Double_t RooSpinZero_3D_pp_VH::evaluate() const{
   Double_t phipp=atan2(AppIm, AppRe)-phi00;
   Double_t phimm=atan2(AmmIm, AmmRe)-phi00;
 
-  Double_t xh1 = 1. - pow(h1, 2);
-  Double_t xh2 = 1. - pow(h2, 2);
-  Double_t xh1p2 = xh1*xh2;
+  Double_t A00_prefactor = 1.;
+  Double_t Amm_pp_prefactor = 1.;
+  Double_t A00mm_prefactor = 2.;
+  Double_t A00pp_prefactor = 2.;
+  Double_t Ammpp_prefactor = 2.;
+
+  A00term = A00*A00_prefactor;
+  Appterm = App*Amm_pp_prefactor;
+  Ammterm = Amm*Amm_pp_prefactor;
+  A00ppterm = sqrt(A00*App)*A00pp_prefactor;
+  A00mmterm = sqrt(A00*Amm)*A00mm_prefactor;
+  Appmmterm = sqrt(Amm*App)*Ammpp_prefactor;
+
+  if ((code % prime_h1)==0){
+    Double_t A00_h1int = 4./3.;
+    Double_t Ammpp_h1int = 8./3.;
+    Double_t A0m_h1int = Pi/2.*R1Val;
+    Double_t A0p_h1int = Pi/2.*R1Val;
+    Double_t Amp_h1int = 4./3.;
+
+    if (A00term!=0) A00term *= A00_h1int;
+    if (Appterm!=0) Appterm *= Ammpp_h1int;
+    if (Ammterm!=0) Ammterm *= Ammpp_h1int;
+    if (A00ppterm!=0) A00ppterm *= A0p_h1int;
+    if (A00mmterm!=0) A00mmterm *= A0m_h1int;
+    if (Appmmterm!=0) Appmmterm *= Amp_h1int;
+  }
+  else{
+    if (A00term!=0) A00term *= (1. - pow(h1, 2));
+    if (Appterm!=0) Appterm *= (1. + pow(h1, 2) - 2.*h1*R1Val);
+    if (Ammterm!=0) Ammterm *= (1. + pow(h1, 2) + 2.*h1*R1Val);
+    if (A00ppterm!=0) A00ppterm *= sqrt(1. - pow(h1, 2))*(R1Val - h1);
+    if (A00mmterm!=0) A00mmterm *= sqrt(1. - pow(h1, 2))*(R1Val + h1);
+    if (Appmmterm!=0) Appmmterm *= (1. - pow(h1, 2));
+  }
+
+  if ((code % prime_h2)==0){
+    Double_t A00_h2int = 4./3.;
+    Double_t Ammpp_h2int = 8./3.;
+    Double_t A0m_h2int = Pi/2.*R2Val;
+    Double_t A0p_h2int = Pi/2.*R2Val;
+    Double_t Amp_h2int = 4./3.;
+
+    if (A00term!=0) A00term *= A00_h2int;
+    if (Appterm!=0) Appterm *= Ammpp_h2int;
+    if (Ammterm!=0) Ammterm *= Ammpp_h2int;
+    if (A00ppterm!=0) A00ppterm *= A0p_h2int;
+    if (A00mmterm!=0) A00mmterm *= A0m_h2int;
+    if (Appmmterm!=0) Appmmterm *= Amp_h2int;
+  }
+  else{
+    if (A00term!=0) A00term *= (1. - pow(h2, 2));
+    if (Appterm!=0) Appterm *= (1. + pow(h2, 2) + 2.*h2*R2Val);
+    if (Ammterm!=0) Ammterm *= (1. + pow(h2, 2) - 2.*h2*R2Val);
+    if (A00ppterm!=0) A00ppterm *= sqrt(1. - pow(h2, 2))*(R2Val + h2);
+    if (A00mmterm!=0) A00mmterm *= sqrt(1. - pow(h2, 2))*(R2Val - h2);
+    if (Appmmterm!=0) Appmmterm *= (1. - pow(h2, 2));
+  }
+
+  if ((code % prime_hs)==0){
+    Double_t A_hsint = 2.;
+
+    if (A00term!=0) A00term *= A_hsint;
+    if (Appterm!=0) Appterm *= A_hsint;
+    if (Ammterm!=0) Ammterm *= A_hsint;
+    if (A00ppterm!=0) A00ppterm *= A_hsint;
+    if (A00mmterm!=0) A00mmterm *= A_hsint;
+    if (Appmmterm!=0) Appmmterm *= A_hsint;
+  } // else *= 1
+
+  if ((code % prime_Phi)==0){
+    Double_t A00mmpp_phiint = 2.*Pi;
+    Double_t A0p_phiint = 0;
+    Double_t A0m_phiint = 0;
+    Double_t Amp_phiint = 0;
+
+    if (A00term!=0) A00term *= A00mmpp_phiint;
+    if (Appterm!=0) Appterm *= A00mmpp_phiint;
+    if (Ammterm!=0) Ammterm *= A00mmpp_phiint;
+    if (A00ppterm!=0) A00ppterm *= A0p_phiint;
+    if (A00mmterm!=0) A00mmterm *= A0m_phiint;
+    if (Appmmterm!=0) Appmmterm *= Amp_phiint;
+  }
+  else{
+    //if (A00term!=0) A00term *= 1.;
+    //if (Appterm!=0) Appterm *= 1.;
+    //if (Ammterm!=0) Ammterm *= 1.;
+    if (A00ppterm!=0) A00ppterm *= cos(Phi + phipp);
+    if (A00mmterm!=0) A00mmterm *= cos(Phi - phimm);
+    if (Appmmterm!=0) Appmmterm *= cos(2*Phi - phimm + phipp);
+  }
+
+  if ((code % prime_Phi1)==0){
+    Double_t A_phi1int = 2.*Pi;
+
+    if (A00term!=0) A00term *= A_phi1int;
+    if (Appterm!=0) Appterm *= A_phi1int;
+    if (Ammterm!=0) Ammterm *= A_phi1int;
+    if (A00ppterm!=0) A00ppterm *= A_phi1int;
+    if (A00mmterm!=0) A00mmterm *= A_phi1int;
+    if (Appmmterm!=0) Appmmterm *= A_phi1int;
+  }
+  // else *= 1
+}
+
+
+Double_t RooSpinZero_3D_pp_VH::evaluate() const{
+  Double_t epsilon=1e-15;
+  Double_t m1_=m1; if (Vdecay1==0) return epsilon;
+  Double_t m2_=m2; if (Vdecay2==0) m2_=0;
+  if ((m12+m2_) > m1_ || (m2_ <= 0. && Vdecay2!=0) || m1_ <= 0.) return epsilon;
+
+  Int_t code = 1;
+  if (Vdecay2==0) code *= prime_h2*prime_Phi;
+
+  Double_t betaValSq = (1.-(pow(m12-m2_, 2)/pow(m1_, 2)))*(1.-(pow(m12+m2_, 2)/pow(m1_, 2)));
+  if (betaValSq<0.) return epsilon;
+  Double_t betaVal = sqrt(betaValSq);
+
+  Double_t term1Coeff = 1;
+  Double_t term2Coeff = 1;
+  term1Coeff = pow(m1_, -2);
+  if (Vdecay2!=0) term2Coeff = 2.*m2_;
+  Double_t plumi = partonicLuminosity(m1_, Y, sqrts);
 
   Double_t value = 0;
-  value += (A00*xh1p2)/4.;
-  value += (App*(1. + pow(h1, 2) - 2.*h1*R1Val)*(1. + pow(h2, 2) + 2.*h2*R2Val))/16.;
-  value += (Amm*(1. + pow(h1, 2) + 2.*h1*R1Val)*(1. + pow(h2, 2) - 2.*h2*R2Val))/16.;
-  value += -(sqrt(A00*App)*sqrt(xh1p2)*(h1 - R1Val)*(h2 + R2Val)*cos(Phi + phipp))/4.;
-  value += -(sqrt(A00*Amm)*sqrt(xh1p2)*(h1 + R1Val)*(h2 - R2Val)*cos(Phi - phimm))/4.;
-  value += (sqrt(Amm*App)*xh1p2*cos(2.*Phi - phimm + phipp))/8.;
-
-  value *= plumi;
-  value *= sigma_psf;
-  value /= SMfactor;
-  if (value<=0) value = epsilon;
+  Double_t val_A00=0, val_App=0, val_Amm=0, val_A0p=0, val_A0m=0, val_Amp=0;
+  evaluatePolarizationTerms(val_A00, val_App, val_Amm, val_A0p, val_A0m, val_Amp, code);
+  value = val_A00 + val_App + val_Amm + val_A0p + val_A0m + val_Amp;
+  value *= betaVal*term1Coeff*term2Coeff*plumi;
   return value;
 }
 
 Int_t RooSpinZero_3D_pp_VH::getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* /*rangeName*/) const{
-  if (matchArgs(allVars, analVars, RooArgSet(*h1.absArg(), *h2.absArg(), *Phi.absArg()))) return 4;
-  if (matchArgs(allVars, analVars, h1, h2)) return 1;
-  if (matchArgs(allVars, analVars, h1, Phi)) return 2;
-  if (matchArgs(allVars, analVars, h2, Phi)) return 3;
-  return 0;
+  int code=1;
+  if (matchArgs(allVars, analVars, h1)) code *= prime_h1;
+  if (matchArgs(allVars, analVars, h2) || Vdecay2==0) code *= prime_h2;
+  if (matchArgs(allVars, analVars, hs)) code *= prime_hs;
+  if (matchArgs(allVars, analVars, Phi) || Vdecay2==0) code *= prime_Phi;
+  if (matchArgs(allVars, analVars, Phi1)) code *= prime_Phi1;
+  if (code==1) code=0;
+  return code;
 }
 
 Double_t RooSpinZero_3D_pp_VH::analyticalIntegral(Int_t code, const char* /*rangeName*/) const{
   Double_t epsilon=1e-10;
-  if (m1 <= 0.0 || (m2 <= 0.0 && Vdecay2!=0) || Vdecay1==0) return epsilon;
+  Double_t m1_=m1; if (Vdecay1==0) return epsilon;
   Double_t m2_=m2; if (Vdecay2==0) m2_=0;
+  if ((m12+m2_) > m1_ || (m2_ <= 0. && Vdecay2!=0) || m1_ <= 0.) return epsilon;
 
-  // Get phasespace factor (arxiv 9306270 Eq. 2)
-  double phaseSpaceBetaSq = (1.-pow((m2_+m12)/m1, 2))*(1.-pow((m2_-m12)/m1, 2));
-  if (phaseSpaceBetaSq < 0.) return 1e-15;
-  double phaseSpaceBeta = sqrt(phaseSpaceBetaSq);
-  double sigma_psf = phaseSpaceBeta*(phaseSpaceBetaSq + 12.*pow(m2_/m1, 2))/pow((1.-pow(m2_/m1, 2))*m1, 2);
-  Double_t plumi = partonicLuminosity(m1, Y, sqrts);
-  Double_t Pi = TMath::Pi();
+  Double_t betaValSq = (1.-(pow(m12-m2_, 2)/pow(m1_, 2)))*(1.-(pow(m12+m2_, 2)/pow(m1_, 2)));
+  if (betaValSq<0) return epsilon;
+  Double_t betaVal = sqrt(betaValSq);
 
-  Double_t eta1 = m1 / m12;
-  Double_t eta2 = m2_ / m12;
-  Double_t eta1p2 = eta1;
-  if (Vdecay2!=0) eta1p2 *= eta2;
-  Double_t etas = (1. - pow(eta1, 2) - pow(eta2, 2))/2.;
-  //if (pow(eta1+eta2, 2)>1.) etas = -etas;
-  double SMfactor = (pow(etas/eta1p2, 2) + 2.)*pow(mV/m12, 4);
-
-  Double_t A00Re, A00Im, AppRe, AppIm, AmmRe, AmmIm;
-  calculateAmplitudes(A00Re, A00Im, AppRe, AppIm, AmmRe, AmmIm);
-
-  Double_t A00 = A00Im*A00Im + A00Re*A00Re;
-  Double_t App = AppIm*AppIm + AppRe*AppRe;
-  Double_t Amm = AmmIm*AmmIm + AmmRe*AmmRe;
-
-  Double_t phi00=atan2(A00Im, A00Re);
-  Double_t phipp=atan2(AppIm, AppRe)-phi00;
-  Double_t phimm=atan2(AmmIm, AmmRe)-phi00;
-
-  Double_t xh1 = 1. - pow(h1, 2);
-  Double_t xh2 = 1. - pow(h2, 2);
+  Double_t term1Coeff = 1;
+  Double_t term2Coeff = 1;
+  term1Coeff = pow(m1_, -2);
+  if (Vdecay2!=0) term2Coeff = 2.*m2_;
+  Double_t plumi = partonicLuminosity(m1_, Y, sqrts);
 
   Double_t value = 0;
-  if (code==2){ // projections to h2
-    value += A00*xh2/3.*(2.*Pi);
-    value += App*(1. + pow(h2, 2) + 2.*h2*R2Val)/3.*Pi;
-    value += Amm*(1. + pow(h2, 2) - 2.*h2*R2Val)/3.*Pi;
-  }
-  else if (code==3){ // projections to h1
-    value += A00*xh1/3.*(2.*Pi);
-    value += App*(1. + pow(h1, 2) - 2.*h1*R1Val)/3.*Pi;
-    value += Amm*(1. + pow(h1, 2) + 2.*h1*R1Val)/3.*Pi;
-  }
-  else if (code==1){ // projections to Phi
-    value += (A00+App+A00)*4./9.;
-    value += (sqrt(A00*App)*cos(Phi + phipp)+sqrt(A00*Amm)*cos(Phi - phimm))*R1Val*R2Val/16.*pow(Pi, 2);
-    value += sqrt(Amm*App)*cos(2.*Phi - phimm + phipp)*2./9.;
-  }
-  else if (code==4){ // projected everything
-    value += (A00+App+A00)*8.*Pi/9.;
-  }
-  else{
-    assert(0);
-    return 0;
-  }
-  value *= plumi;
-  value *= sigma_psf;
-  value /= SMfactor;
-  if (value<=0) value = epsilon;
+  Double_t val_A00=0, val_App=0, val_Amm=0, val_A0p=0, val_A0m=0, val_Amp=0;
+  evaluatePolarizationTerms(val_A00, val_App, val_Amm, val_A0p, val_A0m, val_Amp, code);
+  value = val_A00 + val_App + val_Amm + val_A0p + val_A0m + val_Amp;
+  value *= betaVal*term1Coeff*term2Coeff*plumi;
   return value;
 }
 
-double RooSpinZero_3D_pp_VH::partonicLuminosity(double mVal, double YVal, double sqrtsVal) const{
+Double_t RooSpinZero_3D_pp_VH::partonicLuminosity(Double_t mVal, Double_t YVal, Double_t sqrtsVal) const{
   Double_t Q = mVal;
   Double_t xa0 = mVal/sqrtsVal; // -> E E <- => xa0=xb0=p/Ebeam (Ebeam = sqrts/2)
   Double_t xa = exp(YVal)*xa0; // -> Ea Eb <- => xa=Ea/Ebeam
@@ -159,11 +217,11 @@ double RooSpinZero_3D_pp_VH::partonicLuminosity(double mVal, double YVal, double
     (mVal <= 600. && fabs(YVal) > 20.*pow(mVal, -0.32))
     ||
     (mVal > 600. && fabs(YVal) > 21.*pow(mVal, -0.34))
-    ) && (fabs(mV-91.2)<5.) // ZH
+    ) && (fabs(mV-80.39)>5.) // !WH
     ){
     xa = xa0;
     xb = xa0;
-    //prefactor = 1.e-5;
+    prefactor = 1e-5;
   }
 
   Double_t weightu = 0.5;
@@ -171,6 +229,7 @@ double RooSpinZero_3D_pp_VH::partonicLuminosity(double mVal, double YVal, double
   Double_t weightc = 1.0;
   Double_t weights = 1.0;
   Double_t weightb = 1.0;
+
 
   // PDF parameters
   // up params
@@ -214,7 +273,6 @@ double RooSpinZero_3D_pp_VH::partonicLuminosity(double mVal, double YVal, double
   Double_t b2par0 = 0.1174; Double_t b2par1 = 3.752e-05; Double_t b2par2 =-2.863e-08;
   Double_t b3par0 =-0.5549; Double_t b3par1 =-0.0002205; Double_t b3par2 = 1.334e-07;
   Double_t b4par0 =-10.18; Double_t b4par1 =-0.001136; Double_t b4par2 = 6.931e-07;
-
 
   // PDF definition
   Double_t up0 = u0par0 + u0par1*Q + u0par2*Q*Q;
@@ -260,14 +318,11 @@ double RooSpinZero_3D_pp_VH::partonicLuminosity(double mVal, double YVal, double
   Double_t FuncBu1 = (antiup0+antiup1*xb+antiup2*pow(xb, 2)+antiup3*pow(xb, 3))*pow((1-xb), 4)*pow(xb, antiup4)*exp(1.0+antiup5*xb);
   Double_t FuncAu2 = (up0+up1*xb+up2*pow(xb, 2))*pow((1-xb), 4)*pow(xb, up3)*exp(1.0+up4*xb);
   Double_t FuncBu2 = (antiup0+antiup1*xa+antiup2*pow(xa, 2)+antiup3*pow(xa, 3))*pow((1-xa), 4)*pow(xa, antiup4)*exp(1.0+antiup5*xa);
-  Double_t FuncABu = FuncAu1/xa*FuncBu1/xb+FuncAu2/xa*FuncBu2/xb;
-
 
   Double_t FuncAd1 = (down0+down1*xa+down2*pow(xa, 2))*pow((1-xa), 4)*pow(xa, down3)*exp(1.0+down4*xa);
   Double_t FuncBd1 = (antidown0+antidown1*xb+antidown2*pow(xb, 2)+antidown3*pow(xb, 3))*pow((1-xb), 4)*pow(xb, antidown4)*exp(1.0+antidown5*xb);
   Double_t FuncAd2 = (down0+down1*xb+down2*pow(xb, 2))*pow((1-xb), 4)*pow(xb, down3)*exp(1.0+down4*xb);
   Double_t FuncBd2 = (antidown0+antidown1*xa+antidown2*pow(xa, 2)+antidown3*pow(xa, 3))*pow((1-xa), 4)*pow(xa, antidown4)*exp(1.0+antidown5*xa);
-  Double_t FuncABd = FuncAd1/xa*FuncBd1/xb+FuncAd2/xa*FuncBd2/xb;
 
   Double_t Funcca = (charm0+charm1*xa+charm2*pow(xa, 2)+charm3*pow(xa, 3))*pow((1-xa), 4)*pow(xa, charm4)*exp(1.0+charm5*xa);
   Double_t Funccb = (charm0+charm1*xb+charm2*pow(xb, 2)+charm3*pow(xb, 3))*pow((1-xb), 4)*pow(xb, charm4)*exp(1.0+charm5*xb);
@@ -275,22 +330,16 @@ double RooSpinZero_3D_pp_VH::partonicLuminosity(double mVal, double YVal, double
   Double_t Funcsb = (strange0+strange1*xb+strange2*pow(xb, 2))*pow((1-xb), 4)*pow(xb, strange3)*exp(1.0+strange4*xb);
   Double_t Funcba = (bottom0+bottom1*xa+bottom2*pow(xa, 2))*pow((1-xa), 4)*pow(xa, bottom3)*exp(1.0+bottom4*xa);
   Double_t Funcbb = (bottom0+bottom1*xb+bottom2*pow(xb, 2))*pow((1-xb), 4)*pow(xb, bottom3)*exp(1.0+bottom4*xb);
-  Double_t FuncABc = Funcsa*Funcsb/xa/xb;
-  Double_t FuncABs = Funcca*Funccb/xa/xb;
-  Double_t FuncABb = Funcba*Funcbb/xa/xb;
-
-  // u-dbar 
-  Double_t FuncAB_udbar = FuncAu1/xa*FuncBd1/xb + FuncAu2/xa*FuncBd2/xb;
-  // c-sbar
-  Double_t FuncAB_csbar = Funcca*Funcsb/xa/xb;
-  // d-ubar 
-  Double_t FuncAB_dubar = FuncAd1/xa*FuncBu1/xb + FuncAd2/xa*FuncBu2/xb;
-  // s-cbar
-  Double_t FuncAB_scbar = Funccb*Funcsa/xa/xb;
 
   Double_t totSec = 0;
   
   if (fabs(mV-80.39)>5.){ // ZH or gammaH
+    Double_t FuncABu = FuncAu1/xa*FuncBu1/xb+FuncAu2/xa*FuncBu2/xb;
+    Double_t FuncABd = FuncAd1/xa*FuncBd1/xb+FuncAd2/xa*FuncBd2/xb;
+    Double_t FuncABc = Funcsa*Funcsb/xa/xb;
+    Double_t FuncABs = Funcca*Funccb/xa/xb;
+    Double_t FuncABb = Funcba*Funcbb/xa/xb;
+
     totSec = 2.*prefactor*mVal*(
       (FuncABu)*weightu
       +(FuncABd)*weightd
@@ -300,6 +349,11 @@ double RooSpinZero_3D_pp_VH::partonicLuminosity(double mVal, double YVal, double
       );
   }
   else{ // WH
+    Double_t FuncAB_udbar = FuncAu1/xa*FuncBd1/xb + FuncAu2/xa*FuncBd2/xb;
+    Double_t FuncAB_csbar = Funcca*Funcsb/xa/xb;
+    Double_t FuncAB_dubar = FuncAd1/xa*FuncBu1/xb + FuncAd2/xa*FuncBu2/xb;
+    Double_t FuncAB_scbar = Funccb*Funcsa/xa/xb;
+
     totSec = 2.*prefactor*mVal*(
       (FuncAB_udbar)*weightu
       +(FuncAB_dubar)*weightd

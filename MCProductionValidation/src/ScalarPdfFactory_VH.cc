@@ -6,12 +6,7 @@ sqrts(sqrts_)
 {
   if (VHmode1_==-1 || VHmode1_==3 || VHmode1_==4 || VHmode1_==5) PDFType = 1;
   else PDFType = 2;
-
-  if (PDFType==1){
-    measurables.hs=0;
-    measurables.Phi1=0;
-  }
-  else measurables.Y=0;
+  if (PDFType==2) measurables.Y=0;
 
   makeParamsConst(true);
   initPDF();
@@ -22,12 +17,7 @@ sqrts(sqrts_)
 {
   if (VHmode1_==-1 || VHmode1_==3 || VHmode1_==4 || VHmode1_==5) PDFType = 1;
   else PDFType = 2;
-
-  if (PDFType==1){
-    measurables.hs=0;
-    measurables.Phi1=0;
-  }
-  else measurables.Y=0;
+  if (PDFType==2) measurables.Y=0;
 
   makeParamsConst(true);
   initPDF();
