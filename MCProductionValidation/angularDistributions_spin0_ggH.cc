@@ -26,7 +26,7 @@
 using namespace RooFit;
 using namespace std;
 
-void angularDistributions_spin0_ggH(string cinput, double g1Re=1, double g2Re=0, double g4Re=0, double g1L1Re=0, double g2Im=0, double g4Im=0, double g1L1Im=0, int nbins=80, double mPOLE = 125.){
+void angularDistributions_spin0_ggH(string cinput, double g1Re=1, double g2Re=0, double g4Re=0, double g1L1Re=0, double g2Im=0, double g4Im=0, double g1L1Im=0, int nbins=80, double mPOLE = 125., int useTaus=1){
   RooRealVar* mzz = new RooRealVar("GenHMass", "M_{ZZ} (GeV)", mPOLE, mPOLE-0.02, mPOLE+0.02);
   RooRealVar* z1mass = new RooRealVar("GenZ1Mass", "m_{Z1} (GeV)", 0.0, min(120., mPOLE));
   RooRealVar* z2mass = new RooRealVar("GenZ2Mass", "m_{Z2} (GeV)", 0.0, min(120., (mPOLE-90.)*20./35.+55.));
@@ -178,7 +178,7 @@ void angularDistributions_spin0_ggH(string cinput, double g1Re=1, double g2Re=0,
         continue; // Don't bother to recalculate angles etc.
       }
       if (GenLepId[0]==GenLepId[2] && GenLepId[1]==GenLepId[3] && Vdecay1!=0 && Vdecay2!=0) continue;
-      //if (!(GenLepId[0]==15 || GenLepId[2]==15)) continue;
+      if (useTaus==0 && (GenLepId[0]==15 || GenLepId[1]==-15 || GenLepId[2]==15 || GenLepId[3]==-15)) continue;
       reducedTree->Fill();
       nRecorded++;
     }
