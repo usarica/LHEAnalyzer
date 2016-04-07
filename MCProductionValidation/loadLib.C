@@ -1,6 +1,8 @@
 {
   gSystem->AddIncludePath("-I$ROOFITSYS/include/");
 
+  // Higgs JCP mother class
+  gROOT->LoadMacro("src/RooSpin.cc+");
   // Spin-0
   gROOT->LoadMacro("src/RooSpinZero.cc+");
   gROOT->LoadMacro("src/RooSpinZero_7DComplex_withAccep_ggH.cc+");
