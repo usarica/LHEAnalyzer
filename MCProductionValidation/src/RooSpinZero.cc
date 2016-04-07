@@ -9,172 +9,141 @@ RooSpinZero::RooSpinZero(
   const char* name, const char* title,
   modelMeasurables _measurables,
   modelParameters _parameters,
-  int _Vdecay1, int _Vdecay2
-  ) : RooAbsPdf(name, title),
-  Vdecay1((Int_t)_Vdecay1), Vdecay2((Int_t)_Vdecay2),
-  h1("h1", "h1", this),
-  h2("h2", "h2", this),
-  Phi("Phi", "Phi", this),
-  m1("m1", "m1", this),
-  m2("m2", "m2", this),
-  m12("m12", "m12", this),
-  hs("hs", "hs", this),
-  Phi1("Phi1", "Phi1", this),
-  Y("Y", "Y", this),
+  modelCouplings _couplings,
+  RooSpin::VdecayType _Vdecay1, RooSpin::VdecayType _Vdecay2
+  ) : RooSpin(
+  name, title,
+  _measurables, _parameters,
+  _Vdecay1, _Vdecay2
+  ),
 
-  mX("mX", "mX", this, (RooAbsReal&)*(_parameters.mX)),
-  gamX("gamX", "gamX", this, (RooAbsReal&)*(_parameters.gamX)),
-  mV("mV", "mV", this, (RooAbsReal&)*(_parameters.mV)),
-  gamV("gamV", "gamV", this, (RooAbsReal&)*(_parameters.gamV)),
-  R1Val("R1Val", "R1Val", this, (RooAbsReal&)*(_parameters.R1Val)),
-  R2Val("R2Val", "R2Val", this, (RooAbsReal&)*(_parameters.R2Val)),
+  g1Val("g1Val", "g1Val", this, (RooAbsReal&)*(_couplings.g1List[0][0])),
+  g2Val("g2Val", "g2Val", this, (RooAbsReal&)*(_couplings.g2List[0][0])),
+  g3Val("g3Val", "g3Val", this, (RooAbsReal&)*(_couplings.g3List[0][0])),
+  g4Val("g4Val", "g4Val", this, (RooAbsReal&)*(_couplings.g4List[0][0])),
 
-  g1Val("g1Val", "g1Val", this, (RooAbsReal&)*(_parameters.g1List[0][0])),
-  g2Val("g2Val", "g2Val", this, (RooAbsReal&)*(_parameters.g2List[0][0])),
-  g3Val("g3Val", "g3Val", this, (RooAbsReal&)*(_parameters.g3List[0][0])),
-  g4Val("g4Val", "g4Val", this, (RooAbsReal&)*(_parameters.g4List[0][0])),
+  g1_primeVal("g1_primeVal", "g1_primeVal", this, (RooAbsReal&)*(_couplings.g1List[1][0])),
+  g2_primeVal("g2_primeVal", "g2_primeVal", this, (RooAbsReal&)*(_couplings.g2List[1][0])),
+  g3_primeVal("g3_primeVal", "g3_primeVal", this, (RooAbsReal&)*(_couplings.g3List[1][0])),
+  g4_primeVal("g4_primeVal", "g4_primeVal", this, (RooAbsReal&)*(_couplings.g4List[1][0])),
 
-  g1_primeVal("g1_primeVal", "g1_primeVal", this, (RooAbsReal&)*(_parameters.g1List[1][0])),
-  g2_primeVal("g2_primeVal", "g2_primeVal", this, (RooAbsReal&)*(_parameters.g2List[1][0])),
-  g3_primeVal("g3_primeVal", "g3_primeVal", this, (RooAbsReal&)*(_parameters.g3List[1][0])),
-  g4_primeVal("g4_primeVal", "g4_primeVal", this, (RooAbsReal&)*(_parameters.g4List[1][0])),
+  g1_prime2Val("g1_prime2Val", "g1_prime2Val", this, (RooAbsReal&)*(_couplings.g1List[2][0])),
+  g2_prime2Val("g2_prime2Val", "g2_prime2Val", this, (RooAbsReal&)*(_couplings.g2List[2][0])),
+  g3_prime2Val("g3_prime2Val", "g3_prime2Val", this, (RooAbsReal&)*(_couplings.g3List[2][0])),
+  g4_prime2Val("g4_prime2Val", "g4_prime2Val", this, (RooAbsReal&)*(_couplings.g4List[2][0])),
 
-  g1_prime2Val("g1_prime2Val", "g1_prime2Val", this, (RooAbsReal&)*(_parameters.g1List[2][0])),
-  g2_prime2Val("g2_prime2Val", "g2_prime2Val", this, (RooAbsReal&)*(_parameters.g2List[2][0])),
-  g3_prime2Val("g3_prime2Val", "g3_prime2Val", this, (RooAbsReal&)*(_parameters.g3List[2][0])),
-  g4_prime2Val("g4_prime2Val", "g4_prime2Val", this, (RooAbsReal&)*(_parameters.g4List[2][0])),
+  g1_prime3Val("g1_prime3Val", "g1_prime3Val", this, (RooAbsReal&)*(_couplings.g1List[3][0])),
+  g2_prime3Val("g2_prime3Val", "g2_prime3Val", this, (RooAbsReal&)*(_couplings.g2List[3][0])),
+  g3_prime3Val("g3_prime3Val", "g3_prime3Val", this, (RooAbsReal&)*(_couplings.g3List[3][0])),
+  g4_prime3Val("g4_prime3Val", "g4_prime3Val", this, (RooAbsReal&)*(_couplings.g4List[3][0])),
 
-  g1_prime3Val("g1_prime3Val", "g1_prime3Val", this, (RooAbsReal&)*(_parameters.g1List[3][0])),
-  g2_prime3Val("g2_prime3Val", "g2_prime3Val", this, (RooAbsReal&)*(_parameters.g2List[3][0])),
-  g3_prime3Val("g3_prime3Val", "g3_prime3Val", this, (RooAbsReal&)*(_parameters.g3List[3][0])),
-  g4_prime3Val("g4_prime3Val", "g4_prime3Val", this, (RooAbsReal&)*(_parameters.g4List[3][0])),
+  g1_prime4Val("g1_prime4Val", "g1_prime4Val", this, (RooAbsReal&)*(_couplings.g1List[4][0])),
+  g2_prime4Val("g2_prime4Val", "g2_prime4Val", this, (RooAbsReal&)*(_couplings.g2List[4][0])),
+  g3_prime4Val("g3_prime4Val", "g3_prime4Val", this, (RooAbsReal&)*(_couplings.g3List[4][0])),
+  g4_prime4Val("g4_prime4Val", "g4_prime4Val", this, (RooAbsReal&)*(_couplings.g4List[4][0])),
 
-  g1_prime4Val("g1_prime4Val", "g1_prime4Val", this, (RooAbsReal&)*(_parameters.g1List[4][0])),
-  g2_prime4Val("g2_prime4Val", "g2_prime4Val", this, (RooAbsReal&)*(_parameters.g2List[4][0])),
-  g3_prime4Val("g3_prime4Val", "g3_prime4Val", this, (RooAbsReal&)*(_parameters.g3List[4][0])),
-  g4_prime4Val("g4_prime4Val", "g4_prime4Val", this, (RooAbsReal&)*(_parameters.g4List[4][0])),
+  g1_prime5Val("g1_prime5Val", "g1_prime5Val", this, (RooAbsReal&)*(_couplings.g1List[5][0])),
+  g2_prime5Val("g2_prime5Val", "g2_prime5Val", this, (RooAbsReal&)*(_couplings.g2List[5][0])),
+  g3_prime5Val("g3_prime5Val", "g3_prime5Val", this, (RooAbsReal&)*(_couplings.g3List[5][0])),
+  g4_prime5Val("g4_prime5Val", "g4_prime5Val", this, (RooAbsReal&)*(_couplings.g4List[5][0])),
 
-  g1_prime5Val("g1_prime5Val", "g1_prime5Val", this, (RooAbsReal&)*(_parameters.g1List[5][0])),
-  g2_prime5Val("g2_prime5Val", "g2_prime5Val", this, (RooAbsReal&)*(_parameters.g2List[5][0])),
-  g3_prime5Val("g3_prime5Val", "g3_prime5Val", this, (RooAbsReal&)*(_parameters.g3List[5][0])),
-  g4_prime5Val("g4_prime5Val", "g4_prime5Val", this, (RooAbsReal&)*(_parameters.g4List[5][0])),
+  g1_prime6Val("g1_prime6Val", "g1_prime6Val", this, (RooAbsReal&)*(_couplings.g1List[6][0])),
+  g2_prime6Val("g2_prime6Val", "g2_prime6Val", this, (RooAbsReal&)*(_couplings.g2List[6][0])),
+  g3_prime6Val("g3_prime6Val", "g3_prime6Val", this, (RooAbsReal&)*(_couplings.g3List[6][0])),
+  g4_prime6Val("g4_prime6Val", "g4_prime6Val", this, (RooAbsReal&)*(_couplings.g4List[6][0])),
 
-  g1_prime6Val("g1_prime6Val", "g1_prime6Val", this, (RooAbsReal&)*(_parameters.g1List[6][0])),
-  g2_prime6Val("g2_prime6Val", "g2_prime6Val", this, (RooAbsReal&)*(_parameters.g2List[6][0])),
-  g3_prime6Val("g3_prime6Val", "g3_prime6Val", this, (RooAbsReal&)*(_parameters.g3List[6][0])),
-  g4_prime6Val("g4_prime6Val", "g4_prime6Val", this, (RooAbsReal&)*(_parameters.g4List[6][0])),
+  g1_prime7Val("g1_prime7Val", "g1_prime7Val", this, (RooAbsReal&)*(_couplings.g1List[7][0])),
+  g2_prime7Val("g2_prime7Val", "g2_prime7Val", this, (RooAbsReal&)*(_couplings.g2List[7][0])),
+  g3_prime7Val("g3_prime7Val", "g3_prime7Val", this, (RooAbsReal&)*(_couplings.g3List[7][0])),
+  g4_prime7Val("g4_prime7Val", "g4_prime7Val", this, (RooAbsReal&)*(_couplings.g4List[7][0])),
 
-  g1_prime7Val("g1_prime7Val", "g1_prime7Val", this, (RooAbsReal&)*(_parameters.g1List[7][0])),
-  g2_prime7Val("g2_prime7Val", "g2_prime7Val", this, (RooAbsReal&)*(_parameters.g2List[7][0])),
-  g3_prime7Val("g3_prime7Val", "g3_prime7Val", this, (RooAbsReal&)*(_parameters.g3List[7][0])),
-  g4_prime7Val("g4_prime7Val", "g4_prime7Val", this, (RooAbsReal&)*(_parameters.g4List[7][0])),
+  gzgs1_prime2Val("gzgs1_prime2Val", "gzgs1_prime2Val", this, (RooAbsReal&)*(_couplings.gzgs1List[0][0])), // Special case!
+  gzgs2Val("gzgs2Val", "gzgs2Val", this, (RooAbsReal&)*(_couplings.gzgs2List[0][0])),
+  gzgs3Val("gzgs3Val", "gzgs3Val", this, (RooAbsReal&)*(_couplings.gzgs3List[0][0])),
+  gzgs4Val("gzgs4Val", "gzgs4Val", this, (RooAbsReal&)*(_couplings.gzgs4List[0][0])),
+  ggsgs2Val("ggsgs2Val", "ggsgs2Val", this, (RooAbsReal&)*(_couplings.ggsgs2List[0][0])),
+  ggsgs3Val("ggsgs3Val", "ggsgs3Val", this, (RooAbsReal&)*(_couplings.ggsgs3List[0][0])),
+  ggsgs4Val("ggsgs4Val", "ggsgs4Val", this, (RooAbsReal&)*(_couplings.ggsgs4List[0][0])),
 
-  gzgs1_prime2Val("gzgs1_prime2Val", "gzgs1_prime2Val", this, (RooAbsReal&)*(_parameters.gzgs1List[0][0])), // Special case!
-  gzgs2Val("gzgs2Val", "gzgs2Val", this, (RooAbsReal&)*(_parameters.gzgs2List[0][0])),
-  gzgs3Val("gzgs3Val", "gzgs3Val", this, (RooAbsReal&)*(_parameters.gzgs3List[0][0])),
-  gzgs4Val("gzgs4Val", "gzgs4Val", this, (RooAbsReal&)*(_parameters.gzgs4List[0][0])),
-  ggsgs2Val("ggsgs2Val", "ggsgs2Val", this, (RooAbsReal&)*(_parameters.ggsgs2List[0][0])),
-  ggsgs3Val("ggsgs3Val", "ggsgs3Val", this, (RooAbsReal&)*(_parameters.ggsgs3List[0][0])),
-  ggsgs4Val("ggsgs4Val", "ggsgs4Val", this, (RooAbsReal&)*(_parameters.ggsgs4List[0][0])),
+  g1ValIm("g1ValIm", "g1ValIm", this, (RooAbsReal&)*(_couplings.g1List[0][1])),
+  g2ValIm("g2ValIm", "g2ValIm", this, (RooAbsReal&)*(_couplings.g2List[0][1])),
+  g3ValIm("g3ValIm", "g3ValIm", this, (RooAbsReal&)*(_couplings.g3List[0][1])),
+  g4ValIm("g4ValIm", "g4ValIm", this, (RooAbsReal&)*(_couplings.g4List[0][1])),
 
-  g1ValIm("g1ValIm", "g1ValIm", this, (RooAbsReal&)*(_parameters.g1List[0][1])),
-  g2ValIm("g2ValIm", "g2ValIm", this, (RooAbsReal&)*(_parameters.g2List[0][1])),
-  g3ValIm("g3ValIm", "g3ValIm", this, (RooAbsReal&)*(_parameters.g3List[0][1])),
-  g4ValIm("g4ValIm", "g4ValIm", this, (RooAbsReal&)*(_parameters.g4List[0][1])),
+  g1_primeValIm("g1_primeValIm", "g1_primeValIm", this, (RooAbsReal&)*(_couplings.g1List[1][1])),
+  g2_primeValIm("g2_primeValIm", "g2_primeValIm", this, (RooAbsReal&)*(_couplings.g2List[1][1])),
+  g3_primeValIm("g3_primeValIm", "g3_primeValIm", this, (RooAbsReal&)*(_couplings.g3List[1][1])),
+  g4_primeValIm("g4_primeValIm", "g4_primeValIm", this, (RooAbsReal&)*(_couplings.g4List[1][1])),
 
-  g1_primeValIm("g1_primeValIm", "g1_primeValIm", this, (RooAbsReal&)*(_parameters.g1List[1][1])),
-  g2_primeValIm("g2_primeValIm", "g2_primeValIm", this, (RooAbsReal&)*(_parameters.g2List[1][1])),
-  g3_primeValIm("g3_primeValIm", "g3_primeValIm", this, (RooAbsReal&)*(_parameters.g3List[1][1])),
-  g4_primeValIm("g4_primeValIm", "g4_primeValIm", this, (RooAbsReal&)*(_parameters.g4List[1][1])),
+  g1_prime2ValIm("g1_prime2ValIm", "g1_prime2ValIm", this, (RooAbsReal&)*(_couplings.g1List[2][1])),
+  g2_prime2ValIm("g2_prime2ValIm", "g2_prime2ValIm", this, (RooAbsReal&)*(_couplings.g2List[2][1])),
+  g3_prime2ValIm("g3_prime2ValIm", "g3_prime2ValIm", this, (RooAbsReal&)*(_couplings.g3List[2][1])),
+  g4_prime2ValIm("g4_prime2ValIm", "g4_prime2ValIm", this, (RooAbsReal&)*(_couplings.g4List[2][1])),
 
-  g1_prime2ValIm("g1_prime2ValIm", "g1_prime2ValIm", this, (RooAbsReal&)*(_parameters.g1List[2][1])),
-  g2_prime2ValIm("g2_prime2ValIm", "g2_prime2ValIm", this, (RooAbsReal&)*(_parameters.g2List[2][1])),
-  g3_prime2ValIm("g3_prime2ValIm", "g3_prime2ValIm", this, (RooAbsReal&)*(_parameters.g3List[2][1])),
-  g4_prime2ValIm("g4_prime2ValIm", "g4_prime2ValIm", this, (RooAbsReal&)*(_parameters.g4List[2][1])),
+  g1_prime3ValIm("g1_prime3ValIm", "g1_prime3ValIm", this, (RooAbsReal&)*(_couplings.g1List[3][1])),
+  g2_prime3ValIm("g2_prime3ValIm", "g2_prime3ValIm", this, (RooAbsReal&)*(_couplings.g2List[3][1])),
+  g3_prime3ValIm("g3_prime3ValIm", "g3_prime3ValIm", this, (RooAbsReal&)*(_couplings.g3List[3][1])),
+  g4_prime3ValIm("g4_prime3ValIm", "g4_prime3ValIm", this, (RooAbsReal&)*(_couplings.g4List[3][1])),
 
-  g1_prime3ValIm("g1_prime3ValIm", "g1_prime3ValIm", this, (RooAbsReal&)*(_parameters.g1List[3][1])),
-  g2_prime3ValIm("g2_prime3ValIm", "g2_prime3ValIm", this, (RooAbsReal&)*(_parameters.g2List[3][1])),
-  g3_prime3ValIm("g3_prime3ValIm", "g3_prime3ValIm", this, (RooAbsReal&)*(_parameters.g3List[3][1])),
-  g4_prime3ValIm("g4_prime3ValIm", "g4_prime3ValIm", this, (RooAbsReal&)*(_parameters.g4List[3][1])),
+  g1_prime4ValIm("g1_prime4ValIm", "g1_prime4ValIm", this, (RooAbsReal&)*(_couplings.g1List[4][1])),
+  g2_prime4ValIm("g2_prime4ValIm", "g2_prime4ValIm", this, (RooAbsReal&)*(_couplings.g2List[4][1])),
+  g3_prime4ValIm("g3_prime4ValIm", "g3_prime4ValIm", this, (RooAbsReal&)*(_couplings.g3List[4][1])),
+  g4_prime4ValIm("g4_prime4ValIm", "g4_prime4ValIm", this, (RooAbsReal&)*(_couplings.g4List[4][1])),
 
-  g1_prime4ValIm("g1_prime4ValIm", "g1_prime4ValIm", this, (RooAbsReal&)*(_parameters.g1List[4][1])),
-  g2_prime4ValIm("g2_prime4ValIm", "g2_prime4ValIm", this, (RooAbsReal&)*(_parameters.g2List[4][1])),
-  g3_prime4ValIm("g3_prime4ValIm", "g3_prime4ValIm", this, (RooAbsReal&)*(_parameters.g3List[4][1])),
-  g4_prime4ValIm("g4_prime4ValIm", "g4_prime4ValIm", this, (RooAbsReal&)*(_parameters.g4List[4][1])),
+  g1_prime5ValIm("g1_prime5ValIm", "g1_prime5ValIm", this, (RooAbsReal&)*(_couplings.g1List[5][1])),
+  g2_prime5ValIm("g2_prime5ValIm", "g2_prime5ValIm", this, (RooAbsReal&)*(_couplings.g2List[5][1])),
+  g3_prime5ValIm("g3_prime5ValIm", "g3_prime5ValIm", this, (RooAbsReal&)*(_couplings.g3List[5][1])),
+  g4_prime5ValIm("g4_prime5ValIm", "g4_prime5ValIm", this, (RooAbsReal&)*(_couplings.g4List[5][1])),
 
-  g1_prime5ValIm("g1_prime5ValIm", "g1_prime5ValIm", this, (RooAbsReal&)*(_parameters.g1List[5][1])),
-  g2_prime5ValIm("g2_prime5ValIm", "g2_prime5ValIm", this, (RooAbsReal&)*(_parameters.g2List[5][1])),
-  g3_prime5ValIm("g3_prime5ValIm", "g3_prime5ValIm", this, (RooAbsReal&)*(_parameters.g3List[5][1])),
-  g4_prime5ValIm("g4_prime5ValIm", "g4_prime5ValIm", this, (RooAbsReal&)*(_parameters.g4List[5][1])),
+  g1_prime6ValIm("g1_prime6ValIm", "g1_prime6ValIm", this, (RooAbsReal&)*(_couplings.g1List[6][1])),
+  g2_prime6ValIm("g2_prime6ValIm", "g2_prime6ValIm", this, (RooAbsReal&)*(_couplings.g2List[6][1])),
+  g3_prime6ValIm("g3_prime6ValIm", "g3_prime6ValIm", this, (RooAbsReal&)*(_couplings.g3List[6][1])),
+  g4_prime6ValIm("g4_prime6ValIm", "g4_prime6ValIm", this, (RooAbsReal&)*(_couplings.g4List[6][1])),
 
-  g1_prime6ValIm("g1_prime6ValIm", "g1_prime6ValIm", this, (RooAbsReal&)*(_parameters.g1List[6][1])),
-  g2_prime6ValIm("g2_prime6ValIm", "g2_prime6ValIm", this, (RooAbsReal&)*(_parameters.g2List[6][1])),
-  g3_prime6ValIm("g3_prime6ValIm", "g3_prime6ValIm", this, (RooAbsReal&)*(_parameters.g3List[6][1])),
-  g4_prime6ValIm("g4_prime6ValIm", "g4_prime6ValIm", this, (RooAbsReal&)*(_parameters.g4List[6][1])),
+  g1_prime7ValIm("g1_prime7ValIm", "g1_prime7ValIm", this, (RooAbsReal&)*(_couplings.g1List[7][1])),
+  g2_prime7ValIm("g2_prime7ValIm", "g2_prime7ValIm", this, (RooAbsReal&)*(_couplings.g2List[7][1])),
+  g3_prime7ValIm("g3_prime7ValIm", "g3_prime7ValIm", this, (RooAbsReal&)*(_couplings.g3List[7][1])),
+  g4_prime7ValIm("g4_prime7ValIm", "g4_prime7ValIm", this, (RooAbsReal&)*(_couplings.g4List[7][1])),
 
-  g1_prime7ValIm("g1_prime7ValIm", "g1_prime7ValIm", this, (RooAbsReal&)*(_parameters.g1List[7][1])),
-  g2_prime7ValIm("g2_prime7ValIm", "g2_prime7ValIm", this, (RooAbsReal&)*(_parameters.g2List[7][1])),
-  g3_prime7ValIm("g3_prime7ValIm", "g3_prime7ValIm", this, (RooAbsReal&)*(_parameters.g3List[7][1])),
-  g4_prime7ValIm("g4_prime7ValIm", "g4_prime7ValIm", this, (RooAbsReal&)*(_parameters.g4List[7][1])),
+  gzgs1_prime2ValIm("gzgs1_prime2ValIm", "gzgs1_prime2ValIm", this, (RooAbsReal&)*(_couplings.gzgs1List[0][1])), // Special case!
+  gzgs2ValIm("gzgs2ValIm", "gzgs2ValIm", this, (RooAbsReal&)*(_couplings.gzgs2List[0][1])),
+  gzgs3ValIm("gzgs3ValIm", "gzgs3ValIm", this, (RooAbsReal&)*(_couplings.gzgs3List[0][1])),
+  gzgs4ValIm("gzgs4ValIm", "gzgs4ValIm", this, (RooAbsReal&)*(_couplings.gzgs4List[0][1])),
+  ggsgs2ValIm("ggsgs2ValIm", "ggsgs2ValIm", this, (RooAbsReal&)*(_couplings.ggsgs2List[0][1])),
+  ggsgs3ValIm("ggsgs3ValIm", "ggsgs3ValIm", this, (RooAbsReal&)*(_couplings.ggsgs3List[0][1])),
+  ggsgs4ValIm("ggsgs4ValIm", "ggsgs4ValIm", this, (RooAbsReal&)*(_couplings.ggsgs4List[0][1])),
 
-  gzgs1_prime2ValIm("gzgs1_prime2ValIm", "gzgs1_prime2ValIm", this, (RooAbsReal&)*(_parameters.gzgs1List[0][1])), // Special case!
-  gzgs2ValIm("gzgs2ValIm", "gzgs2ValIm", this, (RooAbsReal&)*(_parameters.gzgs2List[0][1])),
-  gzgs3ValIm("gzgs3ValIm", "gzgs3ValIm", this, (RooAbsReal&)*(_parameters.gzgs3List[0][1])),
-  gzgs4ValIm("gzgs4ValIm", "gzgs4ValIm", this, (RooAbsReal&)*(_parameters.gzgs4List[0][1])),
-  ggsgs2ValIm("ggsgs2ValIm", "ggsgs2ValIm", this, (RooAbsReal&)*(_parameters.ggsgs2List[0][1])),
-  ggsgs3ValIm("ggsgs3ValIm", "ggsgs3ValIm", this, (RooAbsReal&)*(_parameters.ggsgs3List[0][1])),
-  ggsgs4ValIm("ggsgs4ValIm", "ggsgs4ValIm", this, (RooAbsReal&)*(_parameters.ggsgs4List[0][1])),
+  Lambda("Lambda", "Lambda", this, (RooAbsReal&)*(_couplings.Lambda)),
+  Lambda_zgs1("Lambda_zgs1", "Lambda_zgs1", this, (RooAbsReal&)*(_couplings.Lambda_zgs1)),
+  Lambda_z1("Lambda_z1", "Lambda_z1", this, (RooAbsReal&)*(_couplings.Lambda_z1)),
+  Lambda_z2("Lambda_z2", "Lambda_z2", this, (RooAbsReal&)*(_couplings.Lambda_z2)),
+  Lambda_z3("Lambda_z3", "Lambda_z3", this, (RooAbsReal&)*(_couplings.Lambda_z3)),
+  Lambda_z4("Lambda_z4", "Lambda_z4", this, (RooAbsReal&)*(_couplings.Lambda_z4)),
+  Lambda_Q("Lambda_Q", "Lambda_Q", this, (RooAbsReal&)*(_couplings.Lambda_Q)),
 
-  Lambda("Lambda", "Lambda", this, (RooAbsReal&)*(_parameters.Lambda)),
-  Lambda_zgs1("Lambda_zgs1", "Lambda_zgs1", this, (RooAbsReal&)*(_parameters.Lambda_zgs1)),
-  Lambda_z1("Lambda_z1", "Lambda_z1", this, (RooAbsReal&)*(_parameters.Lambda_z1)),
-  Lambda_z2("Lambda_z2", "Lambda_z2", this, (RooAbsReal&)*(_parameters.Lambda_z2)),
-  Lambda_z3("Lambda_z3", "Lambda_z3", this, (RooAbsReal&)*(_parameters.Lambda_z3)),
-  Lambda_z4("Lambda_z4", "Lambda_z4", this, (RooAbsReal&)*(_parameters.Lambda_z4)),
-  Lambda_Q("Lambda_Q", "Lambda_Q", this, (RooAbsReal&)*(_parameters.Lambda_Q)),
+  Lambda_z11("Lambda_z11", "Lambda_z11", this, (RooAbsReal&)*(_couplings.Lambda_z1qsq[0])),
+  Lambda_z21("Lambda_z21", "Lambda_z21", this, (RooAbsReal&)*(_couplings.Lambda_z2qsq[0])),
+  Lambda_z31("Lambda_z31", "Lambda_z31", this, (RooAbsReal&)*(_couplings.Lambda_z3qsq[0])),
+  Lambda_z41("Lambda_z41", "Lambda_z41", this, (RooAbsReal&)*(_couplings.Lambda_z4qsq[0])),
 
-  Lambda_z11("Lambda_z11", "Lambda_z11", this, (RooAbsReal&)*(_parameters.Lambda_z1qsq[0])),
-  Lambda_z21("Lambda_z21", "Lambda_z21", this, (RooAbsReal&)*(_parameters.Lambda_z2qsq[0])),
-  Lambda_z31("Lambda_z31", "Lambda_z31", this, (RooAbsReal&)*(_parameters.Lambda_z3qsq[0])),
-  Lambda_z41("Lambda_z41", "Lambda_z41", this, (RooAbsReal&)*(_parameters.Lambda_z4qsq[0])),
+  Lambda_z12("Lambda_z12", "Lambda_z12", this, (RooAbsReal&)*(_couplings.Lambda_z1qsq[1])),
+  Lambda_z22("Lambda_z22", "Lambda_z22", this, (RooAbsReal&)*(_couplings.Lambda_z2qsq[1])),
+  Lambda_z32("Lambda_z32", "Lambda_z32", this, (RooAbsReal&)*(_couplings.Lambda_z3qsq[1])),
+  Lambda_z42("Lambda_z42", "Lambda_z42", this, (RooAbsReal&)*(_couplings.Lambda_z4qsq[1])),
 
-  Lambda_z12("Lambda_z12", "Lambda_z12", this, (RooAbsReal&)*(_parameters.Lambda_z1qsq[1])),
-  Lambda_z22("Lambda_z22", "Lambda_z22", this, (RooAbsReal&)*(_parameters.Lambda_z2qsq[1])),
-  Lambda_z32("Lambda_z32", "Lambda_z32", this, (RooAbsReal&)*(_parameters.Lambda_z3qsq[1])),
-  Lambda_z42("Lambda_z42", "Lambda_z42", this, (RooAbsReal&)*(_parameters.Lambda_z4qsq[1])),
+  Lambda_z10("Lambda_z10", "Lambda_z10", this, (RooAbsReal&)*(_couplings.Lambda_z1qsq[2])),
+  Lambda_z20("Lambda_z20", "Lambda_z20", this, (RooAbsReal&)*(_couplings.Lambda_z2qsq[2])),
+  Lambda_z30("Lambda_z30", "Lambda_z30", this, (RooAbsReal&)*(_couplings.Lambda_z3qsq[2])),
+  Lambda_z40("Lambda_z40", "Lambda_z40", this, (RooAbsReal&)*(_couplings.Lambda_z4qsq[2])),
 
-  Lambda_z10("Lambda_z10", "Lambda_z10", this, (RooAbsReal&)*(_parameters.Lambda_z1qsq[2])),
-  Lambda_z20("Lambda_z20", "Lambda_z20", this, (RooAbsReal&)*(_parameters.Lambda_z2qsq[2])),
-  Lambda_z30("Lambda_z30", "Lambda_z30", this, (RooAbsReal&)*(_parameters.Lambda_z3qsq[2])),
-  Lambda_z40("Lambda_z40", "Lambda_z40", this, (RooAbsReal&)*(_parameters.Lambda_z4qsq[2])),
-
-  cz_q1sq("cz_q1sq", "cz_q1sq", this, (RooAbsReal&)*(_parameters.cLambda_qsq[0])),
-  cz_q2sq("cz_q2sq", "cz_q2sq", this, (RooAbsReal&)*(_parameters.cLambda_qsq[1])),
-  cz_q12sq("cz_q12sq", "cz_q12sq", this, (RooAbsReal&)*(_parameters.cLambda_qsq[2]))
-{
-  setProxies(_measurables);
-}
+  cz_q1sq("cz_q1sq", "cz_q1sq", this, (RooAbsReal&)*(_couplings.cLambda_qsq[0])),
+  cz_q2sq("cz_q2sq", "cz_q2sq", this, (RooAbsReal&)*(_couplings.cLambda_qsq[1])),
+  cz_q12sq("cz_q12sq", "cz_q12sq", this, (RooAbsReal&)*(_couplings.cLambda_qsq[2]))
+{}
 
 
 RooSpinZero::RooSpinZero(const RooSpinZero& other, const char* name) :
-RooAbsPdf(other, name),
-Vdecay1(other.Vdecay1), Vdecay2(other.Vdecay2),
-h1("h1", this, other.h1),
-h2("h2", this, other.h2),
-Phi("Phi", this, other.Phi),
-m1("m1", this, other.m1),
-m2("m2", this, other.m2),
-m12("m12", this, other.m12),
-hs("hs", this, other.hs),
-Phi1("Phi1", this, other.Phi1),
-Y("Y", this, other.Y),
-
-mX("mX", this, other.mX),
-gamX("gamX", this, other.gamX),
-mV("mV", this, other.mV),
-gamV("gamV", this, other.gamV),
-R1Val("R1Val", this, other.R1Val),
-R2Val("R2Val", this, other.R2Val),
+RooSpin(other, name),
 
 g1Val("g1Val", this, other.g1Val),
 g2Val("g2Val", this, other.g2Val),
@@ -463,18 +432,6 @@ void RooSpinZero::calculateAi(Double_t& a1Re, Double_t& a1Im, Double_t& a2Re, Do
   a2Im = -(2.*g2_dynIm + g3_dynIm*kappa)*pow(m12, 2);
   a1Im = g1_dynIm*pow(mV, 2) - a2Im*s/pow(m12, 2);
 }
-void RooSpinZero::calculatePropagator(Double_t& propRe, Double_t& propIm, Double_t mass, bool useGamma)const{
-  // prop = -i / ((m**2-mV**2) + i*mV*GaV) = - ( mV*GaV + i*(m**2-mV**2) ) / ((m**2-mV**2)**2 + (mV*GaV)**2)
-  if (useGamma){
-    propRe = 0;
-    propIm = -1./pow(mass, 2);
-  }
-  else{
-    Double_t denominator = pow(mV*gamV, 2)+pow(pow(mass, 2)-pow(mV, 2), 2);
-    propRe = -mV*gamV/denominator;
-    propIm = -(pow(mass, 2)-pow(mV, 2))/denominator;
-  }
-}
 void RooSpinZero::calculateAmplitudeScale(bool isGammaV1, bool isGammaV2)const{
 
 }
@@ -532,19 +489,4 @@ void RooSpinZero::calculateAmplitudes(Double_t& A00Re, Double_t& A00Im, Double_t
   if (!(A00Re==A00Re) || !(AppRe==AppRe) || !(AmmRe==AmmRe) || !(A00Im==A00Im) || !(AppIm==AppIm) || !(AmmIm==AmmIm)){
     cout << eta1 << '\t' << eta2 << '\t' << etas << '\t' << etasp << '\t' << eta1p2 << endl;
   }
-}
-
-void RooSpinZero::setProxies(modelMeasurables _measurables){
-  setProxy(h1, (RooAbsReal*)_measurables.h1);
-  setProxy(h2, (RooAbsReal*)_measurables.h2);
-  setProxy(Phi, (RooAbsReal*)_measurables.Phi);
-  setProxy(m1, (RooAbsReal*)_measurables.m1);
-  setProxy(m2, (RooAbsReal*)_measurables.m2);
-  setProxy(m12, (RooAbsReal*)_measurables.m12);
-  setProxy(hs, (RooAbsReal*)_measurables.hs);
-  setProxy(Phi1, (RooAbsReal*)_measurables.Phi1);
-  setProxy(Y, (RooAbsReal*)_measurables.Y);
-}
-void RooSpinZero::setProxy(RooRealProxy& proxy, RooAbsReal* objectPtr){
-  if (objectPtr!=0) proxy.setArg((RooAbsReal&)*objectPtr);
 }

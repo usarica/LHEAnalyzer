@@ -9,11 +9,13 @@ RooSpinZero_5D_VH::RooSpinZero_5D_VH(
   const char *name, const char *title,
   modelMeasurables _measurables,
   modelParameters _parameters,
-  int _Vdecay1, int _Vdecay2
+  modelCouplings _couplings,
+  RooSpin::VdecayType _Vdecay1, RooSpin::VdecayType _Vdecay2
   ) : RooSpinZero(
   name, title,
   _measurables,
   _parameters,
+  _couplings,
   _Vdecay1, _Vdecay2
   )
 {}

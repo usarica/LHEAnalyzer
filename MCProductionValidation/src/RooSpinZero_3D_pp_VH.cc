@@ -9,12 +9,14 @@ RooSpinZero_3D_pp_VH::RooSpinZero_3D_pp_VH(
   const char *name, const char *title,
   modelMeasurables _measurables,
   modelParameters _parameters,
+  modelCouplings _couplings,
   Double_t _sqrts,
-  int _Vdecay1, int _Vdecay2
+  RooSpin::VdecayType _Vdecay1, RooSpin::VdecayType _Vdecay2
   ) : RooSpinZero(
   name, title,
   _measurables,
   _parameters,
+  _couplings,
   _Vdecay1, _Vdecay2
   ),
   sqrts(_sqrts)

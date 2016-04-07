@@ -5,7 +5,7 @@
 #endif
 
 
-ScalarPdfFactory_ggH::ScalarPdfFactory_ggH(RooSpinZero::modelMeasurables measurables_, bool acceptance_, int V1decay_, int V2decay_) :
+ScalarPdfFactory_ggH::ScalarPdfFactory_ggH(RooSpinZero::modelMeasurables measurables_, bool acceptance_, RooSpin::VdecayType V1decay_, RooSpin::VdecayType V2decay_) :
 ScalarPdfFactory(measurables_, acceptance_, V1decay_, V2decay_)
 {
   measurables.Y=0;
@@ -13,7 +13,7 @@ ScalarPdfFactory(measurables_, acceptance_, V1decay_, V2decay_)
   makeParamsConst(true);
   initPDF();
 }
-ScalarPdfFactory_ggH::ScalarPdfFactory_ggH(RooSpinZero::modelMeasurables measurables_, double gRatio_[4][8], double gZGsRatio_[4][1], double gGsGsRatio_[3][1], bool pmf_applied_, bool acceptance_, int V1decay_, int V2decay_) :
+ScalarPdfFactory_ggH::ScalarPdfFactory_ggH(RooSpinZero::modelMeasurables measurables_, double gRatio_[4][8], double gZGsRatio_[4][1], double gGsGsRatio_[3][1], bool pmf_applied_, bool acceptance_, RooSpin::VdecayType V1decay_, RooSpin::VdecayType V2decay_) :
 ScalarPdfFactory(measurables_, gRatio_, gZGsRatio_, gGsGsRatio_, pmf_applied_, acceptance_, V1decay_, V2decay_)
 {
   measurables.Y=0;
@@ -148,13 +148,13 @@ void ScalarPdfFactory_ggH::destroyAcceptanceParams(){
 }
 
 void ScalarPdfFactory_ggH::makeParamsConst(bool yesNo){
-  parameters.Lambda->setConstant(true);
-  parameters.Lambda_zgs1->setConstant(true);
-  parameters.Lambda_z1->setConstant(true);
-  parameters.Lambda_z2->setConstant(true);
-  parameters.Lambda_z3->setConstant(true);
-  parameters.Lambda_z4->setConstant(true);
-  parameters.Lambda_Q->setConstant(true);
+  couplings.Lambda->setConstant(true);
+  couplings.Lambda_zgs1->setConstant(true);
+  couplings.Lambda_z1->setConstant(true);
+  couplings.Lambda_z2->setConstant(true);
+  couplings.Lambda_z3->setConstant(true);
+  couplings.Lambda_z4->setConstant(true);
+  couplings.Lambda_Q->setConstant(true);
 
   parameters.mX->setConstant(yesNo);
   parameters.gamX->setConstant(yesNo);
@@ -252,6 +252,7 @@ void ScalarPdfFactory_ggH::initPDF(){
     "PDF", "PDF",
     measurables,
     parameters,
+    couplings,
     accepParams,
     V1decay,V2decay
     );

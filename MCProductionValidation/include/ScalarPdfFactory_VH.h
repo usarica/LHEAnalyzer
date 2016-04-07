@@ -15,8 +15,8 @@
 class ScalarPdfFactory_VH : public ScalarPdfFactory {
 public:
 
-  ScalarPdfFactory_VH(RooSpinZero::modelMeasurables measurables_, double sqrts_, int VHmode1_=3, int VHmode2_=3);
-  ScalarPdfFactory_VH(RooSpinZero::modelMeasurables measurables_, double gRatio_[4][8], double gZGsRatio_[4][1], double gGsGsRatio_[3][1], double sqrts_, bool pmf_applied_=false, int VHmode1_=3, int VHmode2_=3);
+  ScalarPdfFactory_VH(RooSpin::modelMeasurables measurables_, double sqrts_, RooSpin::VdecayType VHmode1_=RooSpin::kVdecayType_Zud, RooSpin::VdecayType VHmode2_=RooSpin::kVdecayType_Zud);
+  ScalarPdfFactory_VH(RooSpin::modelMeasurables measurables_, double gRatio_[4][8], double gZGsRatio_[4][1], double gGsGsRatio_[3][1], double sqrts_, bool pmf_applied_=false, RooSpin::VdecayType VHmode1_=RooSpin::kVdecayType_Zud, RooSpin::VdecayType VHmode2_=RooSpin::kVdecayType_Zud);
   ~ScalarPdfFactory_VH();
 
   void makeParamsConst(bool yesNo=true);

@@ -5,22 +5,22 @@
 #endif
 
 
-ScalarPdfFactory_VH::ScalarPdfFactory_VH(RooSpinZero::modelMeasurables measurables_, double sqrts_, int VHmode1_, int VHmode2_) :
+ScalarPdfFactory_VH::ScalarPdfFactory_VH(RooSpinZero::modelMeasurables measurables_, double sqrts_, RooSpin::VdecayType VHmode1_, RooSpin::VdecayType VHmode2_) :
 ScalarPdfFactory(measurables_, false, VHmode1_, VHmode2_),
 sqrts(sqrts_)
 {
-  if (VHmode1_==-1 || VHmode1_==3 || VHmode1_==4 || VHmode1_==5) PDFType = 1;
+  if (VHmode1_==RooSpin::kVdecayType_Wany || VHmode1_==RooSpin::kVdecayType_Zuu || VHmode1_==RooSpin::kVdecayType_Zdd || VHmode1_==RooSpin::kVdecayType_Zud) PDFType = 1;
   else PDFType = 2;
   if (PDFType==2) measurables.Y=0;
 
   makeParamsConst(true);
   initPDF();
 }
-ScalarPdfFactory_VH::ScalarPdfFactory_VH(RooSpinZero::modelMeasurables measurables_, double gRatio_[4][8], double gZGsRatio_[4][1], double gGsGsRatio_[3][1], double sqrts_, bool pmf_applied_, int VHmode1_, int VHmode2_) :
+ScalarPdfFactory_VH::ScalarPdfFactory_VH(RooSpinZero::modelMeasurables measurables_, double gRatio_[4][8], double gZGsRatio_[4][1], double gGsGsRatio_[3][1], double sqrts_, bool pmf_applied_, RooSpin::VdecayType VHmode1_, RooSpin::VdecayType VHmode2_) :
 ScalarPdfFactory(measurables_, gRatio_, gZGsRatio_, gGsGsRatio_, pmf_applied_, false, VHmode1_, VHmode2_),
 sqrts(sqrts_)
 {
-  if (VHmode1_==-1 || VHmode1_==3 || VHmode1_==4 || VHmode1_==5) PDFType = 1;
+  if (VHmode1_==RooSpin::kVdecayType_Wany || VHmode1_==RooSpin::kVdecayType_Zuu || VHmode1_==RooSpin::kVdecayType_Zdd || VHmode1_==RooSpin::kVdecayType_Zud) PDFType = 1;
   else PDFType = 2;
   if (PDFType==2) measurables.Y=0;
 
@@ -32,13 +32,13 @@ ScalarPdfFactory_VH::~ScalarPdfFactory_VH(){
 }
 
 void ScalarPdfFactory_VH::makeParamsConst(bool yesNo){
-  parameters.Lambda->setConstant(true);
-  parameters.Lambda_zgs1->setConstant(true);
-  parameters.Lambda_z1->setConstant(true);
-  parameters.Lambda_z2->setConstant(true);
-  parameters.Lambda_z3->setConstant(true);
-  parameters.Lambda_z4->setConstant(true);
-  parameters.Lambda_Q->setConstant(true);
+  couplings.Lambda->setConstant(true);
+  couplings.Lambda_zgs1->setConstant(true);
+  couplings.Lambda_z1->setConstant(true);
+  couplings.Lambda_z2->setConstant(true);
+  couplings.Lambda_z3->setConstant(true);
+  couplings.Lambda_z4->setConstant(true);
+  couplings.Lambda_Q->setConstant(true);
 
   parameters.mX->setConstant(yesNo);
   parameters.gamX->setConstant(yesNo);
@@ -56,6 +56,7 @@ void ScalarPdfFactory_VH::initPDF(){
       "PDF", "PDF",
       measurables,
       parameters,
+      couplings,
       V1decay, V2decay
       );
     PDF_base = (RooSpinZero*)PDF_ILC_5D;
@@ -65,6 +66,7 @@ void ScalarPdfFactory_VH::initPDF(){
       "PDF", "PDF",
       measurables,
       parameters,
+      couplings,
       sqrts,
       V1decay, V2decay
       );

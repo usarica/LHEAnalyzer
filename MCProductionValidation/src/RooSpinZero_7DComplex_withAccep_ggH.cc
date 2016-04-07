@@ -9,12 +9,14 @@ RooSpinZero_7DComplex_withAccep_ggH::RooSpinZero_7DComplex_withAccep_ggH(
   const char *name, const char *title,
   modelMeasurables _measurables,
   modelParameters _parameters,
+  modelCouplings _couplings,
   accepParameters _accepParams,
-  int _Vdecay1, int _Vdecay2
+  RooSpin::VdecayType _Vdecay1, RooSpin::VdecayType _Vdecay2
   ) : RooSpinZero(
   name, title,
   _measurables,
   _parameters,
+  _couplings,
   _Vdecay1, _Vdecay2
   ),
   aPhi("aPhi", "aPhi", this, (RooAbsReal&)*(_accepParams.aPhi)),

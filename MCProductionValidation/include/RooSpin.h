@@ -19,6 +19,7 @@ public:
 
   enum VdecayType{
     kVdecayType_Wany=-1,
+    kVdecayType_GammaOnshell=0,
     kVdecayType_Zll=1,
     kVdecayType_Znn=2,
     kVdecayType_Zuu=3,

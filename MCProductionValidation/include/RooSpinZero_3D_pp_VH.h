@@ -19,8 +19,9 @@ public:
     const char *name, const char *title,
     modelMeasurables _measurables,
     modelParameters _parameters,
+    modelCouplings _couplings,
     Double_t _sqrts,
-    int _Vdecay1=1, int _Vdecay2=1
+    RooSpin::VdecayType _Vdecay1=RooSpin::kVdecayType_Zll, RooSpin::VdecayType _Vdecay2=RooSpin::kVdecayType_Zll
     );
 
   RooSpinZero_3D_pp_VH(const RooSpinZero_3D_pp_VH& other, const char* name=0);

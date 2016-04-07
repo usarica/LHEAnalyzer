@@ -31,15 +31,15 @@ using namespace std;
 void angularDistributions_spin0_VH(string cinput, double sqrts = 13, double g1Re=1, double g2Re=0, double g4Re=0, double g1L1Re=0, double g2Im=0, double g4Im=0, double g1L1Im=0, int isLeptonic=0, int nbins=80){
   sqrts *= 1e3;
 
-  int VHmode=-1;
+  RooSpin::VdecayType VHmode=RooSpin::kVdecayType_Wany;
   bool isZH=false;
   if (cinput.find("ZH")!=string::npos){
-    VHmode=5;
+    VHmode=RooSpin::kVdecayType_Zud;
     isZH = true;
   }
-  int Vdecaymode = 5;
-  if (isLeptonic==1) Vdecaymode = 1;
-  else if (isLeptonic==2) Vdecaymode = 2;
+  RooSpin::VdecayType Vdecaymode = RooSpin::kVdecayType_Zud;
+  if (isLeptonic==1) Vdecaymode = RooSpin::kVdecayType_Zll;
+  else if (isLeptonic==2) Vdecaymode = RooSpin::kVdecayType_Znn;
   
   const double mHPOLE=125;
   const double GaHPOLE=4.07e-3;
@@ -71,7 +71,7 @@ void angularDistributions_spin0_VH(string cinput, double sqrts = 13, double g1Re
   RooRealVar* Phi = new RooRealVar(strKDs[5], "#Phi", -TMath::Pi(), TMath::Pi());
   RooRealVar* Y = new RooRealVar("GenY", "Y", 0, -4, 4);
 
-  RooSpinZero::modelMeasurables measurables_;
+  RooSpin::modelMeasurables measurables_;
   measurables_.h1 = h1;
   measurables_.h2 = h2;
   measurables_.Phi = Phi;
@@ -100,10 +100,10 @@ void angularDistributions_spin0_VH(string cinput, double sqrts = 13, double g1Re
   RooRealVar* g4List[8][2];
   for (int gg=0; gg<8; gg++){
     for (int im=0; im<2; im++){
-      g1List[gg][im] = (RooRealVar*)someHiggs->parameters.g1List[gg][im];
-      g2List[gg][im] = (RooRealVar*)someHiggs->parameters.g2List[gg][im];
-      //g3List[gg][im] = (RooRealVar*)someHiggs->parameters.g3List[gg][im];
-      g4List[gg][im] = (RooRealVar*)someHiggs->parameters.g4List[gg][im];
+      g1List[gg][im] = (RooRealVar*)someHiggs->couplings.g1List[gg][im];
+      g2List[gg][im] = (RooRealVar*)someHiggs->couplings.g2List[gg][im];
+      //g3List[gg][im] = (RooRealVar*)someHiggs->couplings.g3List[gg][im];
+      g4List[gg][im] = (RooRealVar*)someHiggs->couplings.g4List[gg][im];
     }
   }
   g1List[0][0]->setVal(g1Re);

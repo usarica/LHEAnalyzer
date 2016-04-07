@@ -53,8 +53,9 @@ public:
     const char *name, const char *title,
     modelMeasurables _measurables,
     modelParameters _parameters,
+    modelCouplings _couplings,
     accepParameters _accepParams,
-    int _Vdecay1=1, int _Vdecay2=1
+    RooSpin::VdecayType _Vdecay1=RooSpin::kVdecayType_Zll, RooSpin::VdecayType _Vdecay2=RooSpin::kVdecayType_Zll
     );
   RooSpinZero_7DComplex_withAccep_ggH(const RooSpinZero_7DComplex_withAccep_ggH& other, const char* name=0);
   virtual TObject* clone(const char* newname) const { return new RooSpinZero_7DComplex_withAccep_ggH(*this, newname); }
