@@ -1,4 +1,9 @@
-#include "../include/RooSpinZero_5D_VH.h" 
+#ifdef _def_melatools_
+#include <ZZMatrixElement/MELA/interface/RooSpinZero_5D_VH.h>
+#else
+#include "../include/RooSpinZero_5D_VH.h"
+#endif
+
 
 RooSpinZero_5D_VH::RooSpinZero_5D_VH(
   const char *name, const char *title,

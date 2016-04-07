@@ -1,4 +1,9 @@
+#ifdef _def_melatools_
+#include <ZZMatrixElement/MELA/interface/TensorPdfFactory.h>
+#else
 #include "../include/TensorPdfFactory.h"
+#endif
+
 
 TensorPdfFactory::TensorPdfFactory(RooSpinTwo::modelMeasurables measurables_, int V1decay_, int V2decay_) :
 V1decay(V1decay_),

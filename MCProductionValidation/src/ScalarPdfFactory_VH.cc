@@ -1,4 +1,9 @@
+#ifdef _def_melatools_
+#include <ZZMatrixElement/MELA/interface/ScalarPdfFactory_VH.h>
+#else
 #include "../include/ScalarPdfFactory_VH.h"
+#endif
+
 
 ScalarPdfFactory_VH::ScalarPdfFactory_VH(RooSpinZero::modelMeasurables measurables_, double sqrts_, int VHmode1_, int VHmode2_) :
 ScalarPdfFactory(measurables_, false, VHmode1_, VHmode2_),

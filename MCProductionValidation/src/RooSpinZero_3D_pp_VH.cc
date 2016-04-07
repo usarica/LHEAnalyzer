@@ -1,4 +1,8 @@
-#include "../include/RooSpinZero_3D_pp_VH.h" 
+#ifdef _def_melatools_
+#include <ZZMatrixElement/MELA/interface/RooSpinZero_3D_pp_VH.h>
+#else
+#include "../include/RooSpinZero_3D_pp_VH.h"
+#endif
 
 
 RooSpinZero_3D_pp_VH::RooSpinZero_3D_pp_VH(

@@ -1,4 +1,9 @@
+#ifdef _def_melatools_
+#include <ZZMatrixElement/MELA/interface/ScalarPdfFactory.h>
+#else
 #include "../include/ScalarPdfFactory.h"
+#endif
+
 
 ScalarPdfFactory::ScalarPdfFactory(RooSpinZero::modelMeasurables measurables_, bool acceptance_, int V1decay_, int V2decay_) :
 parameterization(0),

@@ -1,9 +1,14 @@
 #ifndef TENSOR_PDF_FACTORY
 #define TENSOR_PDF_FACTORY
 
+#ifdef _def_melatools_
+#include <ZZMatrixElement/MELA/interface/RooSpinTwo.h>
+#else
 #include "RooSpinTwo.h"
+#endif
 #include "TString.h"
 #include "RooFormulaVar.h"
+
 
 class TensorPdfFactory{
 public:

@@ -1,4 +1,8 @@
+#ifdef _def_melatools_
+#include <ZZMatrixElement/MELA/interface/RooSpinTwo_7DComplex_HVV.h>
+#else
 #include "../include/RooSpinTwo_7DComplex_HVV.h"
+#endif
 
 
 RooSpinTwo_7DComplex_HVV::RooSpinTwo_7DComplex_HVV(

@@ -1,9 +1,14 @@
 #ifndef SCALAR_PDF_FACTORY
 #define SCALAR_PDF_FACTORY
 
+#ifdef _def_melatools_
+#include <ZZMatrixElement/MELA/interface/RooSpinZero.h>
+#else
 #include "RooSpinZero.h"
+#endif
 #include "TString.h"
 #include "RooFormulaVar.h"
+
 
 class ScalarPdfFactory{
 public:

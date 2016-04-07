@@ -1,4 +1,8 @@
+#ifdef _def_melatools_
+#include <ZZMatrixElement/MELA/interface/RooSpinZero_7DComplex_withAccep_ggH.h>
+#else
 #include "../include/RooSpinZero_7DComplex_withAccep_ggH.h"
+#endif
 
 
 RooSpinZero_7DComplex_withAccep_ggH::RooSpinZero_7DComplex_withAccep_ggH(

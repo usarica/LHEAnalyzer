@@ -1,8 +1,14 @@
 #ifndef SCALAR_PDF_FACTORY_GGH
 #define SCALAR_PDF_FACTORY_GGH
 
+#ifdef _def_melatools_
+#include <ZZMatrixElement/MELA/interface/RooSpinZero_7DComplex_withAccep_ggH.h>
+#include <ZZMatrixElement/MELA/interface/ScalarPdfFactory.h>
+#else
 #include "RooSpinZero_7DComplex_withAccep_ggH.h"
 #include "ScalarPdfFactory.h"
+#endif
+
 
 class ScalarPdfFactory_ggH : public ScalarPdfFactory {
 public:
