@@ -9,7 +9,6 @@
 
 
 class RooSpinTwo_7DComplex_HVV : public RooSpinTwo {
-
 public:
 
   RooSpinTwo_7DComplex_HVV(){}
@@ -17,7 +16,8 @@ public:
     const char *name, const char *title,
     modelMeasurables _measurables,
     modelParameters _parameters,
-    int _Vdecay1=1, int _Vdecay2=1
+    modelCouplings _couplings,
+    RooSpin::VdecayType _Vdecay1=RooSpin::kVdecayType_Zll, RooSpin::VdecayType _Vdecay2=RooSpin::kVdecayType_Zll
     );
   RooSpinTwo_7DComplex_HVV(const RooSpinTwo_7DComplex_HVV& other, const char* name=0);
   virtual TObject* clone(const char* newname) const { return new RooSpinTwo_7DComplex_HVV(*this, newname); }

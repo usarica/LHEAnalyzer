@@ -152,12 +152,12 @@ void RooSpinZero_3D_pp_VH::evaluatePolarizationTerms(Double_t& A00term, Double_t
 
 Double_t RooSpinZero_3D_pp_VH::evaluate() const{
   Double_t epsilon=1e-15;
-  Double_t m1_=m1; if (Vdecay1==0) return epsilon;
-  Double_t m2_=m2; if (Vdecay2==0) m2_=0;
-  if ((m12+m2_) > m1_ || (m2_ <= 0. && Vdecay2!=0) || m1_ <= 0.) return epsilon;
+  Double_t m1_=m1; if (Vdecay1==RooSpin::kVdecayType_GammaOnshell) return epsilon;
+  Double_t m2_=m2; if (Vdecay2==RooSpin::kVdecayType_GammaOnshell) m2_=0;
+  if ((m12+m2_) > m1_ || (m2_ <= 0. && Vdecay2!=RooSpin::kVdecayType_GammaOnshell) || m1_ <= 0.) return epsilon;
 
   Int_t code = 1;
-  if (Vdecay2==0) code *= prime_h2*prime_Phi;
+  if (Vdecay2==RooSpin::kVdecayType_GammaOnshell) code *= prime_h2*prime_Phi;
 
   Double_t betaValSq = (1.-(pow(m12-m2_, 2)/pow(m1_, 2)))*(1.-(pow(m12+m2_, 2)/pow(m1_, 2)));
   if (betaValSq<0.) return epsilon;
@@ -166,7 +166,7 @@ Double_t RooSpinZero_3D_pp_VH::evaluate() const{
   Double_t term1Coeff = 1;
   Double_t term2Coeff = 1;
   term1Coeff = pow(m1_, -2);
-  if (Vdecay2!=0) term2Coeff = 2.*m2_;
+  if (Vdecay2!=RooSpin::kVdecayType_GammaOnshell) term2Coeff = 2.*m2_;
   Double_t plumi = partonicLuminosity(m1_, Y, sqrts);
 
   Double_t value = 0;
@@ -180,9 +180,9 @@ Double_t RooSpinZero_3D_pp_VH::evaluate() const{
 Int_t RooSpinZero_3D_pp_VH::getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* /*rangeName*/) const{
   int code=1;
   if (matchArgs(allVars, analVars, h1)) code *= prime_h1;
-  if (matchArgs(allVars, analVars, h2) || Vdecay2==0) code *= prime_h2;
+  if (matchArgs(allVars, analVars, h2) || Vdecay2==RooSpin::kVdecayType_GammaOnshell) code *= prime_h2;
   if (matchArgs(allVars, analVars, hs)) code *= prime_hs;
-  if (matchArgs(allVars, analVars, Phi) || Vdecay2==0) code *= prime_Phi;
+  if (matchArgs(allVars, analVars, Phi) || Vdecay2==RooSpin::kVdecayType_GammaOnshell) code *= prime_Phi;
   if (matchArgs(allVars, analVars, Phi1)) code *= prime_Phi1;
   if (code==1) code=0;
   return code;
@@ -190,9 +190,9 @@ Int_t RooSpinZero_3D_pp_VH::getAnalyticalIntegral(RooArgSet& allVars, RooArgSet&
 
 Double_t RooSpinZero_3D_pp_VH::analyticalIntegral(Int_t code, const char* /*rangeName*/) const{
   Double_t epsilon=1e-10;
-  Double_t m1_=m1; if (Vdecay1==0) return epsilon;
-  Double_t m2_=m2; if (Vdecay2==0) m2_=0;
-  if ((m12+m2_) > m1_ || (m2_ <= 0. && Vdecay2!=0) || m1_ <= 0.) return epsilon;
+  Double_t m1_=m1; if (Vdecay1==RooSpin::kVdecayType_GammaOnshell) return epsilon;
+  Double_t m2_=m2; if (Vdecay2==RooSpin::kVdecayType_GammaOnshell) m2_=0;
+  if ((m12+m2_) > m1_ || (m2_ <= 0. && Vdecay2!=RooSpin::kVdecayType_GammaOnshell) || m1_ <= 0.) return epsilon;
 
   Double_t betaValSq = (1.-(pow(m12-m2_, 2)/pow(m1_, 2)))*(1.-(pow(m12+m2_, 2)/pow(m1_, 2)));
   if (betaValSq<0) return epsilon;
@@ -201,7 +201,7 @@ Double_t RooSpinZero_3D_pp_VH::analyticalIntegral(Int_t code, const char* /*rang
   Double_t term1Coeff = 1;
   Double_t term2Coeff = 1;
   term1Coeff = pow(m1_, -2);
-  if (Vdecay2!=0) term2Coeff = 2.*m2_;
+  if (Vdecay2!=RooSpin::kVdecayType_GammaOnshell) term2Coeff = 2.*m2_;
   Double_t plumi = partonicLuminosity(m1_, Y, sqrts);
 
   Double_t value = 0;

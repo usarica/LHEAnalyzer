@@ -9,76 +9,44 @@ RooSpinTwo::RooSpinTwo(
   const char* name, const char* title,
   modelMeasurables _measurables,
   modelParameters _parameters,
-  int _Vdecay1, int _Vdecay2
-  ) : RooAbsPdf(name, title),
-  Vdecay1((Int_t)_Vdecay1), Vdecay2((Int_t)_Vdecay2),
-  h1("h1", "h1", this),
-  h2("h2", "h2", this),
-  Phi("Phi", "Phi", this),
-  m1("m1", "m1", this),
-  m2("m2", "m2", this),
-  m12("m12", "m12", this),
-  hs("hs", "hs", this),
-  Phi1("Phi1", "Phi1", this),
-  //Y("Y", "Y", this),
+  modelCouplings _couplings,
+  RooSpin::VdecayType _Vdecay1, RooSpin::VdecayType _Vdecay2
+  ) : RooSpin(
+  name, title,
+  _measurables, _parameters,
+  _Vdecay1, _Vdecay2
+  ),
 
-  mX("mX", "mX", this, (RooAbsReal&)*(_parameters.mX)),
-  gamX("gamX", "gamX", this, (RooAbsReal&)*(_parameters.gamX)),
-  mV("mV", "mV", this, (RooAbsReal&)*(_parameters.mV)),
-  gamV("gamV", "gamV", this, (RooAbsReal&)*(_parameters.gamV)),
-  R1Val("R1Val", "R1Val", this, (RooAbsReal&)*(_parameters.R1Val)),
-  R2Val("R2Val", "R2Val", this, (RooAbsReal&)*(_parameters.R2Val)),
+  b1Val("b1Val", "b1Val", this, (RooAbsReal&)*(_couplings.bList[0][0])),
+  b2Val("b2Val", "b2Val", this, (RooAbsReal&)*(_couplings.bList[1][0])),
+  b3Val("b3Val", "b3Val", this, (RooAbsReal&)*(_couplings.bList[2][0])),
+  b4Val("b4Val", "b4Val", this, (RooAbsReal&)*(_couplings.bList[3][0])),
+  b5Val("b5Val", "b5Val", this, (RooAbsReal&)*(_couplings.bList[4][0])),
+  b6Val("b6Val", "b6Val", this, (RooAbsReal&)*(_couplings.bList[5][0])),
+  b7Val("b7Val", "b7Val", this, (RooAbsReal&)*(_couplings.bList[6][0])),
+  b8Val("b8Val", "b8Val", this, (RooAbsReal&)*(_couplings.bList[7][0])),
+  b9Val("b9Val", "b9Val", this, (RooAbsReal&)*(_couplings.bList[8][0])),
+  b10Val("b10Val", "b10Val", this, (RooAbsReal&)*(_couplings.bList[9][0])),
 
-  b1Val("b1Val", "b1Val", this, (RooAbsReal&)*(_parameters.bList[0][0])),
-  b2Val("b2Val", "b2Val", this, (RooAbsReal&)*(_parameters.bList[1][0])),
-  b3Val("b3Val", "b3Val", this, (RooAbsReal&)*(_parameters.bList[2][0])),
-  b4Val("b4Val", "b4Val", this, (RooAbsReal&)*(_parameters.bList[3][0])),
-  b5Val("b5Val", "b5Val", this, (RooAbsReal&)*(_parameters.bList[4][0])),
-  b6Val("b6Val", "b6Val", this, (RooAbsReal&)*(_parameters.bList[5][0])),
-  b7Val("b7Val", "b7Val", this, (RooAbsReal&)*(_parameters.bList[6][0])),
-  b8Val("b8Val", "b8Val", this, (RooAbsReal&)*(_parameters.bList[7][0])),
-  b9Val("b9Val", "b9Val", this, (RooAbsReal&)*(_parameters.bList[8][0])),
-  b10Val("b10Val", "b10Val", this, (RooAbsReal&)*(_parameters.bList[9][0])),
+  b1ValIm("b1ValIm", "b1ValIm", this, (RooAbsReal&)*(_couplings.bList[0][1])),
+  b2ValIm("b2ValIm", "b2ValIm", this, (RooAbsReal&)*(_couplings.bList[1][1])),
+  b3ValIm("b3ValIm", "b3ValIm", this, (RooAbsReal&)*(_couplings.bList[2][1])),
+  b4ValIm("b4ValIm", "b4ValIm", this, (RooAbsReal&)*(_couplings.bList[3][1])),
+  b5ValIm("b5ValIm", "b5ValIm", this, (RooAbsReal&)*(_couplings.bList[4][1])),
+  b6ValIm("b6ValIm", "b6ValIm", this, (RooAbsReal&)*(_couplings.bList[5][1])),
+  b7ValIm("b7ValIm", "b7ValIm", this, (RooAbsReal&)*(_couplings.bList[6][1])),
+  b8ValIm("b8ValIm", "b8ValIm", this, (RooAbsReal&)*(_couplings.bList[7][1])),
+  b9ValIm("b9ValIm", "b9ValIm", this, (RooAbsReal&)*(_couplings.bList[8][1])),
+  b10ValIm("b10ValIm", "b10ValIm", this, (RooAbsReal&)*(_couplings.bList[9][1])),
 
-  b1ValIm("b1ValIm", "b1ValIm", this, (RooAbsReal&)*(_parameters.bList[0][1])),
-  b2ValIm("b2ValIm", "b2ValIm", this, (RooAbsReal&)*(_parameters.bList[1][1])),
-  b3ValIm("b3ValIm", "b3ValIm", this, (RooAbsReal&)*(_parameters.bList[2][1])),
-  b4ValIm("b4ValIm", "b4ValIm", this, (RooAbsReal&)*(_parameters.bList[3][1])),
-  b5ValIm("b5ValIm", "b5ValIm", this, (RooAbsReal&)*(_parameters.bList[4][1])),
-  b6ValIm("b6ValIm", "b6ValIm", this, (RooAbsReal&)*(_parameters.bList[5][1])),
-  b7ValIm("b7ValIm", "b7ValIm", this, (RooAbsReal&)*(_parameters.bList[6][1])),
-  b8ValIm("b8ValIm", "b8ValIm", this, (RooAbsReal&)*(_parameters.bList[7][1])),
-  b9ValIm("b9ValIm", "b9ValIm", this, (RooAbsReal&)*(_parameters.bList[8][1])),
-  b10ValIm("b10ValIm", "b10ValIm", this, (RooAbsReal&)*(_parameters.bList[9][1])),
+  Lambda("Lambda", "Lambda", this, (RooAbsReal&)*(_couplings.Lambda)),
 
-  Lambda("Lambda", "Lambda", this, (RooAbsReal&)*(_parameters.Lambda)),
-
-  f_spinz1("f_spinz1", "f_spinz1", this, (RooAbsReal&)*(_parameters.f_spinz1)),
-  f_spinz2("f_spinz2", "f_spinz2", this, (RooAbsReal&)*(_parameters.f_spinz2))
-{
-  setProxies(_measurables);
-}
-
+  f_spinz1("f_spinz1", "f_spinz1", this, (RooAbsReal&)*(_couplings.f_spinz1)),
+  f_spinz2("f_spinz2", "f_spinz2", this, (RooAbsReal&)*(_couplings.f_spinz2))
+{}
 
 RooSpinTwo::RooSpinTwo(const RooSpinTwo& other, const char* name) :
-RooAbsPdf(other, name),
-Vdecay1(other.Vdecay1), Vdecay2(other.Vdecay2),
-h1("h1", this, other.h1),
-h2("h2", this, other.h2),
-Phi("Phi", this, other.Phi),
-m1("m1", this, other.m1),
-m2("m2", this, other.m2),
-m12("m12", this, other.m12),
-hs("hs", this, other.hs),
-Phi1("Phi1", this, other.Phi1),
-//Y("Y", this, other.Y),
-
-mX("mX", this, other.mX),
-gamX("gamX", this, other.gamX),
-mV("mV", this, other.mV),
-gamV("gamV", this, other.gamV),
-R1Val("R1Val", this, other.R1Val),
-R2Val("R2Val", this, other.R2Val),
+RooSpin(other, name),
 
 b1Val("b1Val", this, other.b1Val),
 b2Val("a2Val", this, other.b2Val),
@@ -109,8 +77,8 @@ f_spinz2("f_spinz2", this, other.f_spinz2)
 {}
 
 void RooSpinTwo::calculateCi(std::vector<Double_t>& ciRe, std::vector<Double_t>& ciIm, bool isGammaV1, bool isGammaV2) const{
-  Double_t m1_=m1; if (Vdecay1==0) m1_=0;
-  Double_t m2_=m2; if (Vdecay2==0) m2_=0;
+  Double_t m1_=m1; if (Vdecay1==RooSpin::kVdecayType_GammaOnshell) m1_=0;
+  Double_t m2_=m2; if (Vdecay2==RooSpin::kVdecayType_GammaOnshell) m2_=0;
   Double_t m1sq = pow(m1_, 2);
   Double_t m2sq = pow(m2_, 2);
   Double_t mVsq = pow(mV, 2);
@@ -120,7 +88,7 @@ void RooSpinTwo::calculateCi(std::vector<Double_t>& ciRe, std::vector<Double_t>&
   if (m1sq>m12sq || m2sq>m12sq) s = -s;
   Double_t kappa = s/pow(Lambda, 2);
 
-  if (!isGammaV1 && !isGammaV2 && !(Vdecay1==0 || Vdecay2==0)){ // ZZ/WW
+  if (!isGammaV1 && !isGammaV2 && !(Vdecay1==RooSpin::kVdecayType_GammaOnshell || Vdecay2==RooSpin::kVdecayType_GammaOnshell)){ // ZZ/WW
     Double_t c1Re = 2.*(b1Val + b2Val*kappa*(1.+m1sq/s)*(1.+m2sq/s) + b5Val*mVsq/s); ciRe.push_back(c1Re);
     Double_t c2Re = -0.5*b1Val + b3Val*kappa*(1.-(m1sq+m2sq)/(2*s)) + 2.*b4Val*kappa + b7Val*kappa*mVsq/s; ciRe.push_back(c2Re);
     Double_t c3Re = -(b2Val/2.+b3Val+2.*b4Val)*kappa*m12sq/s; ciRe.push_back(c3Re);
@@ -139,7 +107,7 @@ void RooSpinTwo::calculateCi(std::vector<Double_t>& ciRe, std::vector<Double_t>&
     Double_t c6Im = b9ValIm*kappa*mVsq/s; ciIm.push_back(c6Im);
     Double_t c7Im = b10ValIm*m12sq*mVsq*pow(kappa/s, 2); ciIm.push_back(c7Im);
   }
-  //else if ((!isGammaV1 || !isGammaV2) && !(Vdecay1==0 && Vdecay2==0)){ // ZGs/ZG
+  //else if ((!isGammaV1 || !isGammaV2) && !(Vdecay1==RooSpin::kVdecayType_GammaOnshell && Vdecay2==RooSpin::kVdecayType_GammaOnshell)){ // ZGs/ZG
   //???
   //}
   //else{ // GG/GGs
@@ -163,18 +131,6 @@ void RooSpinTwo::calculateCi(std::vector<Double_t>& ciRe, std::vector<Double_t>&
     Double_t c7Im = 0; ciIm.push_back(c7Im);
   }
 }
-void RooSpinTwo::calculatePropagator(Double_t& propRe, Double_t& propIm, Double_t mass, bool useGamma)const{
-  // prop = -i / ((m**2-mV**2) + i*mV*GaV) = - ( mV*GaV + i*(m**2-mV**2) ) / ((m**2-mV**2)**2 + (mV*GaV)**2)
-  if (useGamma){
-    propRe = 0;
-    propIm = -1./pow(mass, 2);
-  }
-  else{
-    Double_t denominator = pow(mV*gamV, 2)+pow(pow(mass, 2)-pow(mV, 2), 2);
-    propRe = -mV*gamV/denominator;
-    propIm = -(pow(mass, 2)-pow(mV, 2))/denominator;
-  }
-}
 void RooSpinTwo::calculateAmplitudeScale(bool isGammaV1, bool isGammaV2)const{
 
 }
@@ -185,8 +141,8 @@ void RooSpinTwo::calculateAmplitudes(
   Double_t& ApmRe, Double_t& ApmIm, Double_t& AmpRe, Double_t& AmpIm,
   bool isGammaV1, bool isGammaV2
   )const{
-  Double_t m1_=m1; if (Vdecay1==0) m1_=0;
-  Double_t m2_=m2; if (Vdecay2==0) m2_=0;
+  Double_t m1_=m1; if (Vdecay1==RooSpin::kVdecayType_GammaOnshell) m1_=0;
+  Double_t m2_=m2; if (Vdecay2==RooSpin::kVdecayType_GammaOnshell) m2_=0;
 
   std::vector<Double_t> ciRe;
   std::vector<Double_t> ciIm;
@@ -194,8 +150,8 @@ void RooSpinTwo::calculateAmplitudes(
 
   Double_t propV1Re=0, propV2Re=0;
   Double_t propV1Im=-1, propV2Im=-1;
-  if (Vdecay1!=0) calculatePropagator(propV1Re, propV1Im, m1_, isGammaV1);
-  if (Vdecay2!=0) calculatePropagator(propV2Re, propV2Im, m2_, isGammaV2);
+  if (Vdecay1!=RooSpin::kVdecayType_GammaOnshell) calculatePropagator(propV1Re, propV1Im, m1_, isGammaV1);
+  if (Vdecay2!=RooSpin::kVdecayType_GammaOnshell) calculatePropagator(propV2Re, propV2Im, m2_, isGammaV2);
 
   Double_t c1Re = ciRe.at(0);
   Double_t c2Re = ciRe.at(1);
@@ -523,17 +479,3 @@ void RooSpinTwo::calculateAmplitudes(
   return;
 }
 
-void RooSpinTwo::setProxies(modelMeasurables _measurables){
-  setProxy(h1, (RooAbsReal*)_measurables.h1);
-  setProxy(h2, (RooAbsReal*)_measurables.h2);
-  setProxy(Phi, (RooAbsReal*)_measurables.Phi);
-  setProxy(m1, (RooAbsReal*)_measurables.m1);
-  setProxy(m2, (RooAbsReal*)_measurables.m2);
-  setProxy(m12, (RooAbsReal*)_measurables.m12);
-  setProxy(hs, (RooAbsReal*)_measurables.hs);
-  setProxy(Phi1, (RooAbsReal*)_measurables.Phi1);
-  //setProxy(Y, (RooAbsReal*)_measurables.Y);
-}
-void RooSpinTwo::setProxy(RooRealProxy& proxy, RooAbsReal* objectPtr){
-  if (objectPtr!=0) proxy.setArg((RooAbsReal&)*objectPtr);
-}

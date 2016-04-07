@@ -271,8 +271,8 @@ cz_q12sq("cz_q12sq", this, other.cz_q12sq)
 {}
 
 void RooSpinZero::calculateAi(Double_t& a1Re, Double_t& a1Im, Double_t& a2Re, Double_t& a2Im, Double_t& a3Re, Double_t& a3Im, bool isGammaV1, bool isGammaV2)const{
-  Double_t m1_=m1; if (Vdecay1==0) m1_=0;
-  Double_t m2_=m2; if (Vdecay2==0) m2_=0;
+  Double_t m1_=m1; if (Vdecay1==RooSpin::kVdecayType_GammaOnshell) m1_=0;
+  Double_t m2_=m2; if (Vdecay2==RooSpin::kVdecayType_GammaOnshell) m2_=0;
 
   Double_t s = (pow(m12, 2) - pow(m1_, 2) - pow(m2_, 2))/2.;
   if (pow(m1_, 2)>pow(m12, 2) || pow(m2_, 2)>pow(m12, 2)) s = -s;
@@ -286,7 +286,7 @@ void RooSpinZero::calculateAi(Double_t& a1Re, Double_t& a1Im, Double_t& a2Re, Do
   Double_t g3_dynIm=0;
   Double_t g4_dynIm=0;
 
-  if (!isGammaV1 && !isGammaV2 && !(Vdecay1==0 || Vdecay2==0)){
+  if (!isGammaV1 && !isGammaV2 && !(Vdecay1==RooSpin::kVdecayType_GammaOnshell || Vdecay2==RooSpin::kVdecayType_GammaOnshell)){
     if (g1_primeVal!=0) g1_dyn += g1_primeVal * pow(Lambda_z1, 4)/(pow(Lambda_z1, 2) + pow(m1_, 2))/(pow(Lambda_z1, 2) + pow(m2_, 2));
     if (g1_prime2Val!=0) g1_dyn += g1_prime2Val* (pow(m1_, 2) + pow(m2_, 2))/pow(Lambda_z1, 2);
     if (g1_prime3Val!=0) g1_dyn += g1_prime3Val* (pow(m1_, 2) - pow(m2_, 2))/pow(Lambda_z1, 2);
@@ -394,7 +394,7 @@ void RooSpinZero::calculateAi(Double_t& a1Re, Double_t& a1Im, Double_t& a2Re, Do
     if (cz_q2sq!=0.) g4_dynIm *= 1./(1.+ cz_q2sq*pow(m2_/Lambda_z42, 2));
     if (cz_q12sq!=0.) g4_dynIm *= 1./(1.+ cz_q12sq*pow(m12/Lambda_z40, 2));
   }
-  else if ((!isGammaV1 || !isGammaV2) && !(Vdecay1==0 && Vdecay2==0)){
+  else if ((!isGammaV1 || !isGammaV2) && !(Vdecay1==RooSpin::kVdecayType_GammaOnshell && Vdecay2==RooSpin::kVdecayType_GammaOnshell)){
     if (gzgs1_prime2Val!=0 && !isGammaV1) g1_dyn += gzgs1_prime2Val* pow(m1_, 2)/pow(Lambda_zgs1, 2);
     if (gzgs1_prime2Val!=0 && !isGammaV2) g1_dyn += gzgs1_prime2Val* pow(m2_, 2)/pow(Lambda_zgs1, 2);
     g2_dyn = gzgs2Val;
@@ -436,22 +436,22 @@ void RooSpinZero::calculateAmplitudeScale(bool isGammaV1, bool isGammaV2)const{
 
 }
 void RooSpinZero::calculateAmplitudes(Double_t& A00Re, Double_t& A00Im, Double_t& AppRe, Double_t& AppIm, Double_t& AmmRe, Double_t& AmmIm, bool isGammaV1, bool isGammaV2)const{
-  Double_t m1_=m1; if (Vdecay1==0) m1_=0;
-  Double_t m2_=m2; if (Vdecay2==0) m2_=0;
+  Double_t m1_=m1; if (Vdecay1==RooSpin::kVdecayType_GammaOnshell) m1_=0;
+  Double_t m2_=m2; if (Vdecay2==RooSpin::kVdecayType_GammaOnshell) m2_=0;
 
   Double_t a1Re, a2Re, a3Re, a1Im, a2Im, a3Im;
   calculateAi(a1Re, a1Im, a2Re, a2Im, a3Re, a3Im, isGammaV1, isGammaV2);
 
   Double_t propV1Re=0, propV2Re=0;
   Double_t propV1Im=-1, propV2Im=-1;
-  if (Vdecay1!=0) calculatePropagator(propV1Re, propV1Im, m1_, isGammaV1);
-  if (Vdecay2!=0) calculatePropagator(propV2Re, propV2Im, m2_, isGammaV2);
+  if (Vdecay1!=RooSpin::kVdecayType_GammaOnshell) calculatePropagator(propV1Re, propV1Im, m1_, isGammaV1);
+  if (Vdecay2!=RooSpin::kVdecayType_GammaOnshell) calculatePropagator(propV2Re, propV2Im, m2_, isGammaV2);
 
   Double_t eta1 = m1_ / m12;
   Double_t eta2 = m2_ / m12;
   Double_t eta1p2 = 1.;
-  if (Vdecay1!=0) eta1p2 *= eta1;
-  if (Vdecay2!=0) eta1p2 *= eta2;
+  if (Vdecay1!=RooSpin::kVdecayType_GammaOnshell) eta1p2 *= eta1;
+  if (Vdecay2!=RooSpin::kVdecayType_GammaOnshell) eta1p2 *= eta2;
 
   Double_t etas = (1. - pow(eta1, 2) - pow(eta2, 2))/2.;
   if (pow(eta1+eta2, 2)>1.) etas = -etas;

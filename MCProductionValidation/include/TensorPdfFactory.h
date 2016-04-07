@@ -12,28 +12,29 @@
 
 class TensorPdfFactory{
 public:
-  RooSpinTwo::modelMeasurables measurables;
-  RooSpinTwo::modelParameters parameters;
+  RooSpin::modelMeasurables measurables;
+  RooSpin::modelParameters parameters;
+  RooSpinTwo::modelCouplings couplings;
 
-  TensorPdfFactory(RooSpinTwo::modelMeasurables measurables_, int V1decay_=1, int V2decay_=1);
+  TensorPdfFactory(RooSpinTwo::modelMeasurables measurables_, RooSpin::VdecayType V1decay_=RooSpin::kVdecayType_Zll, RooSpin::VdecayType V2decay_=RooSpin::kVdecayType_Zll);
   virtual ~TensorPdfFactory();
 
   virtual void makeParamsConst(bool yesNo)=0;
   virtual void addHypothesis(int ig, double initval, double iphase=0);
   virtual void setTensorPolarization(int ig, double initval);
   virtual void resetHypotheses();
-  virtual void resetVdecay(int V1decay_, int V2decay_);
+  virtual void resetVdecay(RooSpin::VdecayType V1decay_, RooSpin::VdecayType V2decay_);
   virtual RooSpinTwo* getPDF()=0;
 
 protected:
   RooSpinTwo* PDF_base;
 
-  int V1decay;
-  int V2decay;
+  RooSpin::VdecayType V1decay;
+  RooSpin::VdecayType V2decay;
 
-  virtual double getRValue(int Vdecay);
+  virtual double getRValue(RooSpin::VdecayType Vdecay);
 
-  virtual void initMeasurables(RooSpinTwo::modelMeasurables measurables_);
+  virtual void initMeasurables(RooSpin::modelMeasurables measurables_);
   virtual void initMassPole();
   virtual void initVdecayParams();
   virtual void initGVals();

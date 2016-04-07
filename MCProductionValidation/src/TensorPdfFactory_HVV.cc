@@ -5,7 +5,7 @@
 #endif
 
 
-TensorPdfFactory_HVV::TensorPdfFactory_HVV(RooSpinTwo::modelMeasurables measurables_, int V1decay_, int V2decay_) :
+TensorPdfFactory_HVV::TensorPdfFactory_HVV(RooSpinTwo::modelMeasurables measurables_, RooSpin::VdecayType V1decay_, RooSpin::VdecayType V2decay_) :
 TensorPdfFactory(measurables_, V1decay_, V2decay_)
 {
   //measurables.Y=0;
@@ -18,7 +18,7 @@ TensorPdfFactory_HVV::~TensorPdfFactory_HVV(){
 }
 
 void TensorPdfFactory_HVV::makeParamsConst(bool yesNo){
-  parameters.Lambda->setConstant(true);
+  couplings.Lambda->setConstant(true);
 
   parameters.mX->setConstant(yesNo);
   parameters.gamX->setConstant(yesNo);
@@ -33,6 +33,7 @@ void TensorPdfFactory_HVV::initPDF(){
     "PDF", "PDF",
     measurables,
     parameters,
+    couplings,
     V1decay, V2decay
     );
   PDF_base = (RooSpinTwo*)PDF;
