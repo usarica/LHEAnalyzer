@@ -40,7 +40,7 @@ const double my_bList[10][2]={ // For production
   { 0, 0 }  // b10
 };
 
-void angularDistributions_spin2_XVV(string cinput, double fz1, double fz2, int nbins=80, double mPOLE = 125.){
+void angularDistributions_spin2_XVV(string cinput, double fz1, double fz2, int nbins=80, double mPOLE = 125., int useTaus=0){
   RooRealVar* mzz = new RooRealVar("GenHMass", "M_{ZZ} (GeV)", mPOLE, mPOLE-0.02, mPOLE+0.02);
   RooRealVar* z1mass = new RooRealVar("GenZ1Mass", "m_{Z1} (GeV)", 0.0, min(120., mPOLE));
   RooRealVar* z2mass = new RooRealVar("GenZ2Mass", "m_{Z2} (GeV)", 0.0, min(120., (mPOLE-90.)*20./35.+55.));
@@ -60,7 +60,7 @@ void angularDistributions_spin2_XVV(string cinput, double fz1, double fz2, int n
   measurables_.m12 = mzz;
   measurables_.hs = hs;
   measurables_.Phi1 = Phi1;
-  //measurables_.Y = Y;
+  measurables_.Y = Y;
 
   const int nVars = 8;
   const int nPlots=nVars-1;
@@ -75,28 +75,28 @@ void angularDistributions_spin2_XVV(string cinput, double fz1, double fz2, int n
   };
   TString strGenLepId[4]={ "GenLep1Id", "GenLep2Id", "GenLep3Id", "GenLep4Id" };
   int GenLepId[4]={ 0 };
-  int Vdecay1=(cinput.find("WW")!=string::npos ? -1 : 1);
-  int Vdecay2=(cinput.find("WW")!=string::npos ? -1 : 1);
+  RooSpin::VdecayType Vdecay1=(cinput.find("WW")!=string::npos ? RooSpin::kVdecayType_Wany : RooSpin::kVdecayType_Zll);
+  RooSpin::VdecayType Vdecay2=(cinput.find("WW")!=string::npos ? RooSpin::kVdecayType_Wany : RooSpin::kVdecayType_Zll);
   int nToPlot=nPlots;
   if (cinput.find("ZG")!=string::npos){
     nToPlot-=3;
-    Vdecay2=0;
-    if (cinput.find("2l")!=string::npos) Vdecay1=1;
-    else if (cinput.find("2nu")!=string::npos) Vdecay1=2;
-    else if (cinput.find("2q")!=string::npos) Vdecay1=5;
+    Vdecay2=RooSpin::kVdecayType_GammaOnshell;
+    if (cinput.find("2l")!=string::npos) Vdecay1=RooSpin::kVdecayType_Zll;
+    else if (cinput.find("2nu")!=string::npos) Vdecay1=RooSpin::kVdecayType_Znn;
+    else if (cinput.find("2q")!=string::npos) Vdecay1=RooSpin::kVdecayType_Zud;
     else{
       cerr << "Could not find the Z decays! Exiting." << endl;
       return;
     }
   }
-  else if (cinput.find("GG")!=string::npos && cinput.find("GGto")==string::npos){ nToPlot-=5; Vdecay1=0; Vdecay2=0; }
+  else if (cinput.find("GG")!=string::npos && cinput.find("GGto")==string::npos){ nToPlot-=5; Vdecay1=RooSpin::kVdecayType_GammaOnshell; Vdecay2=RooSpin::kVdecayType_GammaOnshell; }
   else if (cinput.find("ZZ")!=string::npos){
-    if (cinput.find("4l")!=string::npos){ Vdecay1=1; Vdecay2=1; }
-    else if (cinput.find("4nu")!=string::npos){ Vdecay1=2; Vdecay2=2; }
-    else if (cinput.find("4q")!=string::npos){ Vdecay1=5; Vdecay2=5; }
-    else if (cinput.find("2l2q")!=string::npos || cinput.find("2q2l")!=string::npos){ Vdecay1=1; Vdecay2=5; }
-    else if (cinput.find("2l2nu")!=string::npos || cinput.find("2nu2l")!=string::npos){ Vdecay1=1; Vdecay2=2; }
-    else if (cinput.find("2q2nu")!=string::npos || cinput.find("2nu2q")!=string::npos){ Vdecay1=1; Vdecay2=5; }
+    if (cinput.find("4l")!=string::npos){ Vdecay1=RooSpin::kVdecayType_Zll; Vdecay2=RooSpin::kVdecayType_Zll; }
+    else if (cinput.find("4nu")!=string::npos){ Vdecay1=RooSpin::kVdecayType_Znn; Vdecay2=RooSpin::kVdecayType_Znn; }
+    else if (cinput.find("4q")!=string::npos){ Vdecay1=RooSpin::kVdecayType_Zud; Vdecay2=RooSpin::kVdecayType_Zud; }
+    else if (cinput.find("2l2q")!=string::npos || cinput.find("2q2l")!=string::npos){ Vdecay1=RooSpin::kVdecayType_Zll; Vdecay2=RooSpin::kVdecayType_Zud; }
+    else if (cinput.find("2l2nu")!=string::npos || cinput.find("2nu2l")!=string::npos){ Vdecay1=RooSpin::kVdecayType_Zll; Vdecay2=RooSpin::kVdecayType_Znn; }
+    else if (cinput.find("2q2nu")!=string::npos || cinput.find("2nu2q")!=string::npos){ Vdecay1=RooSpin::kVdecayType_Zll; Vdecay2=RooSpin::kVdecayType_Zud; }
     else{
       cerr << "Could not find the Z decays! Exiting." << endl;
       return;
@@ -107,17 +107,17 @@ void angularDistributions_spin2_XVV(string cinput, double fz1, double fz2, int n
     return;
   }
   for (int r=0; r<nToPlot; r++) treeargs.add(*(measurables[r]));
-  if (Vdecay1==0){ z1mass->setVal(0); z1mass->setConstant(true); }
-  if (Vdecay2==0){ z2mass->setVal(0); z2mass->setConstant(true); }
+  if (Vdecay1==RooSpin::kVdecayType_GammaOnshell){ z1mass->setVal(0); z1mass->setConstant(true); }
+  if (Vdecay2==RooSpin::kVdecayType_GammaOnshell){ z2mass->setVal(0); z2mass->setConstant(true); }
 
   cout << "Decay modes found are " << Vdecay1 << '\t' << Vdecay2 << endl;
   TensorPdfFactory_HVV* someHiggs = new TensorPdfFactory_HVV(measurables_, Vdecay1, Vdecay2);
   someHiggs->makeParamsConst(false);
   for (int gg=0; gg<10; gg++){
-    for (int im=0; im<2; im++){ ((RooRealVar*)someHiggs->parameters.bList[gg][im])->setVal(my_bList[gg][im]); }
+    for (int im=0; im<2; im++){ ((RooRealVar*)someHiggs->couplings.bList[gg][im])->setVal(my_bList[gg][im]); }
   }
-  ((RooRealVar*)someHiggs->parameters.f_spinz1)->setVal(fz1);
-  ((RooRealVar*)someHiggs->parameters.f_spinz2)->setVal(fz2);
+  ((RooRealVar*)someHiggs->couplings.f_spinz1)->setVal(fz1);
+  ((RooRealVar*)someHiggs->couplings.f_spinz2)->setVal(fz2);
   someHiggs->makeParamsConst(true);
 
   size_t lastSlash = cinput.find_last_of("/\\");
@@ -144,34 +144,35 @@ void angularDistributions_spin2_XVV(string cinput, double fz1, double fz2, int n
     tree->GetEntry(ev);
     if ((kd_vars[0]-mPOLE)>=0.02) continue;
     if (
-      ((GenLepId[0]==11 || GenLepId[0]==13 || GenLepId[0]==15) && (GenLepId[2]==11 || GenLepId[2]==13 || GenLepId[2]==15) && (Vdecay1==1 && Vdecay2==1))
+      ((GenLepId[0]==11 || GenLepId[0]==13 || GenLepId[0]==15) && (GenLepId[2]==11 || GenLepId[2]==13 || GenLepId[2]==15) && (Vdecay1==RooSpin::kVdecayType_Zll && Vdecay2==RooSpin::kVdecayType_Zll))
       ||
-      ((GenLepId[0]==12 || GenLepId[0]==14 || GenLepId[0]==16) && (GenLepId[2]==12 || GenLepId[2]==14 || GenLepId[2]==16) && (Vdecay1==2 && Vdecay2==2))
+      ((GenLepId[0]==12 || GenLepId[0]==14 || GenLepId[0]==16) && (GenLepId[2]==12 || GenLepId[2]==14 || GenLepId[2]==16) && (Vdecay1==RooSpin::kVdecayType_Znn && Vdecay2==RooSpin::kVdecayType_Znn))
       ||
-      ((GenLepId[0]>0 && GenLepId[0]<6) && (GenLepId[2]>0 && GenLepId[2]<6) && (Vdecay1==5 && Vdecay2==5))
+      ((GenLepId[0]>0 && GenLepId[0]<6) && (GenLepId[2]>0 && GenLepId[2]<6) && (Vdecay1==RooSpin::kVdecayType_Zud && Vdecay2==RooSpin::kVdecayType_Zud))
       ||
-      ((((GenLepId[0]==11 || GenLepId[0]==13 || GenLepId[0]==15) && (GenLepId[2]==12 || GenLepId[2]==14 || GenLepId[2]==16)) || ((GenLepId[2]==11 || GenLepId[2]==13 || GenLepId[2]==15) && (GenLepId[0]==12 || GenLepId[0]==14 || GenLepId[0]==16))) && (Vdecay1==1 && Vdecay2==2))
+      ((((GenLepId[0]==11 || GenLepId[0]==13 || GenLepId[0]==15) && (GenLepId[2]==12 || GenLepId[2]==14 || GenLepId[2]==16)) || ((GenLepId[2]==11 || GenLepId[2]==13 || GenLepId[2]==15) && (GenLepId[0]==12 || GenLepId[0]==14 || GenLepId[0]==16))) && (Vdecay1==RooSpin::kVdecayType_Zll && Vdecay2==RooSpin::kVdecayType_Znn))
       ||
-      ((((GenLepId[0]==11 || GenLepId[0]==13 || GenLepId[0]==15) && (GenLepId[2]>0 && GenLepId[2]<6)) || ((GenLepId[2]==11 || GenLepId[2]==13 || GenLepId[2]==15) && (GenLepId[0]>0 && GenLepId[0]<6))) && (Vdecay1==1 && Vdecay2==5))
+      ((((GenLepId[0]==11 || GenLepId[0]==13 || GenLepId[0]==15) && (GenLepId[2]>0 && GenLepId[2]<6)) || ((GenLepId[2]==11 || GenLepId[2]==13 || GenLepId[2]==15) && (GenLepId[0]>0 && GenLepId[0]<6))) && (Vdecay1==RooSpin::kVdecayType_Zll && Vdecay2==RooSpin::kVdecayType_Zud))
       ||
-      ((((GenLepId[0]==12 || GenLepId[0]==14 || GenLepId[0]==16) && (GenLepId[2]>0 && GenLepId[2]<6)) || ((GenLepId[2]==12 || GenLepId[2]==14 || GenLepId[2]==16) && (GenLepId[0]>0 && GenLepId[0]<6))) && (Vdecay1==2 && Vdecay2==5))
+      ((((GenLepId[0]==12 || GenLepId[0]==14 || GenLepId[0]==16) && (GenLepId[2]>0 && GenLepId[2]<6)) || ((GenLepId[2]==12 || GenLepId[2]==14 || GenLepId[2]==16) && (GenLepId[0]>0 && GenLepId[0]<6))) && (Vdecay1==RooSpin::kVdecayType_Znn && Vdecay2==RooSpin::kVdecayType_Zud))
       ||
-      (Vdecay1==-1 && Vdecay2==-1)
+      (Vdecay1==RooSpin::kVdecayType_Wany && Vdecay2==RooSpin::kVdecayType_Wany)
       ||
-      (Vdecay1==0 || Vdecay2==0)
+      (Vdecay1==RooSpin::kVdecayType_GammaOnshell || Vdecay2==RooSpin::kVdecayType_GammaOnshell)
       ){
       if (
-        ((GenLepId[2]==11 || GenLepId[2]==13 || GenLepId[2]==15) && (GenLepId[0]==12 || GenLepId[0]==14 || GenLepId[0]==16) && (Vdecay1==1 && Vdecay2==2))
+        ((GenLepId[2]==11 || GenLepId[2]==13 || GenLepId[2]==15) && (GenLepId[0]==12 || GenLepId[0]==14 || GenLepId[0]==16) && (Vdecay1==RooSpin::kVdecayType_Zll && Vdecay2==RooSpin::kVdecayType_Znn))
         ||
-        ((GenLepId[2]==11 || GenLepId[2]==13 || GenLepId[2]==15) && (GenLepId[0]>0 && GenLepId[0]<6) && (Vdecay1==1 && Vdecay2==5))
+        ((GenLepId[2]==11 || GenLepId[2]==13 || GenLepId[2]==15) && (GenLepId[0]>0 && GenLepId[0]<6) && (Vdecay1==RooSpin::kVdecayType_Zll && Vdecay2==RooSpin::kVdecayType_Zud))
         ||
-        ((GenLepId[2]==12 || GenLepId[2]==14 || GenLepId[2]==16) && (GenLepId[0]>0 && GenLepId[0]<6) && (Vdecay1==2 && Vdecay2==5))
+        ((GenLepId[2]==12 || GenLepId[2]==14 || GenLepId[2]==16) && (GenLepId[0]>0 && GenLepId[0]<6) && (Vdecay1==RooSpin::kVdecayType_Znn && Vdecay2==RooSpin::kVdecayType_Zud))
         ){
         //swap(strKDs[2], strKDs[2]);
         //swap(strKDs[3], strKDs[4]);
         continue; // Don't bother to recalculate angles etc.
       }
-      if (GenLepId[0]==GenLepId[2] && GenLepId[1]==GenLepId[3] && Vdecay1!=0 && Vdecay2!=0) continue;
+      if (GenLepId[0]==GenLepId[2] && GenLepId[1]==GenLepId[3] && Vdecay1!=RooSpin::kVdecayType_GammaOnshell && Vdecay2!=RooSpin::kVdecayType_GammaOnshell) continue;
+      if (useTaus==0 && (GenLepId[0]==15 || GenLepId[1]==-15 || GenLepId[2]==15 || GenLepId[3]==-15)) continue;
       reducedTree->Fill();
       nRecorded++;
     }
