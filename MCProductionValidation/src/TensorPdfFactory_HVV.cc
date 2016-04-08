@@ -8,7 +8,7 @@
 TensorPdfFactory_HVV::TensorPdfFactory_HVV(RooSpinTwo::modelMeasurables measurables_, RooSpin::VdecayType V1decay_, RooSpin::VdecayType V2decay_) :
 TensorPdfFactory(measurables_, V1decay_, V2decay_)
 {
-  //measurables.Y=0;
+  measurables.Y=0;
   makeParamsConst(true);
   initPDF();
 }
