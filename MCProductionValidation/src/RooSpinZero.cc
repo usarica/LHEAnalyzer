@@ -5,6 +5,8 @@
 #endif
 
 
+using namespace std;
+
 RooSpinZero::RooSpinZero(
   const char* name, const char* title,
   modelMeasurables _measurables,
@@ -442,10 +444,11 @@ void RooSpinZero::calculateAmplitudes(Double_t& A00Re, Double_t& A00Im, Double_t
   Double_t a1Re, a2Re, a3Re, a1Im, a2Im, a3Im;
   calculateAi(a1Re, a1Im, a2Re, a2Im, a3Re, a3Im, isGammaV1, isGammaV2);
 
-  Double_t propV1Re=0, propV2Re=0;
-  Double_t propV1Im=-1, propV2Im=-1;
-  if (Vdecay1!=RooSpin::kVdecayType_GammaOnshell) calculatePropagator(propV1Re, propV1Im, m1_, isGammaV1);
-  if (Vdecay2!=RooSpin::kVdecayType_GammaOnshell) calculatePropagator(propV2Re, propV2Im, m2_, isGammaV2);
+  Double_t propV1Re=1, propV2Re=1, propHRe=1;
+  Double_t propV1Im=0, propV2Im=0, propHIm=0;
+  if (Vdecay1!=RooSpin::kVdecayType_GammaOnshell) calculatePropagator(propV1Re, propV1Im, m1_, (isGammaV1 ? 0 : 1));
+  if (Vdecay2!=RooSpin::kVdecayType_GammaOnshell) calculatePropagator(propV2Re, propV2Im, m2_, (isGammaV2 ? 0 : 1));
+  calculatePropagator(propHRe, propHIm, m12, 2);
 
   Double_t eta1 = m1_ / m12;
   Double_t eta2 = m2_ / m12;
@@ -458,16 +461,16 @@ void RooSpinZero::calculateAmplitudes(Double_t& A00Re, Double_t& A00Im, Double_t
   Double_t etasp = pow(etas, 2) - pow(eta1*eta2, 2); // Notice how eta1p2 is not used. The second set of multiplications below is the reason to it!
   if (etasp<0) etasp=0;
 
-  Double_t A00Re_tmp, A00Im_tmp, AppRe_tmp, AppIm_tmp, AmmRe_tmp, AmmIm_tmp;
-  A00Re_tmp = -(a1Re*etas + a2Re*etasp);
-  A00Im_tmp = -(a1Im*etas + a2Im*etasp);
+  Double_t A00Re_tmp=0, A00Im_tmp=0, AppRe_tmp=0, AppIm_tmp=0, AmmRe_tmp=0, AmmIm_tmp=0;
+  if (Vdecay1!=RooSpin::kVdecayType_GammaOnshell && Vdecay2!=RooSpin::kVdecayType_GammaOnshell){
+    A00Re_tmp = -(a1Re*etas + a2Re*etasp);
+    A00Im_tmp = -(a1Im*etas + a2Im*etasp);
+  }
   AppRe_tmp = (a1Re - a3Im*sqrt(etasp));
   AppIm_tmp = (a1Im + a3Re*sqrt(etasp));
   AmmRe_tmp = (a1Re + a3Im*sqrt(etasp));
   AmmIm_tmp = (a1Im - a3Re*sqrt(etasp));
 
-  //A00Re /= eta1p2;
-  //A00Im /= eta1p2;
   AppRe_tmp *= eta1p2;
   AppIm_tmp *= eta1p2;
   AmmRe_tmp *= eta1p2;
@@ -480,13 +483,14 @@ void RooSpinZero::calculateAmplitudes(Double_t& A00Re, Double_t& A00Im, Double_t
   AppIm = ((AppRe_tmp*propV1Re - AppIm_tmp*propV1Im)*propV2Im + (AppRe_tmp*propV1Im + AppIm_tmp*propV1Re)*propV2Re)/4.;
   AmmRe = ((AmmRe_tmp*propV1Re - AmmIm_tmp*propV1Im)*propV2Re - (AmmRe_tmp*propV1Im + AmmIm_tmp*propV1Re)*propV2Im)/4.;
   AmmIm = ((AmmRe_tmp*propV1Re - AmmIm_tmp*propV1Im)*propV2Im + (AmmRe_tmp*propV1Im + AmmIm_tmp*propV1Re)*propV2Re)/4.;
+  A00Re_tmp = A00Re; A00Im_tmp = A00Im; A00Re = (A00Re_tmp*propHRe - A00Im_tmp*propHIm); A00Im = (A00Re_tmp*propHRe + A00Im_tmp*propHIm);
+  AppRe_tmp = AppRe; AppIm_tmp = AppIm; AppRe = (AppRe_tmp*propHRe - AppIm_tmp*propHIm); AppIm = (AppRe_tmp*propHRe + AppIm_tmp*propHIm);
+  AmmRe_tmp = AmmRe; AmmIm_tmp = AmmIm; AmmRe = (AmmRe_tmp*propHRe - AmmIm_tmp*propHIm); AmmIm = (AmmRe_tmp*propHRe + AmmIm_tmp*propHIm);
 
-  /*
-  cout << "A00 = " << A00Re << ", " << A00Im << endl;
-  cout << "App = " << AppRe << ", " << AppIm << endl;
-  cout << "Amm = " << AmmRe << ", " << AmmIm << endl;
-  */
   if (!(A00Re==A00Re) || !(AppRe==AppRe) || !(AmmRe==AmmRe) || !(A00Im==A00Im) || !(AppIm==AppIm) || !(AmmIm==AmmIm)){
+    cout << "A00 = " << A00Re << ", " << A00Im << endl;
+    cout << "App = " << AppRe << ", " << AppIm << endl;
+    cout << "Amm = " << AmmRe << ", " << AmmIm << endl;
     cout << eta1 << '\t' << eta2 << '\t' << etas << '\t' << etasp << '\t' << eta1p2 << endl;
   }
 }

@@ -5,6 +5,8 @@
 #endif
 
 
+using namespace std;
+
 RooSpin::RooSpin(
   const char* name, const char* title,
   modelMeasurables _measurables,
@@ -58,16 +60,37 @@ R1Val("R1Val", this, other.R1Val),
 R2Val("R2Val", this, other.R2Val)
 {}
 
-void RooSpin::calculatePropagator(Double_t& propRe, Double_t& propIm, Double_t mass, bool useGamma)const{
+void RooSpin::calculatePropagator(Double_t& propRe, Double_t& propIm, Double_t mass, Int_t propType)const{
   // prop = -i / ((m**2-mV**2) + i*mV*GaV) = - ( mV*GaV + i*(m**2-mV**2) ) / ((m**2-mV**2)**2 + (mV*GaV)**2)
-  if (useGamma){
-    propRe = 0;
-    propIm = -1./pow(mass, 2);
+  if (propType==0){
+    propRe = 0.;
+    propIm = (mass!=0. ? -1./pow(mass, 2) : 0.);
+  }
+  else if (propType==1){
+    if (gamV>0){
+      Double_t denominator = pow(mV*gamV, 2)+pow(pow(mass, 2)-pow(mV, 2), 2);
+      propRe = -mV*gamV/denominator;
+      propIm = -(pow(mass, 2)-pow(mV, 2))/denominator;
+    }
+    else{
+      propRe = (mass==mV ? 1. : 0.);
+      propIm = 0.;
+    }
+  }
+  else if (propType==2){ // Higgs prop = i / ((m**2-mX**2) + i*mX*GaX) = - ( mX*GaX + i*(m**2-mX**2) ) / ((m**2-mX**2)**2 + (mX*GaX)**2)
+    if (gamX>0.){
+      Double_t denominator = pow(mX*gamX, 2)+pow(pow(mass, 2)-pow(mX, 2), 2);
+      propRe = mX*gamX/denominator;
+      propIm = (pow(mass, 2)-pow(mX, 2))/denominator;
+    }
+    else{
+      propRe = (mass==mX ? 1. : 0.);
+      propIm = 0.;
+    }
   }
   else{
-    Double_t denominator = pow(mV*gamV, 2)+pow(pow(mass, 2)-pow(mV, 2), 2);
-    propRe = -mV*gamV/denominator;
-    propIm = -(pow(mass, 2)-pow(mV, 2))/denominator;
+    propRe = 1.;
+    propIm = 0.;
   }
 }
 void RooSpin::setProxies(modelMeasurables _measurables){

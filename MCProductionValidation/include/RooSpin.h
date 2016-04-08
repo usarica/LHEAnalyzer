@@ -101,7 +101,7 @@ protected:
 
   virtual Double_t evaluate() const = 0;
 
-  virtual void calculatePropagator(Double_t& propRe, Double_t& propIm, Double_t mass, bool useGamma=false) const;
+  virtual void calculatePropagator(Double_t& propRe, Double_t& propIm, Double_t mass, Int_t propType=1) const;
   virtual void setProxies(modelMeasurables _measurables);
 };
 

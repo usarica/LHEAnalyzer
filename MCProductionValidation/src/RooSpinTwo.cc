@@ -5,6 +5,8 @@
 #endif
 
 
+using namespace std;
+
 RooSpinTwo::RooSpinTwo(
   const char* name, const char* title,
   modelMeasurables _measurables,
@@ -148,10 +150,11 @@ void RooSpinTwo::calculateAmplitudes(
   std::vector<Double_t> ciIm;
   calculateCi(ciRe, ciIm, isGammaV1, isGammaV2);
 
-  Double_t propV1Re=0, propV2Re=0;
-  Double_t propV1Im=-1, propV2Im=-1;
-  if (Vdecay1!=RooSpin::kVdecayType_GammaOnshell) calculatePropagator(propV1Re, propV1Im, m1_, isGammaV1);
-  if (Vdecay2!=RooSpin::kVdecayType_GammaOnshell) calculatePropagator(propV2Re, propV2Im, m2_, isGammaV2);
+  Double_t propV1Re=1, propV2Re=1, propHRe=1;
+  Double_t propV1Im=0, propV2Im=0, propHIm=0;
+  if (Vdecay1!=RooSpin::kVdecayType_GammaOnshell) calculatePropagator(propV1Re, propV1Im, m1_, (isGammaV1 ? 0 : 1));
+  if (Vdecay2!=RooSpin::kVdecayType_GammaOnshell) calculatePropagator(propV2Re, propV2Im, m2_, (isGammaV2 ? 0 : 1));
+  calculatePropagator(propHRe, propHIm, m12, 2);
 
   Double_t c1Re = ciRe.at(0);
   Double_t c2Re = ciRe.at(1);
@@ -190,47 +193,49 @@ void RooSpinTwo::calculateAmplitudes(
     AmmRe_tmp=0, AmmIm_tmp=0, A0mRe_tmp=0, A0mIm_tmp=0, Am0Re_tmp=0, Am0Im_tmp=0,
     ApmRe_tmp=0, ApmIm_tmp=0, AmpRe_tmp=0, AmpIm_tmp=0;
 
-  A00Re_tmp =
-    pow(m12, 4)*sqrt(2./3.)*
-    (
-    c1Re*(
-    eta1p2sq * (xsq - eta1p2sq/4.)
-    - (pow(eta1, 4)+pow(eta2, 4)) * xsq/2.
-    + (pow(eta1, 8)+pow(eta2, 8))/8.
-    + xsq/2.
-    - (pow(eta1, 4)+pow(eta2, 4))/4.
-    + 1.0/8.
-    )
-    + c2Re*2.*xxp*(
-    (pow(eta1, 4) + pow(eta2, 4))
-    - 2.*(eta1p2sq + 2.*xxp)
-    - 1.
-    )
-    -c3Re*8.*pow(xxp, 2)
-    + c41Re*2.*xxp*(1.+eta1sq-eta2sq)
-    + c42Re*2.*xxp*(1.-eta1sq+eta2sq)
-    );
+  if (Vdecay1!=RooSpin::kVdecayType_GammaOnshell && Vdecay2!=RooSpin::kVdecayType_GammaOnshell){
+    A00Re_tmp =
+      pow(m12, 4)*sqrt(2./3.)*
+      (
+      c1Re*(
+      eta1p2sq * (xsq - eta1p2sq/4.)
+      - (pow(eta1, 4)+pow(eta2, 4)) * xsq/2.
+      + (pow(eta1, 8)+pow(eta2, 8))/8.
+      + xsq/2.
+      - (pow(eta1, 4)+pow(eta2, 4))/4.
+      + 1.0/8.
+      )
+      + c2Re*2.*xxp*(
+      (pow(eta1, 4) + pow(eta2, 4))
+      - 2.*(eta1p2sq + 2.*xxp)
+      - 1.
+      )
+      -c3Re*8.*pow(xxp, 2)
+      + c41Re*2.*xxp*(1.+eta1sq-eta2sq)
+      + c42Re*2.*xxp*(1.-eta1sq+eta2sq)
+      );
 
-  A00Im_tmp =
-    pow(m12, 4)*sqrt(2./3.)*
-    (
-    c1Im*(
-    eta1p2sq * (xsq - eta1p2sq/4.)
-    - (pow(eta1, 4)+pow(eta2, 4)) * xsq/2.
-    + (pow(eta1, 8)+pow(eta2, 8))/8.
-    + xsq/2.
-    - (pow(eta1, 4)+pow(eta2, 4))/4.
-    + 1.0/8.
-    )
-    + c2Im*2.*xxp*(
-    (pow(eta1, 4) + pow(eta2, 4))
-    - 2.*(eta1p2sq + 2.*xxp)
-    - 1.
-    )
-    -c3Im*8.*pow(xxp, 2)
-    + c41Im*2.*xxp*(1.+eta1sq-eta2sq)
-    + c42Im*2.*xxp*(1.-eta1sq+eta2sq)
-    );
+    A00Im_tmp =
+      pow(m12, 4)*sqrt(2./3.)*
+      (
+      c1Im*(
+      eta1p2sq * (xsq - eta1p2sq/4.)
+      - (pow(eta1, 4)+pow(eta2, 4)) * xsq/2.
+      + (pow(eta1, 8)+pow(eta2, 8))/8.
+      + xsq/2.
+      - (pow(eta1, 4)+pow(eta2, 4))/4.
+      + 1.0/8.
+      )
+      + c2Im*2.*xxp*(
+      (pow(eta1, 4) + pow(eta2, 4))
+      - 2.*(eta1p2sq + 2.*xxp)
+      - 1.
+      )
+      -c3Im*8.*pow(xxp, 2)
+      + c41Im*2.*xxp*(1.+eta1sq-eta2sq)
+      + c42Im*2.*xxp*(1.-eta1sq+eta2sq)
+      );
+  }
 
   //-----------------------------------------------------------------------
   // No m1_/m2_ singularities in A--
@@ -257,9 +262,6 @@ void RooSpinTwo::calculateAmplitudes(
     + c6Re*4.*sqrt(xxp)
     );
 
-  if (m1_!=0) { AmmIm_tmp *= eta1; AmmRe_tmp *= eta1; }
-  if (m2_!=0) { AmmIm_tmp *= eta2; AmmRe_tmp *= eta2; }
-
   //-----------------------------------------------------------------------
   // No m1_/m2_ singularities in A++
 
@@ -285,125 +287,132 @@ void RooSpinTwo::calculateAmplitudes(
     - c6Re*4.*sqrt(xxp)
     );
 
-  if (m1_!=0) { AppIm_tmp *= eta1; AppRe_tmp *= eta1; }
-  if (m2_!=0) { AppIm_tmp *= eta2; AppRe_tmp *= eta2; }
-
-  //-----------------------------------------------------------------------
-
-  Double_t A0m_0p_c1factor = (
-    -(pow(eta1, 6)-pow(eta2, 6))/8.
-    + (eta1sq-eta2sq)*(3.*eta1p2sq + 4.*xxp)/8.
-    - pow(eta1sq-eta2sq, 2)/8.
-    + xxp/2.
-    + (1. + (eta1sq-eta2sq))/8.
-    );
-  Double_t Am0_p0_c1factor = (
-    (pow(eta1, 6)-pow(eta2, 6))/8.
-    - (eta1sq-eta2sq)*(3.*eta1p2sq + 4.*xxp)/8.
-    - pow(eta1sq-eta2sq, 2)/8.
-    + xxp/2.
-    + (1. - (eta1sq-eta2sq))/8.
-    );
-  Double_t A0m_0p_m0_p0_c4factor = 2.*xxp;
-  Double_t A0m_0p_c6factor = sqrt(xxp)*(1.+eta1sq-eta2sq); // x+-i
-  Double_t Am0_p0_c6factor = sqrt(xxp)*(1.-eta1sq+eta2sq); // x+-i
-  Double_t A0m_0p_m0_p0_c7factor = 4.*pow(xxp, 1.5); // x+-i
-
-  A0mRe_tmp =
-    pow(m12, 4)*
-    (
-    c1Re*A0m_0p_c1factor
-    + c42Re*A0m_0p_m0_p0_c4factor
-    - c6Im*A0m_0p_c6factor
-    - c7Im*A0m_0p_m0_p0_c7factor
-    );
-
-  A0mIm_tmp =
-    pow(m12, 4)*
-    (
-    c1Im*A0m_0p_c1factor
-    + c42Im*A0m_0p_m0_p0_c4factor
-    + c6Re*A0m_0p_c6factor
-    + c7Re*A0m_0p_m0_p0_c7factor
-    );
-
-  if (m2_!=0) { A0mIm_tmp *= eta2; A0mRe_tmp *= eta2; }
-
-  //-----------------------------------------------------------------------
-
-  Am0Re_tmp =
-    pow(m12, 4)*
-    (
-    c1Re*Am0_p0_c1factor
-    + c41Re*A0m_0p_m0_p0_c4factor
-    - c6Im*Am0_p0_c6factor
-    - c7Im*A0m_0p_m0_p0_c7factor
-    );
-
-  Am0Im_tmp =
-    pow(m12, 4)*
-    (
-    c1Im*Am0_p0_c1factor
-    + c41Im*A0m_0p_m0_p0_c4factor
-    + c6Re*Am0_p0_c6factor
-    + c7Re*A0m_0p_m0_p0_c7factor
-    );
-
-  if (m1_!=0) { Am0Im_tmp *= eta1; Am0Re_tmp *= eta1; }
-
-  //-----------------------------------------------------------------------
-
-  A0pRe_tmp =
-    pow(m12, 4)*
-    (
-    c1Re*A0m_0p_c1factor
-    + c42Re*A0m_0p_m0_p0_c4factor
-    + c6Im*A0m_0p_c6factor
-    + c7Im*A0m_0p_m0_p0_c7factor
-    );
-
-  A0pIm_tmp =
-    pow(m12, 4)*
-    (
-    c1Im*A0m_0p_c1factor
-    + c42Im*A0m_0p_m0_p0_c4factor
-    - c6Re*A0m_0p_c6factor
-    - c7Re*A0m_0p_m0_p0_c7factor
-    );
-
-  if (m2_!=0) { A0pIm_tmp *= eta2; A0pRe_tmp *= eta2; }
-
-  //-----------------------------------------------------------------------
-
-  Ap0Re_tmp =
-    pow(m12, 4)*
-    (
-    c1Re*Am0_p0_c1factor
-    + c41Re*A0m_0p_m0_p0_c4factor
-    + c6Im*Am0_p0_c6factor
-    + c7Im*A0m_0p_m0_p0_c7factor
-    );
-
-  Ap0Im_tmp =
-    pow(m12, 4)*
-    (
-    c1Im*Am0_p0_c1factor
-    + c41Im*A0m_0p_m0_p0_c4factor
-    - c6Re*Am0_p0_c6factor
-    - c7Re*A0m_0p_m0_p0_c7factor
-    );
-
-  if (m1_!=0) { Ap0Im_tmp *= eta1; Ap0Re_tmp *= eta1; }
-
   //-----------------------------------------------------------------------
   // No m1_/m2_ singularities in A+- or A-+
 
   AmpRe_tmp = pow(m12, 4)*(c1Re/4.*(1.+4.*xxp-pow(eta1sq-eta2sq, 2)));
   AmpIm_tmp = pow(m12, 4)*(c1Im/4.*(1.+4.*xxp-pow(eta1sq-eta2sq, 2)));
-  if (m1_!=0) { AmpIm_tmp *= eta1; AmpRe_tmp *= eta1; }
-  if (m2_!=0) { AmpIm_tmp *= eta2; AmpRe_tmp *= eta2; }
-  ApmRe_tmp = AmpRe_tmp;
+  if (Vdecay1!=RooSpin::kVdecayType_GammaOnshell) { AmmIm_tmp *= eta1; AmmRe_tmp *= eta1; AppIm_tmp *= eta1; AppRe_tmp *= eta1; AmpIm_tmp *= eta1; AmpRe_tmp *= eta1; } // Do these multiplications here...
+  if (Vdecay2!=RooSpin::kVdecayType_GammaOnshell) { AmmIm_tmp *= eta2; AmmRe_tmp *= eta2; AppIm_tmp *= eta2; AppRe_tmp *= eta2; AmpIm_tmp *= eta2; AmpRe_tmp *= eta2; }
+  ApmRe_tmp = AmpRe_tmp; // ...for this reason!
   ApmIm_tmp = AmpIm_tmp;
+
+  //-----------------------------------------------------------------------
+
+  Double_t A0m_0p_m0_p0_c4factor = 2.*xxp;
+  Double_t A0m_0p_m0_p0_c7factor = 4.*pow(xxp, 1.5); // x+-i
+
+  if (Vdecay1!=RooSpin::kVdecayType_GammaOnshell){
+    Double_t A0m_0p_c1factor = (
+      -(pow(eta1, 6)-pow(eta2, 6))/8.
+      + (eta1sq-eta2sq)*(3.*eta1p2sq + 4.*xxp)/8.
+      - pow(eta1sq-eta2sq, 2)/8.
+      + xxp/2.
+      + (1. + (eta1sq-eta2sq))/8.
+      );
+    Double_t A0m_0p_c6factor = sqrt(xxp)*(1.+eta1sq-eta2sq); // x+-i
+
+    A0mRe_tmp =
+      pow(m12, 4)*
+      (
+      c1Re*A0m_0p_c1factor
+      + c42Re*A0m_0p_m0_p0_c4factor
+      - c6Im*A0m_0p_c6factor
+      - c7Im*A0m_0p_m0_p0_c7factor
+      );
+
+    A0mIm_tmp =
+      pow(m12, 4)*
+      (
+      c1Im*A0m_0p_c1factor
+      + c42Im*A0m_0p_m0_p0_c4factor
+      + c6Re*A0m_0p_c6factor
+      + c7Re*A0m_0p_m0_p0_c7factor
+      );
+
+    //-----------------------------------------------------------------------
+
+    A0pRe_tmp =
+      pow(m12, 4)*
+      (
+      c1Re*A0m_0p_c1factor
+      + c42Re*A0m_0p_m0_p0_c4factor
+      + c6Im*A0m_0p_c6factor
+      + c7Im*A0m_0p_m0_p0_c7factor
+      );
+
+    A0pIm_tmp =
+      pow(m12, 4)*
+      (
+      c1Im*A0m_0p_c1factor
+      + c42Im*A0m_0p_m0_p0_c4factor
+      - c6Re*A0m_0p_c6factor
+      - c7Re*A0m_0p_m0_p0_c7factor
+      );
+
+    if (Vdecay2!=RooSpin::kVdecayType_GammaOnshell){
+      A0mIm_tmp *= eta2; A0mRe_tmp *= eta2;
+      A0pIm_tmp *= eta2; A0pRe_tmp *= eta2;
+    }
+  }
+
+  //-----------------------------------------------------------------------
+
+  if (Vdecay2!=RooSpin::kVdecayType_GammaOnshell){
+    Double_t Am0_p0_c1factor = (
+      (pow(eta1, 6)-pow(eta2, 6))/8.
+      - (eta1sq-eta2sq)*(3.*eta1p2sq + 4.*xxp)/8.
+      - pow(eta1sq-eta2sq, 2)/8.
+      + xxp/2.
+      + (1. - (eta1sq-eta2sq))/8.
+      );
+    Double_t Am0_p0_c6factor = sqrt(xxp)*(1.-eta1sq+eta2sq); // x+-i
+
+    Am0Re_tmp =
+      pow(m12, 4)*
+      (
+      c1Re*Am0_p0_c1factor
+      + c41Re*A0m_0p_m0_p0_c4factor
+      - c6Im*Am0_p0_c6factor
+      - c7Im*A0m_0p_m0_p0_c7factor
+      );
+
+    Am0Im_tmp =
+      pow(m12, 4)*
+      (
+      c1Im*Am0_p0_c1factor
+      + c41Im*A0m_0p_m0_p0_c4factor
+      + c6Re*Am0_p0_c6factor
+      + c7Re*A0m_0p_m0_p0_c7factor
+      );
+
+    //-----------------------------------------------------------------------
+
+    Ap0Re_tmp =
+      pow(m12, 4)*
+      (
+      c1Re*Am0_p0_c1factor
+      + c41Re*A0m_0p_m0_p0_c4factor
+      + c6Im*Am0_p0_c6factor
+      + c7Im*A0m_0p_m0_p0_c7factor
+      );
+
+    Ap0Im_tmp =
+      pow(m12, 4)*
+      (
+      c1Im*Am0_p0_c1factor
+      + c41Im*A0m_0p_m0_p0_c4factor
+      - c6Re*Am0_p0_c6factor
+      - c7Re*A0m_0p_m0_p0_c7factor
+      );
+
+    if (Vdecay1!=RooSpin::kVdecayType_GammaOnshell){
+      Am0Im_tmp *= eta1; Am0Re_tmp *= eta1;
+      Ap0Im_tmp *= eta1; Ap0Re_tmp *= eta1;
+    }
+  }
+
+  //-----------------------------------------------------------------------
 
 
   A00Re = ((A00Re_tmp*propV1Re - A00Im_tmp*propV1Im)*propV2Re - (A00Re_tmp*propV1Im + A00Im_tmp*propV1Re)*propV2Im);
@@ -424,6 +433,15 @@ void RooSpinTwo::calculateAmplitudes(
   AmpIm = ((AmpRe_tmp*propV1Re - AmpIm_tmp*propV1Im)*propV2Im + (AmpRe_tmp*propV1Im + AmpIm_tmp*propV1Re)*propV2Re);
   ApmRe = ((ApmRe_tmp*propV1Re - ApmIm_tmp*propV1Im)*propV2Re - (ApmRe_tmp*propV1Im + ApmIm_tmp*propV1Re)*propV2Im);
   ApmIm = ((ApmRe_tmp*propV1Re - ApmIm_tmp*propV1Im)*propV2Im + (ApmRe_tmp*propV1Im + ApmIm_tmp*propV1Re)*propV2Re);
+  A00Re_tmp = A00Re; A00Im_tmp = A00Im; A00Re = (A00Re_tmp*propHRe - A00Im_tmp*propHIm); A00Im = (A00Re_tmp*propHRe + A00Im_tmp*propHIm);
+  AmmRe_tmp = AmmRe; AmmIm_tmp = AmmIm; AmmRe = (AmmRe_tmp*propHRe - AmmIm_tmp*propHIm); AmmIm = (AmmRe_tmp*propHRe + AmmIm_tmp*propHIm);
+  AppRe_tmp = AppRe; AppIm_tmp = AppIm; AppRe = (AppRe_tmp*propHRe - AppIm_tmp*propHIm); AppIm = (AppRe_tmp*propHRe + AppIm_tmp*propHIm);
+  A0mRe_tmp = A0mRe; A0mIm_tmp = A0mIm; A0mRe = (A0mRe_tmp*propHRe - A0mIm_tmp*propHIm); A0mIm = (A0mRe_tmp*propHRe + A0mIm_tmp*propHIm);
+  A0pRe_tmp = A0pRe; A0pIm_tmp = A0pIm; A0pRe = (A0pRe_tmp*propHRe - A0pIm_tmp*propHIm); A0pIm = (A0pRe_tmp*propHRe + A0pIm_tmp*propHIm);
+  Am0Re_tmp = Am0Re; Am0Im_tmp = Am0Im; Am0Re = (Am0Re_tmp*propHRe - Am0Im_tmp*propHIm); Am0Im = (Am0Re_tmp*propHRe + Am0Im_tmp*propHIm);
+  Ap0Re_tmp = Ap0Re; Ap0Im_tmp = Ap0Im; Ap0Re = (Ap0Re_tmp*propHRe - Ap0Im_tmp*propHIm); Ap0Im = (Ap0Re_tmp*propHRe + Ap0Im_tmp*propHIm);
+  AmpRe_tmp = AmpRe; AmpIm_tmp = AmpIm; AmpRe = (AmpRe_tmp*propHRe - AmpIm_tmp*propHIm); AmpIm = (AmpRe_tmp*propHRe + AmpIm_tmp*propHIm);
+  ApmRe_tmp = ApmRe; ApmIm_tmp = ApmIm; ApmRe = (ApmRe_tmp*propHRe - ApmIm_tmp*propHIm); ApmIm = (ApmRe_tmp*propHRe + ApmIm_tmp*propHIm);
 
 
   if (
