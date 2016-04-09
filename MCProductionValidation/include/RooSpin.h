@@ -62,7 +62,6 @@ public:
   virtual Int_t getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* rangeName=0) const = 0;
   virtual Double_t analyticalIntegral(Int_t code, const char* rangeName=0) const = 0;
 
-  virtual void setProxy(RooRealProxy& proxy, RooAbsReal* objectPtr);
   virtual void setDecayModes(RooSpin::VdecayType Vdecay1_, RooSpin::VdecayType Vdecay2_){ Vdecay1=Vdecay1_; Vdecay2=Vdecay2_; }
 
 protected:
@@ -103,6 +102,7 @@ protected:
   virtual void calculatePropagator(Double_t& propRe, Double_t& propIm, Double_t mass, Int_t propType=1) const;
 
   virtual void setProxies(modelMeasurables _measurables);
+  virtual void setProxy(RooRealProxy& proxy, RooAbsReal* objectPtr);
   virtual Bool_t checkFundamentalType(const RooRealProxy& proxy) const;
 };
 
