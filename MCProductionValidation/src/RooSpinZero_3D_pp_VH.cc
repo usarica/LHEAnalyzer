@@ -179,15 +179,14 @@ Double_t RooSpinZero_3D_pp_VH::evaluate() const{
 
 Int_t RooSpinZero_3D_pp_VH::getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* /*rangeName*/) const{
   int code=1;
-  if (matchArgs(allVars, analVars, h1)) code *= prime_h1;
-  if (matchArgs(allVars, analVars, h2) || Vdecay2==RooSpin::kVdecayType_GammaOnshell) code *= prime_h2;
-  if (matchArgs(allVars, analVars, hs)) code *= prime_hs;
-  if (matchArgs(allVars, analVars, Phi) || Vdecay2==RooSpin::kVdecayType_GammaOnshell) code *= prime_Phi;
-  if (matchArgs(allVars, analVars, Phi1)) code *= prime_Phi1;
+  if (matchArgs(allVars, analVars, h1) && checkFundamentalType(h1)) code *= prime_h1;
+  if ((matchArgs(allVars, analVars, h2) || Vdecay2==RooSpin::kVdecayType_GammaOnshell) && checkFundamentalType(h2)) code *= prime_h2;
+  if (matchArgs(allVars, analVars, hs) && checkFundamentalType(hs)) code *= prime_hs;
+  if ((matchArgs(allVars, analVars, Phi) || Vdecay2==RooSpin::kVdecayType_GammaOnshell) && checkFundamentalType(Phi)) code *= prime_Phi;
+  if ((matchArgs(allVars, analVars, Phi1) || Vdecay2==RooSpin::kVdecayType_GammaOnshell) && checkFundamentalType(Phi1)) code *= prime_Phi1;
   if (code==1) code=0;
   return code;
 }
-
 Double_t RooSpinZero_3D_pp_VH::analyticalIntegral(Int_t code, const char* /*rangeName*/) const{
   Double_t epsilon=1e-10;
   Double_t m1_=m1; if (Vdecay1==RooSpin::kVdecayType_GammaOnshell) return epsilon;

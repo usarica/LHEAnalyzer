@@ -156,12 +156,12 @@ void ScalarPdfFactory_ggH::makeParamsConst(bool yesNo){
   couplings.Lambda_z4->setConstant(true);
   couplings.Lambda_Q->setConstant(true);
 
-  parameters.mX->setConstant(yesNo);
-  parameters.gamX->setConstant(yesNo);
-  parameters.mV->setConstant(yesNo);
-  parameters.gamV->setConstant(yesNo);
-  parameters.R1Val->setConstant(yesNo);
-  parameters.R2Val->setConstant(yesNo);
+  ((RooRealVar*)parameters.mX)->setConstant(yesNo);
+  ((RooRealVar*)parameters.gamX)->setConstant(yesNo);
+  ((RooRealVar*)parameters.mV)->setConstant(yesNo);
+  ((RooRealVar*)parameters.gamV)->setConstant(yesNo);
+  ((RooRealVar*)parameters.R1Val)->setConstant(yesNo);
+  ((RooRealVar*)parameters.R2Val)->setConstant(yesNo);
 
   if (acceptance && !yesNo){
     accepParams.aPhi->setConstant(kFALSE);

@@ -28,23 +28,23 @@ public:
   };
 
   struct modelMeasurables{
-    RooRealVar* h1;
-    RooRealVar* h2;
-    RooRealVar* hs;
-    RooRealVar* Phi;
-    RooRealVar* Phi1;
-    RooRealVar* m1;
-    RooRealVar* m2;
-    RooRealVar* m12;
-    RooRealVar* Y;
+    RooAbsReal* h1;
+    RooAbsReal* h2;
+    RooAbsReal* hs;
+    RooAbsReal* Phi;
+    RooAbsReal* Phi1;
+    RooAbsReal* m1;
+    RooAbsReal* m2;
+    RooAbsReal* m12;
+    RooAbsReal* Y;
   };
   struct modelParameters{
-    RooRealVar* mX;
-    RooRealVar* gamX;
-    RooRealVar* mV;
-    RooRealVar* gamV;
-    RooRealVar* R1Val;
-    RooRealVar* R2Val;
+    RooAbsReal* mX;
+    RooAbsReal* gamX;
+    RooAbsReal* mV;
+    RooAbsReal* gamV;
+    RooAbsReal* R1Val;
+    RooAbsReal* R2Val;
   };
 
   RooSpin(){};
@@ -100,9 +100,10 @@ protected:
   RooRealProxy R2Val;
 
   virtual Double_t evaluate() const = 0;
-
   virtual void calculatePropagator(Double_t& propRe, Double_t& propIm, Double_t mass, Int_t propType=1) const;
+
   virtual void setProxies(modelMeasurables _measurables);
+  virtual Bool_t checkFundamentalType(const RooRealProxy& proxy) const;
 };
 
 #endif

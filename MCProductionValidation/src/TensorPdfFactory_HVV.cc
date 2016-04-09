@@ -20,12 +20,12 @@ TensorPdfFactory_HVV::~TensorPdfFactory_HVV(){
 void TensorPdfFactory_HVV::makeParamsConst(bool yesNo){
   couplings.Lambda->setConstant(true);
 
-  parameters.mX->setConstant(yesNo);
-  parameters.gamX->setConstant(yesNo);
-  parameters.mV->setConstant(yesNo);
-  parameters.gamV->setConstant(yesNo);
-  parameters.R1Val->setConstant(yesNo);
-  parameters.R2Val->setConstant(yesNo);
+  ((RooRealVar*)parameters.mX)->setConstant(yesNo);
+  ((RooRealVar*)parameters.gamX)->setConstant(yesNo);
+  ((RooRealVar*)parameters.mV)->setConstant(yesNo);
+  ((RooRealVar*)parameters.gamV)->setConstant(yesNo);
+  ((RooRealVar*)parameters.R1Val)->setConstant(yesNo);
+  ((RooRealVar*)parameters.R2Val)->setConstant(yesNo);
 }
 
 void TensorPdfFactory_HVV::initPDF(){

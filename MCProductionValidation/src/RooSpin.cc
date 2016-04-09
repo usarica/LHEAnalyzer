@@ -107,3 +107,7 @@ void RooSpin::setProxies(modelMeasurables _measurables){
 void RooSpin::setProxy(RooRealProxy& proxy, RooAbsReal* objectPtr){
   if (objectPtr!=0) proxy.setArg((RooAbsReal&)*objectPtr);
 }
+Bool_t RooSpin::checkFundamentalType(const RooRealProxy& proxy)const{
+  RooAbsArg* arg = proxy.absArg();
+  return (dynamic_cast<RooRealVar*>(arg)!=0);
+}

@@ -45,19 +45,19 @@ ScalarPdfFactory::~ScalarPdfFactory(){
   destroyMassPole();
 }
 void ScalarPdfFactory::initMeasurables(RooSpin::modelMeasurables measurables_){
-  measurables.h1 = measurables_.h1;
-  measurables.h2 = measurables_.h2;
-  measurables.Phi = measurables_.Phi;
-  measurables.m1 = measurables_.m1;
-  measurables.m2 = measurables_.m2;
-  measurables.m12 = measurables_.m12;
-  measurables.hs = measurables_.hs;
-  measurables.Phi1 = measurables_.Phi1;
-  measurables.Y = measurables_.Y;
+  measurables.h1 = (RooAbsReal*)measurables_.h1;
+  measurables.h2 = (RooAbsReal*)measurables_.h2;
+  measurables.Phi = (RooAbsReal*)measurables_.Phi;
+  measurables.m1 = (RooAbsReal*)measurables_.m1;
+  measurables.m2 = (RooAbsReal*)measurables_.m2;
+  measurables.m12 = (RooAbsReal*)measurables_.m12;
+  measurables.hs = (RooAbsReal*)measurables_.hs;
+  measurables.Phi1 = (RooAbsReal*)measurables_.Phi1;
+  measurables.Y = (RooAbsReal*)measurables_.Y;
 }
 void ScalarPdfFactory::initMassPole(){
   parameters.mX = new RooRealVar("mX", "mX", (measurables.m12)->getVal());
-  parameters.gamX = new RooRealVar("gamX", "gamX", 4.07e-3);
+  parameters.gamX = new RooRealVar("gamX", "gamX", 0);
 }
 void ScalarPdfFactory::initVdecayParams(){
   if ((((int)V1decay)>0 && ((int)V2decay)<0) || (((int)V1decay)<0 && ((int)V2decay)>0)) cerr << "ScalarPdfFactory::initVdecayParams: V1 and V2 decays are inconsistent!" << endl;
@@ -76,10 +76,10 @@ void ScalarPdfFactory::initVdecayParams(){
   parameters.R1Val = new RooRealVar("R1Val", "R1Val", getRValue(V1decay));
   parameters.R2Val = new RooRealVar("R2Val", "R2Val", getRValue(V2decay));
  
-  parameters.mV->removeRange();
-  parameters.gamV->removeRange();
-  parameters.R1Val->removeRange();
-  parameters.R2Val->removeRange();
+  ((RooRealVar*)parameters.mV)->removeRange();
+  ((RooRealVar*)parameters.gamV)->removeRange();
+  ((RooRealVar*)parameters.R1Val)->removeRange();
+  ((RooRealVar*)parameters.R2Val)->removeRange();
 }
 void ScalarPdfFactory::resetVdecay(RooSpin::VdecayType V1decay_, RooSpin::VdecayType V2decay_){
   if ((((int)V1decay)>0 && ((int)V2decay)<0) || (((int)V1decay)<0 && ((int)V2decay)>0)) cerr << "ScalarPdfFactory::resetVdecay: V1 and V2 decays are inconsistent!" << endl;
@@ -88,35 +88,35 @@ void ScalarPdfFactory::resetVdecay(RooSpin::VdecayType V1decay_, RooSpin::Vdecay
   V2decay=V2decay_;
   PDF_base->setDecayModes(V1decay, V2decay);
 
-  bool is_mvconst = parameters.mV->isConstant();
-  bool is_gamvconst = parameters.gamV->isConstant();
-  bool is_r1const = parameters.R1Val->isConstant();
-  bool is_r2const = parameters.R2Val->isConstant();
-  parameters.mV->setConstant(false);
-  parameters.gamV->setConstant(false);
-  parameters.R1Val->setConstant(false);
-  parameters.R2Val->setConstant(false);
+  bool is_mvconst = ((RooRealVar*)parameters.mV)->isConstant();
+  bool is_gamvconst = ((RooRealVar*)parameters.gamV)->isConstant();
+  bool is_r1const = ((RooRealVar*)parameters.R1Val)->isConstant();
+  bool is_r2const = ((RooRealVar*)parameters.R2Val)->isConstant();
+  ((RooRealVar*)parameters.mV)->setConstant(false);
+  ((RooRealVar*)parameters.gamV)->setConstant(false);
+  ((RooRealVar*)parameters.R1Val)->setConstant(false);
+  ((RooRealVar*)parameters.R2Val)->setConstant(false);
 
   if (V1decay_==RooSpin::kVdecayType_GammaOnshell){
-    parameters.mV = new RooRealVar("mV", "mV", 0);
-    parameters.gamV = new RooRealVar("gamV", "gamV", 0);
+    ((RooRealVar*)parameters.mV)->setVal(0);
+    ((RooRealVar*)parameters.gamV)->setVal(0);
   }
   else if (V1decay_==RooSpin::kVdecayType_Wany){
-    parameters.mV = new RooRealVar("mV", "mV", 80.399);
-    parameters.gamV = new RooRealVar("gamV", "gamV", 2.085);
+    ((RooRealVar*)parameters.mV)->setVal(80.399);
+    ((RooRealVar*)parameters.gamV)->setVal(2.085);
   }
   else{
-    parameters.mV = new RooRealVar("mV", "mV", 91.1876);
-    parameters.gamV = new RooRealVar("gamV", "gamV", 2.4952);
+    ((RooRealVar*)parameters.mV)->setVal(91.1876);
+    ((RooRealVar*)parameters.gamV)->setVal(2.4952);
   }
 
-  parameters.R1Val->setVal(getRValue(V1decay));
-  parameters.R2Val->setVal(getRValue(V2decay));
+  ((RooRealVar*)parameters.R1Val)->setVal(getRValue(V1decay));
+  ((RooRealVar*)parameters.R2Val)->setVal(getRValue(V2decay));
 
-  parameters.mV->setConstant(is_mvconst);
-  parameters.gamV->setConstant(is_gamvconst);
-  parameters.R1Val->setConstant(is_r1const);
-  parameters.R2Val->setConstant(is_r2const);
+  ((RooRealVar*)parameters.mV)->setConstant(is_mvconst);
+  ((RooRealVar*)parameters.gamV)->setConstant(is_gamvconst);
+  ((RooRealVar*)parameters.R1Val)->setConstant(is_r1const);
+  ((RooRealVar*)parameters.R2Val)->setConstant(is_r2const);
 }
 double ScalarPdfFactory::getRValue(RooSpin::VdecayType Vdecay){
   double atomicT3 = 0.5;
@@ -545,19 +545,19 @@ void ScalarPdfFactory::initGVals(){
     strcore = "Lambda_z1";
     strcore.Append(Form("%i", (v!=3 ? v+1 : 0)));
     couplings.Lambda_z1qsq[v] = new RooRealVar(strcore, strcore, initval, 0., 1e15);
-    couplings.Lambda_z1qsq[v]->removeMax();
+    ((RooRealVar*)couplings.Lambda_z1qsq[v])->removeMax();
     strcore = "Lambda_z2";
     strcore.Append(Form("%i", (v!=3 ? v+1 : 0)));
     couplings.Lambda_z2qsq[v] = new RooRealVar(strcore, strcore, initval, 0., 1e15);
-    couplings.Lambda_z2qsq[v]->removeMax();
+    ((RooRealVar*)couplings.Lambda_z2qsq[v])->removeMax();
     strcore = "Lambda_z3";
     strcore.Append(Form("%i", (v!=3 ? v+1 : 0)));
     couplings.Lambda_z3qsq[v] = new RooRealVar(strcore, strcore, initval, 0., 1e15);
-    couplings.Lambda_z3qsq[v]->removeMax();
+    ((RooRealVar*)couplings.Lambda_z3qsq[v])->removeMax();
     strcore = "Lambda_z4";
     strcore.Append(Form("%i", (v!=3 ? v+1 : 0)));
     couplings.Lambda_z4qsq[v] = new RooRealVar(strcore, strcore, initval, 0., 1e15);
-    couplings.Lambda_z4qsq[v]->removeMax();
+    ((RooRealVar*)couplings.Lambda_z4qsq[v])->removeMax();
 
     initval=0;
     strcore = "cz_q";
