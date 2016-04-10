@@ -33,6 +33,8 @@ RooSpinZero_3D_pp_VH::RooSpinZero_3D_pp_VH(
 void RooSpinZero_3D_pp_VH::evaluatePolarizationTerms(Double_t& A00term, Double_t& Appterm, Double_t& Ammterm, Double_t& A00ppterm, Double_t& A00mmterm, Double_t& Appmmterm, const Int_t code, bool isGammaV1, bool isGammaV2) const{
   const Double_t Pi = TMath::Pi();
 
+  Double_t R1Val, R2Val;
+  calculateR1R2(R1Val, R2Val, isGammaV1, isGammaV2);
   Double_t A00Re, A00Im, AppRe, AppIm, AmmRe, AmmIm;
   calculateAmplitudes(A00Re, A00Im, AppRe, AppIm, AmmRe, AmmIm, isGammaV1, isGammaV2);
 
@@ -222,7 +224,7 @@ Double_t RooSpinZero_3D_pp_VH::partonicLuminosity(Double_t mVal, Double_t YVal, 
     (mVal <= 600. && fabs(YVal) > 20.*pow(mVal, -0.32))
     ||
     (mVal > 600. && fabs(YVal) > 21.*pow(mVal, -0.34))
-    ) && (fabs(mV-80.39)>5.) // !WH
+    ) && Vdecay1==RooSpin::kVdecayType_Wany // !WH
     ){
     xa = xa0;
     xb = xa0;
@@ -338,7 +340,7 @@ Double_t RooSpinZero_3D_pp_VH::partonicLuminosity(Double_t mVal, Double_t YVal, 
 
   Double_t totSec = 0;
   
-  if (fabs(mV-80.39)>5.){ // ZH or gammaH
+  if (Vdecay1!=RooSpin::kVdecayType_Wany){ // ZH or gammaH
     Double_t FuncABu = FuncAu1/xa*FuncBu1/xb+FuncAu2/xa*FuncBu2/xb;
     Double_t FuncABd = FuncAd1/xa*FuncBd1/xb+FuncAd2/xa*FuncBd2/xb;
     Double_t FuncABc = Funcsa*Funcsb/xa/xb;

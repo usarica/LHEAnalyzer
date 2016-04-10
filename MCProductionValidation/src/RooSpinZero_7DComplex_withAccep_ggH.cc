@@ -96,6 +96,8 @@ RooSpinZero_7DComplex_withAccep_ggH::RooSpinZero_7DComplex_withAccep_ggH(
 void RooSpinZero_7DComplex_withAccep_ggH::evaluatePolarizationTerms(Double_t& A00term, Double_t& Appterm, Double_t& Ammterm, Double_t& A00ppterm, Double_t& A00mmterm, Double_t& Appmmterm, const Int_t code, bool isGammaV1, bool isGammaV2) const{
   const Double_t Pi = TMath::Pi();
 
+  Double_t R1Val, R2Val;
+  calculateR1R2(R1Val, R2Val, isGammaV1, isGammaV2);
   Double_t A00Re, A00Im, AppRe, AppIm, AmmRe, AmmIm;
   calculateAmplitudes(A00Re, A00Im, AppRe, AppIm, AmmRe, AmmIm, isGammaV1, isGammaV2);
 
@@ -238,6 +240,8 @@ void RooSpinZero_7DComplex_withAccep_ggH::evaluatePolarizationTerms(Double_t& A0
 }
 
 Double_t RooSpinZero_7DComplex_withAccep_ggH::evaluate() const{
+  Double_t mV;
+  getMVGamV(&mV);
   bool isZZ = (mV >= 90.);
   Double_t epsilon=1e-15;
   Double_t m1_=m1; if (Vdecay1==RooSpin::kVdecayType_GammaOnshell) m1_=0;
@@ -309,6 +313,8 @@ Int_t RooSpinZero_7DComplex_withAccep_ggH::getAnalyticalIntegral(RooArgSet& allV
   return code;
 }
 Double_t RooSpinZero_7DComplex_withAccep_ggH::analyticalIntegral(Int_t code, const char* /*rangeName*/) const{
+  Double_t mV;
+  getMVGamV(&mV);
   bool isZZ = (mV >= 90.);
   Double_t epsilon=1e-10;
   Double_t m1_=m1; if (Vdecay1==RooSpin::kVdecayType_GammaOnshell) m1_=0;

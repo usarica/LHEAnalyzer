@@ -171,6 +171,9 @@ Double_t RooSpinTwo_7DComplex_HVV::evaluatePhi1PhiFactor(Int_t i1, Int_t i2, Int
 }
 
 void RooSpinTwo_7DComplex_HVV::evaluatePolarizationTerms(std::vector<Double_t>& Axxyyterm, const Int_t code, bool isGammaV1, bool isGammaV2) const{
+  Double_t R1Val, R2Val;
+  calculateR1R2(R1Val, R2Val, isGammaV1, isGammaV2);
+
   Double_t
     A00Re, A00Im,
     AppRe, AppIm,
@@ -276,6 +279,8 @@ void RooSpinTwo_7DComplex_HVV::evaluatePolarizationTerms(std::vector<Double_t>& 
 }
 
 Double_t RooSpinTwo_7DComplex_HVV::evaluate() const{
+  Double_t mV;
+  getMVGamV(&mV);
   bool isZZ = (mV >= 90.);
   Double_t epsilon=1e-15;
   Double_t m1_=m1; if (Vdecay1==RooSpin::kVdecayType_GammaOnshell) m1_=0;
@@ -327,6 +332,8 @@ Int_t RooSpinTwo_7DComplex_HVV::getAnalyticalIntegral(RooArgSet& allVars, RooArg
   return code;
 }
 Double_t RooSpinTwo_7DComplex_HVV::analyticalIntegral(Int_t code, const char* /*rangeName*/) const{
+  Double_t mV;
+  getMVGamV(&mV);
   bool isZZ = (mV >= 90.);
   Double_t epsilon=1e-10;
   Double_t m1_=m1; if (Vdecay1==RooSpin::kVdecayType_GammaOnshell) m1_=0;

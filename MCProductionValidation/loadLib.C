@@ -3,6 +3,7 @@
 
   // Higgs JCP mother class
   gROOT->LoadMacro("src/RooSpin.cc+");
+  gROOT->LoadMacro("src/SpinPdfFactory.cc+");
   // Spin-0
   gROOT->LoadMacro("src/RooSpinZero.cc+");
   gROOT->LoadMacro("src/RooSpinZero_7DComplex_withAccep_ggH.cc+");

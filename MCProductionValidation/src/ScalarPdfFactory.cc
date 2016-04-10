@@ -6,23 +6,18 @@
 
 
 ScalarPdfFactory::ScalarPdfFactory(RooSpin::modelMeasurables measurables_, bool acceptance_, RooSpin::VdecayType V1decay_, RooSpin::VdecayType V2decay_) :
+SpinPdfFactory(measurables_, V1decay_, V2decay_),
 parameterization(0),
 pmf_applied(false),
-acceptance(acceptance_),
-V1decay(V1decay_),
-V2decay(V2decay_)
+acceptance(acceptance_)
 {
-  initMeasurables(measurables_);
-  initMassPole();
-  initVdecayParams();
   initGVals();
 }
 ScalarPdfFactory::ScalarPdfFactory(RooSpin::modelMeasurables measurables_, double gRatio_[4][8], double gZGsRatio_[4][1], double gGsGsRatio_[3][1], bool pmf_applied_, bool acceptance_, RooSpin::VdecayType V1decay_, RooSpin::VdecayType V2decay_) :
+SpinPdfFactory(measurables_, V1decay_, V2decay_),
 parameterization(1),
 pmf_applied(pmf_applied_),
-acceptance(acceptance_),
-V1decay(V1decay_),
-V2decay(V2decay_)
+acceptance(acceptance_)
 {
   for (int v=0; v<4; v++){
     for (int k=0; k<8; k++){
@@ -33,133 +28,11 @@ V2decay(V2decay_)
       }
     }
   }
-  initMeasurables(measurables_);
-  initMassPole();
-  initVdecayParams();
   initGVals();
 }
 
 ScalarPdfFactory::~ScalarPdfFactory(){
   destroyGVals();
-  destroyVdecayParams();
-  destroyMassPole();
-}
-void ScalarPdfFactory::initMeasurables(RooSpin::modelMeasurables measurables_){
-  measurables.h1 = (RooAbsReal*)measurables_.h1;
-  measurables.h2 = (RooAbsReal*)measurables_.h2;
-  measurables.Phi = (RooAbsReal*)measurables_.Phi;
-  measurables.m1 = (RooAbsReal*)measurables_.m1;
-  measurables.m2 = (RooAbsReal*)measurables_.m2;
-  measurables.m12 = (RooAbsReal*)measurables_.m12;
-  measurables.hs = (RooAbsReal*)measurables_.hs;
-  measurables.Phi1 = (RooAbsReal*)measurables_.Phi1;
-  measurables.Y = (RooAbsReal*)measurables_.Y;
-}
-void ScalarPdfFactory::initMassPole(){
-  parameters.mX = new RooRealVar("mX", "mX", (measurables.m12)->getVal());
-  parameters.gamX = new RooRealVar("gamX", "gamX", 0);
-}
-void ScalarPdfFactory::initVdecayParams(){
-  if ((((int)V1decay)>0 && ((int)V2decay)<0) || (((int)V1decay)<0 && ((int)V2decay)>0)) cerr << "ScalarPdfFactory::initVdecayParams: V1 and V2 decays are inconsistent!" << endl;
-  if (V1decay==RooSpin::kVdecayType_GammaOnshell){
-    parameters.mV = new RooRealVar("mV", "mV", 0);
-    parameters.gamV = new RooRealVar("gamV", "gamV", 0);
-  }
-  else if (V1decay==RooSpin::kVdecayType_Wany){
-    parameters.mV = new RooRealVar("mV", "mV", 80.399);
-    parameters.gamV = new RooRealVar("gamV", "gamV", 2.085);
-  }
-  else{
-    parameters.mV = new RooRealVar("mV", "mV", 91.1876);
-    parameters.gamV = new RooRealVar("gamV", "gamV", 2.4952);
-  }
-  parameters.R1Val = new RooRealVar("R1Val", "R1Val", getRValue(V1decay));
-  parameters.R2Val = new RooRealVar("R2Val", "R2Val", getRValue(V2decay));
- 
-  ((RooRealVar*)parameters.mV)->removeRange();
-  ((RooRealVar*)parameters.gamV)->removeRange();
-  ((RooRealVar*)parameters.R1Val)->removeRange();
-  ((RooRealVar*)parameters.R2Val)->removeRange();
-}
-void ScalarPdfFactory::resetVdecay(RooSpin::VdecayType V1decay_, RooSpin::VdecayType V2decay_){
-  if ((((int)V1decay)>0 && ((int)V2decay)<0) || (((int)V1decay)<0 && ((int)V2decay)>0)) cerr << "ScalarPdfFactory::resetVdecay: V1 and V2 decays are inconsistent!" << endl;
-
-  V1decay=V1decay_;
-  V2decay=V2decay_;
-  PDF_base->setDecayModes(V1decay, V2decay);
-
-  bool is_mvconst = ((RooRealVar*)parameters.mV)->isConstant();
-  bool is_gamvconst = ((RooRealVar*)parameters.gamV)->isConstant();
-  bool is_r1const = ((RooRealVar*)parameters.R1Val)->isConstant();
-  bool is_r2const = ((RooRealVar*)parameters.R2Val)->isConstant();
-  ((RooRealVar*)parameters.mV)->setConstant(false);
-  ((RooRealVar*)parameters.gamV)->setConstant(false);
-  ((RooRealVar*)parameters.R1Val)->setConstant(false);
-  ((RooRealVar*)parameters.R2Val)->setConstant(false);
-
-  if (V1decay_==RooSpin::kVdecayType_GammaOnshell){
-    ((RooRealVar*)parameters.mV)->setVal(0);
-    ((RooRealVar*)parameters.gamV)->setVal(0);
-  }
-  else if (V1decay_==RooSpin::kVdecayType_Wany){
-    ((RooRealVar*)parameters.mV)->setVal(80.399);
-    ((RooRealVar*)parameters.gamV)->setVal(2.085);
-  }
-  else{
-    ((RooRealVar*)parameters.mV)->setVal(91.1876);
-    ((RooRealVar*)parameters.gamV)->setVal(2.4952);
-  }
-
-  ((RooRealVar*)parameters.R1Val)->setVal(getRValue(V1decay));
-  ((RooRealVar*)parameters.R2Val)->setVal(getRValue(V2decay));
-
-  ((RooRealVar*)parameters.mV)->setConstant(is_mvconst);
-  ((RooRealVar*)parameters.gamV)->setConstant(is_gamvconst);
-  ((RooRealVar*)parameters.R1Val)->setConstant(is_r1const);
-  ((RooRealVar*)parameters.R2Val)->setConstant(is_r2const);
-}
-double ScalarPdfFactory::getRValue(RooSpin::VdecayType Vdecay){
-  double atomicT3 = 0.5;
-  double atomicCharge = 1.;
-  double sin2t = 0.23119;
-
-  // gV = T3 - 2*Qf*sintW**2
-  double gV_up = atomicT3 - 2.*(2.*atomicCharge/3.)*sin2t;
-  double gV_dn = -atomicT3 - 2.*(-atomicCharge/3.)*sin2t;
-  double gV_l = -atomicT3 - 2.*(-atomicCharge)*sin2t;
-  double gV_nu = atomicT3;
-
-  // gA = T3
-  double gA_up = atomicT3;
-  double gA_dn = -atomicT3;
-  double gA_l = -atomicT3;
-  double gA_nu = atomicT3;
-
-  double Rval;
-  switch (Vdecay){
-  case RooSpin::kVdecayType_Zud:
-    Rval = (2.*2.*gV_up*gA_up+3.*2.*gV_dn*gA_dn)/(2.*(pow(gV_up, 2)+pow(gA_up, 2))+3.*(pow(gV_dn, 2)+pow(gA_dn, 2))); // Z->uu+dd avg.
-    break;
-  case RooSpin::kVdecayType_Zdd:
-    Rval = (2.*gV_dn*gA_dn)/(pow(gV_dn, 2)+pow(gA_dn, 2)); // Z->dd
-    break;
-  case RooSpin::kVdecayType_Zuu:
-    Rval = (2.*gV_up*gA_up)/(pow(gV_up, 2)+pow(gA_up, 2)); // Z->uu
-    break;
-  case RooSpin::kVdecayType_Znn:
-    Rval = (2.*gV_nu*gA_nu)/(pow(gV_nu, 2)+pow(gA_nu, 2)); // Z->nunu
-    break;
-  case RooSpin::kVdecayType_Zll:
-    Rval = (2.*gV_l*gA_l)/(pow(gV_l, 2)+pow(gA_l, 2)); // Z->ll
-    break;
-  case RooSpin::kVdecayType_Wany:
-    Rval = 1; // W
-    break;
-  default:
-    Rval = 0; // gamma
-    break;
-  }
-  return Rval;
 }
 
 void ScalarPdfFactory::initFractionsPhases(){
@@ -661,16 +534,6 @@ void ScalarPdfFactory::initGVals(){
   else initFractionsPhases();
 }
 
-void ScalarPdfFactory::destroyMassPole(){
-  delete parameters.mX;
-  delete parameters.gamX;
-}
-void ScalarPdfFactory::destroyVdecayParams(){
-  delete parameters.R1Val;
-  delete parameters.R2Val;
-  delete parameters.mV;
-  delete parameters.gamV;
-}
 void ScalarPdfFactory::destroyFractionsPhases(){
   for (int v=0; v<8; v++){
     delete g1FracInterp[v];
@@ -775,36 +638,39 @@ void ScalarPdfFactory::addHypothesis(int ig, int ilam, double iphase, double alt
   if (ilam>=8 || ilam<0){ cerr << "Out-of-range g" << ig << "_prime" << ilam << endl; return; }
 
   if (parameterization==0){
+    double mVval;
+    getMVGamV(&mVval);
+
     // Good guesses of c-constants
     Double_t initval=1.;
     if (ilam>0){
       if (ig==0){ // g1_dyn
-        if (ilam>=1 && ilam<=3) initval = pow(couplings.Lambda_z1->getVal()/parameters.mV->getVal(), 2);
-        else if (ilam>=5 && ilam<=7) initval = pow(couplings.Lambda_z1->getVal()/parameters.mV->getVal(), 4);
+        if (ilam>=1 && ilam<=3) initval = pow(couplings.Lambda_z1->getVal()/mVval, 2);
+        else if (ilam>=5 && ilam<=7) initval = pow(couplings.Lambda_z1->getVal()/mVval, 4);
         else if (ilam==4) initval = pow(couplings.Lambda_Q->getVal()/parameters.mX->getVal(), 2);
       }
       else if (ig==1){ // g2_dyn
-        if (ilam>=1 && ilam<=3) initval = pow(couplings.Lambda_z2->getVal()/parameters.mV->getVal(), 2);
-        else if (ilam>=5 && ilam<=7) initval = pow(couplings.Lambda_z2->getVal()/parameters.mV->getVal(), 4);
+        if (ilam>=1 && ilam<=3) initval = pow(couplings.Lambda_z2->getVal()/mVval, 2);
+        else if (ilam>=5 && ilam<=7) initval = pow(couplings.Lambda_z2->getVal()/mVval, 4);
         else if (ilam==4) initval = pow(couplings.Lambda_Q->getVal()/parameters.mX->getVal(), 2);
       }
       else if (ig==2){ // g3_dyn
-        if (ilam>=1 && ilam<=3) initval = pow(couplings.Lambda_z3->getVal()/parameters.mV->getVal(), 2);
-        else if (ilam>=5 && ilam<=7) initval = pow(couplings.Lambda_z3->getVal()/parameters.mV->getVal(), 4);
+        if (ilam>=1 && ilam<=3) initval = pow(couplings.Lambda_z3->getVal()/mVval, 2);
+        else if (ilam>=5 && ilam<=7) initval = pow(couplings.Lambda_z3->getVal()/mVval, 4);
         else if (ilam==4) initval = pow(couplings.Lambda_Q->getVal()/parameters.mX->getVal(), 2);
       }
       else if (ig==3){ // g4_dyn
-        if (ilam>=1 && ilam<=3) initval = pow(couplings.Lambda_z4->getVal()/parameters.mV->getVal(), 2);
-        else if (ilam>=5 && ilam<=7) initval = pow(couplings.Lambda_z4->getVal()/parameters.mV->getVal(), 4);
+        if (ilam>=1 && ilam<=3) initval = pow(couplings.Lambda_z4->getVal()/mVval, 2);
+        else if (ilam>=5 && ilam<=7) initval = pow(couplings.Lambda_z4->getVal()/mVval, 4);
         else if (ilam==4) initval = pow(couplings.Lambda_Q->getVal()/parameters.mX->getVal(), 2);
       }
       else if (ig==4){ // gzgs1_dyn
-        if (ilam>=1 && ilam<=3) initval = pow(couplings.Lambda_zgs1->getVal()/parameters.mV->getVal(), 2);
-        else if (ilam>=5 && ilam<=7) initval = pow(couplings.Lambda_zgs1->getVal()/parameters.mV->getVal(), 4);
+        if (ilam>=1 && ilam<=3) initval = pow(couplings.Lambda_zgs1->getVal()/mVval, 2);
+        else if (ilam>=5 && ilam<=7) initval = pow(couplings.Lambda_zgs1->getVal()/mVval, 4);
         else if (ilam==4) initval = pow(couplings.Lambda_Q->getVal()/parameters.mX->getVal(), 2);
       }
     }
-    if (ig==2 || ig==6) initval *= fabs(pow(couplings.Lambda->getVal(), 2)/(pow(parameters.mX->getVal(), 2) - pow(parameters.mV->getVal(), 2)));
+    if (ig==2 || ig==6) initval *= fabs(pow(couplings.Lambda->getVal(), 2)/(pow(parameters.mX->getVal(), 2) - pow(mVval, 2)));
     if (ig==9) initval *= pow(couplings.Lambda->getVal()/parameters.mX->getVal(), 2);
 
     if (ig==0){

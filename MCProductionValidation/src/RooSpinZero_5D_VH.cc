@@ -29,6 +29,8 @@ RooSpinZero_5D_VH::RooSpinZero_5D_VH(
 void RooSpinZero_5D_VH::evaluatePolarizationTerms(Double_t& A00term, Double_t& Appterm, Double_t& Ammterm, Double_t& A00ppterm, Double_t& A00mmterm, Double_t& Appmmterm, const Int_t code, bool isGammaV1, bool isGammaV2) const{
   const Double_t Pi = TMath::Pi();
 
+  Double_t R1Val, R2Val;
+  calculateR1R2(R1Val, R2Val, isGammaV1, isGammaV2);
   Double_t A00Re, A00Im, AppRe, AppIm, AmmRe, AmmIm;
   calculateAmplitudes(A00Re, A00Im, AppRe, AppIm, AmmRe, AmmIm, isGammaV1, isGammaV2);
 

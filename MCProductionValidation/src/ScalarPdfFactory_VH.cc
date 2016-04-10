@@ -42,10 +42,12 @@ void ScalarPdfFactory_VH::makeParamsConst(bool yesNo){
 
   ((RooRealVar*)parameters.mX)->setConstant(yesNo);
   ((RooRealVar*)parameters.gamX)->setConstant(yesNo);
-  ((RooRealVar*)parameters.mV)->setConstant(yesNo);
-  ((RooRealVar*)parameters.gamV)->setConstant(yesNo);
-  ((RooRealVar*)parameters.R1Val)->setConstant(yesNo);
-  ((RooRealVar*)parameters.R2Val)->setConstant(yesNo);
+  ((RooRealVar*)parameters.mW)->setConstant(yesNo);
+  ((RooRealVar*)parameters.gamW)->setConstant(yesNo);
+  ((RooRealVar*)parameters.mZ)->setConstant(yesNo);
+  ((RooRealVar*)parameters.gamZ)->setConstant(yesNo);
+  ((RooRealVar*)parameters.Sin2ThetaW)->setConstant(yesNo);
+  ((RooRealVar*)parameters.vev)->setConstant(yesNo);
 }
 
 void ScalarPdfFactory_VH::initPDF(){
@@ -70,7 +72,7 @@ void ScalarPdfFactory_VH::initPDF(){
       sqrts,
       V1decay, V2decay
       );
-    PDF_base = (RooSpinZero*)PDF_LHC_3D;
+    PDF_base = (RooSpin*)PDF_LHC_3D;
   }
 }
 

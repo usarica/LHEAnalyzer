@@ -158,10 +158,12 @@ void ScalarPdfFactory_ggH::makeParamsConst(bool yesNo){
 
   ((RooRealVar*)parameters.mX)->setConstant(yesNo);
   ((RooRealVar*)parameters.gamX)->setConstant(yesNo);
-  ((RooRealVar*)parameters.mV)->setConstant(yesNo);
-  ((RooRealVar*)parameters.gamV)->setConstant(yesNo);
-  ((RooRealVar*)parameters.R1Val)->setConstant(yesNo);
-  ((RooRealVar*)parameters.R2Val)->setConstant(yesNo);
+  ((RooRealVar*)parameters.mW)->setConstant(yesNo);
+  ((RooRealVar*)parameters.gamW)->setConstant(yesNo);
+  ((RooRealVar*)parameters.mZ)->setConstant(yesNo);
+  ((RooRealVar*)parameters.gamZ)->setConstant(yesNo);
+  ((RooRealVar*)parameters.Sin2ThetaW)->setConstant(yesNo);
+  ((RooRealVar*)parameters.vev)->setConstant(yesNo);
 
   if (acceptance && !yesNo){
     accepParams.aPhi->setConstant(kFALSE);
@@ -256,7 +258,7 @@ void ScalarPdfFactory_ggH::initPDF(){
     accepParams,
     V1decay,V2decay
     );
-  PDF_base = (RooSpinZero*)PDF;
+  PDF_base = (RooSpin*)PDF;
 }
 
 

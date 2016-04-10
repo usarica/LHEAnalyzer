@@ -273,6 +273,9 @@ cz_q12sq("cz_q12sq", this, other.cz_q12sq)
 {}
 
 void RooSpinZero::calculateAi(Double_t& a1Re, Double_t& a1Im, Double_t& a2Re, Double_t& a2Im, Double_t& a3Re, Double_t& a3Im, bool isGammaV1, bool isGammaV2)const{
+  Double_t mV;
+  getMVGamV(&mV);
+
   Double_t m1_=m1; if (Vdecay1==RooSpin::kVdecayType_GammaOnshell) m1_=0;
   Double_t m2_=m2; if (Vdecay2==RooSpin::kVdecayType_GammaOnshell) m2_=0;
 

@@ -28,10 +28,12 @@ RooSpin::RooSpin(
 
   mX("mX", "mX", this, (RooAbsReal&)*(_parameters.mX)),
   gamX("gamX", "gamX", this, (RooAbsReal&)*(_parameters.gamX)),
-  mV("mV", "mV", this, (RooAbsReal&)*(_parameters.mV)),
-  gamV("gamV", "gamV", this, (RooAbsReal&)*(_parameters.gamV)),
-  R1Val("R1Val", "R1Val", this, (RooAbsReal&)*(_parameters.R1Val)),
-  R2Val("R2Val", "R2Val", this, (RooAbsReal&)*(_parameters.R2Val))
+  mW("mW", "mW", this, (RooAbsReal&)*(_parameters.mW)),
+  gamW("gamW", "gamW", this, (RooAbsReal&)*(_parameters.gamW)),
+  mZ("mZ", "mZ", this, (RooAbsReal&)*(_parameters.mZ)),
+  gamZ("gamZ", "gamZ", this, (RooAbsReal&)*(_parameters.gamZ)),
+  Sin2ThetaW("Sin2ThetaW", "Sin2ThetaW", this, (RooAbsReal&)*(_parameters.Sin2ThetaW)),
+  vev("vev", "vev", this, (RooAbsReal&)*(_parameters.vev))
 {
   setProxies(_measurables);
 }
@@ -54,10 +56,12 @@ Y("Y", this, other.Y),
 
 mX("mX", this, other.mX),
 gamX("gamX", this, other.gamX),
-mV("mV", this, other.mV),
-gamV("gamV", this, other.gamV),
-R1Val("R1Val", this, other.R1Val),
-R2Val("R2Val", this, other.R2Val)
+mW("mW", this, other.mW),
+gamW("gamW", this, other.gamW),
+mZ("mZ", this, other.mZ),
+gamZ("gamZ", this, other.gamZ),
+Sin2ThetaW("Sin2ThetaW", this, other.Sin2ThetaW),
+vev("vev", this, other.vev)
 {}
 
 void RooSpin::calculatePropagator(Double_t& propRe, Double_t& propIm, Double_t mass, Int_t propType)const{
@@ -67,6 +71,8 @@ void RooSpin::calculatePropagator(Double_t& propRe, Double_t& propIm, Double_t m
     propIm = (mass!=0. ? -1./pow(mass, 2) : 0.);
   }
   else if (propType==1){
+    Double_t mV, gamV;
+    getMVGamV(&mV, &gamV);
     if (gamV>0){
       Double_t denominator = pow(mV*gamV, 2)+pow(pow(mass, 2)-pow(mV, 2), 2);
       propRe = -mV*gamV/denominator;
@@ -93,6 +99,121 @@ void RooSpin::calculatePropagator(Double_t& propRe, Double_t& propIm, Double_t m
     propIm = 0.;
   }
 }
+void RooSpin::calculateGVGA(Double_t& gV, Double_t& gA, RooSpin::VdecayType Vdecay, bool isGamma)const{
+  const Double_t atomicT3 = 0.5;
+  const Double_t atomicCharge = 1.;
+
+  const Double_t gW = 2.*mW/vev;
+  const Double_t overallFactorZ = gW*0.5/sqrt(1.-Sin2ThetaW);
+  const Double_t overallFactorGamma = gW*sqrt(Sin2ThetaW);
+  const Double_t overallFactorW = gW*0.5/sqrt(2.);
+
+  const Double_t Q_up = 2.*atomicCharge/3.;
+  const Double_t Q_dn = -atomicCharge/3.;
+  const Double_t Q_l = -atomicCharge;
+  const Double_t Q_nu = 0;
+
+  // gV = T3 - 2*Qf*sintW**2
+  const Double_t gV_up = atomicT3 - 2.*Q_up*Sin2ThetaW;
+  const Double_t gV_dn = -atomicT3 - 2.*Q_dn*Sin2ThetaW;
+  const Double_t gV_l = -atomicT3 - 2.*Q_l*Sin2ThetaW;
+  const Double_t gV_nu = atomicT3 - 2.*Q_nu*Sin2ThetaW;
+
+  // gA = T3
+  const Double_t gA_up = atomicT3;
+  const Double_t gA_dn = -atomicT3;
+  const Double_t gA_l = -atomicT3;
+  const Double_t gA_nu = atomicT3;
+
+  if (Vdecay==RooSpin::kVdecayType_Zud){
+    if (!isGamma){
+      gV = overallFactorZ*(2.*gV_up + 3.*gV_dn)/5.;
+      gA = overallFactorZ*(2.*gA_up + 3.*gA_dn)/5.;
+    }
+    else{
+      gV = overallFactorGamma*(2.*Q_up + 3.*Q_dn)/5.;
+      gA = 0;
+    }
+  }
+  else if (Vdecay==RooSpin::kVdecayType_Zdd){
+    if (!isGamma){
+      gV = overallFactorZ*gV_dn;
+      gA = overallFactorZ*gA_dn;
+    }
+    else{
+      gV = overallFactorGamma*Q_dn;
+      gA = 0;
+    }
+  }
+  else if (Vdecay==RooSpin::kVdecayType_Zuu){
+    if (!isGamma){
+      gV = overallFactorZ*gV_up;
+      gA = overallFactorZ*gA_up;
+    }
+    else{
+      gV = overallFactorGamma*Q_up;
+      gA = 0;
+    }
+  }
+  else if (Vdecay==RooSpin::kVdecayType_Znn){
+    if (!isGamma){
+      gV = overallFactorZ*gV_nu;
+      gA = overallFactorZ*gA_nu;
+    }
+    else{
+      gV = overallFactorGamma*Q_nu;
+      gA = 0;
+    }
+  }
+  else if (Vdecay==RooSpin::kVdecayType_Zll){
+    if (!isGamma){
+      gV = overallFactorZ*gV_l;
+      gA = overallFactorZ*gA_l;
+    }
+    else{
+      gV = overallFactorGamma*Q_l;
+      gA = 0;
+    }
+  }
+  else if (Vdecay==RooSpin::kVdecayType_Wany){
+    if (!isGamma){
+      gV = overallFactorW;
+      gA = overallFactorW;
+    }
+    else{
+      gV = 0;
+      gA = 0;
+    }
+  }
+  else{
+    gV = 1;
+    gA = 0;
+  }
+}
+void RooSpin::calculateR1R2(Double_t& R1Val, Double_t& R2Val, bool isGammaV1, bool isGammaV2)const{
+  Double_t gV1, gV2, gA1, gA2;
+  calculateGVGA(gV1, gA1, Vdecay1, isGammaV1);
+  R1Val = 2.*gV1*gA1/(pow(gV1, 2) + pow(gA1, 2));
+  calculateGVGA(gV2, gA2, Vdecay2, isGammaV2);
+  R2Val = 2.*gV2*gA2/(pow(gV2, 2) + pow(gA2, 2));
+}
+void RooSpin::getMVGamV(Double_t* mV, Double_t* gamV)const{
+  if (Vdecay1==RooSpin::kVdecayType_Wany){
+    if (mV!=0) (*mV)=mW;
+    if (gamV!=0) (*gamV)=gamW;
+  }
+  else if (!(Vdecay1==RooSpin::kVdecayType_GammaOnshell && Vdecay2==RooSpin::kVdecayType_GammaOnshell)){
+    if (mV!=0) (*mV)=mZ;
+    if (gamV!=0) (*gamV)=gamZ;
+  }
+  else{
+    if (mV!=0) (*mV)=0;
+    if (gamV!=0) (*gamV)=0;
+  }
+}
+
+
+
 void RooSpin::setProxies(modelMeasurables _measurables){
   setProxy(h1, (RooAbsReal*)_measurables.h1);
   setProxy(h2, (RooAbsReal*)_measurables.h2);

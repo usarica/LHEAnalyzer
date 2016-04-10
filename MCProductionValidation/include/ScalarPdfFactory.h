@@ -3,17 +3,17 @@
 
 #ifdef _def_melatools_
 #include <ZZMatrixElement/MELA/interface/RooSpinZero.h>
+#include <ZZMatrixElement/MELA/interface/SpinPdfFactory.h>
 #else
 #include "RooSpinZero.h"
+#include "SpinPdfFactory.h"
 #endif
 #include "TString.h"
 #include "RooFormulaVar.h"
 
 
-class ScalarPdfFactory{
+class ScalarPdfFactory : public SpinPdfFactory{
 public:
-  RooSpin::modelMeasurables measurables;
-  RooSpin::modelParameters parameters;
   RooSpinZero::modelCouplings couplings;
 
   RooRealVar* g1Frac[7]; // f_a1 = 1.-sum_{i, i>1}{fabs(f_ai)}
@@ -66,33 +66,20 @@ public:
   virtual void makeParamsConst(bool yesNo)=0;
   virtual void addHypothesis(int ig, int ilam, double iphase=0, double altparam_fracval=0);
   virtual void resetHypotheses();
-  virtual void resetVdecay(RooSpin::VdecayType V1decay_, RooSpin::VdecayType V2decay_);
   virtual RooSpinZero* getPDF()=0;
 
 protected:
-  RooSpinZero* PDF_base;
-
   int parameterization;
   bool pmf_applied;
   bool acceptance;
-
-  RooSpin::VdecayType V1decay;
-  RooSpin::VdecayType V2decay;
 
   double gRatio[4][8];
   double gZGsRatio[4][1];
   double gGsGsRatio[3][1];
 
-  virtual double getRValue(RooSpin::VdecayType Vdecay);
-
-  virtual void initMeasurables(RooSpin::modelMeasurables measurables_);
-  virtual void initMassPole();
-  virtual void initVdecayParams();
   virtual void initFractionsPhases();
   virtual void initGVals();
 
-  virtual void destroyMassPole();
-  virtual void destroyVdecayParams();
   virtual void destroyFractionsPhases();
   virtual void destroyGVals();
 

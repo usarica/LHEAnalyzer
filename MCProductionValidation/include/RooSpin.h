@@ -41,10 +41,12 @@ public:
   struct modelParameters{
     RooAbsReal* mX;
     RooAbsReal* gamX;
-    RooAbsReal* mV;
-    RooAbsReal* gamV;
-    RooAbsReal* R1Val;
-    RooAbsReal* R2Val;
+    RooAbsReal* mW;
+    RooAbsReal* gamW;
+    RooAbsReal* mZ;
+    RooAbsReal* gamZ;
+    RooAbsReal* Sin2ThetaW;
+    RooAbsReal* vev;
   };
 
   RooSpin(){};
@@ -93,13 +95,18 @@ protected:
 
   RooRealProxy mX;
   RooRealProxy gamX;
-  RooRealProxy mV;
-  RooRealProxy gamV;
-  RooRealProxy R1Val;
-  RooRealProxy R2Val;
+  RooRealProxy mW;
+  RooRealProxy gamW;
+  RooRealProxy mZ;
+  RooRealProxy gamZ;
+  RooRealProxy Sin2ThetaW;
+  RooRealProxy vev;
 
   virtual Double_t evaluate() const = 0;
   virtual void calculatePropagator(Double_t& propRe, Double_t& propIm, Double_t mass, Int_t propType=1) const;
+  virtual void calculateGVGA(Double_t& gV, Double_t& gA, RooSpin::VdecayType Vdecay, bool isGamma=false) const;
+  virtual void calculateR1R2(Double_t& R1Val, Double_t& R2Val, bool isGammaV1=false, bool isGammaV2=false) const;
+  virtual void getMVGamV(Double_t* mV=0, Double_t* gamV=0) const;
 
   virtual void setProxies(modelMeasurables _measurables);
   virtual void setProxy(RooRealProxy& proxy, RooAbsReal* objectPtr);

@@ -79,6 +79,9 @@ f_spinz2("f_spinz2", this, other.f_spinz2)
 {}
 
 void RooSpinTwo::calculateCi(std::vector<Double_t>& ciRe, std::vector<Double_t>& ciIm, bool isGammaV1, bool isGammaV2) const{
+  Double_t mV;
+  getMVGamV(&mV);
+
   Double_t m1_=m1; if (Vdecay1==RooSpin::kVdecayType_GammaOnshell) m1_=0;
   Double_t m2_=m2; if (Vdecay2==RooSpin::kVdecayType_GammaOnshell) m2_=0;
   Double_t m1sq = pow(m1_, 2);
