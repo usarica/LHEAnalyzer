@@ -44,7 +44,7 @@ RooSpin::RooSpin(
   RooSpin::VdecayType _Vdecay1, RooSpin::VdecayType _Vdecay2
   ) : RooAbsPdf(name, title),
 
-  Vdecay1(_Vdecay1), Vdecay2(_Vdecay2),
+  Vdecay1(_Vdecay1), Vdecay2(_Vdecay2), intCodeStart(1),
 
   h1("h1", "h1", this),
   h2("h2", "h2", this),
@@ -72,7 +72,7 @@ RooSpin::RooSpin(
 RooSpin::RooSpin(const RooSpin& other, const char* name) :
 RooAbsPdf(other, name),
 
-Vdecay1(other.Vdecay1), Vdecay2(other.Vdecay2),
+Vdecay1(other.Vdecay1), Vdecay2(other.Vdecay2), intCodeStart(other.intCodeStart),
 
 h1("h1", this, other.h1),
 h2("h2", this, other.h2),
@@ -93,6 +93,18 @@ gamZ("gamZ", this, other.gamZ),
 Sin2ThetaW("Sin2ThetaW", this, other.Sin2ThetaW),
 vev("vev", this, other.vev)
 {}
+
+void RooSpin::alwaysIntegrate(Int_t code){
+  intCodeStart=1;
+  if (code%prime_h1==0)intCodeStart *= prime_h1;
+  if (code%prime_h2==0)intCodeStart *= prime_h2;
+  if (code%prime_Phi==0)intCodeStart *= prime_Phi;
+  if (code%prime_Phi1==0)intCodeStart *= prime_Phi1;
+  if (code%prime_m1==0)intCodeStart *= prime_m1;
+  if (code%prime_m2==0)intCodeStart *= prime_m2;
+  if (code%prime_m12==0)intCodeStart *= prime_m12;
+  if (code%prime_Y==0)intCodeStart *= prime_Y;
+}
 
 void RooSpin::calculatePropagator(Double_t& propRe, Double_t& propIm, Double_t mass, Int_t propType)const{
   // prop = -i / ((m**2-mV**2) + i*mV*GaV) = - ( mV*GaV + i*(m**2-mV**2) ) / ((m**2-mV**2)**2 + (mV*GaV)**2)

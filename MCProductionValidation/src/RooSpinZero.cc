@@ -280,7 +280,7 @@ void RooSpinZero::calculateAi(Double_t& a1Re, Double_t& a1Im, Double_t& a2Re, Do
   Double_t m2_=m2; if (Vdecay2==RooSpin::kVdecayType_GammaOnshell) m2_=0;
 
   Double_t s = (pow(m12, 2) - pow(m1_, 2) - pow(m2_, 2))/2.;
-  if (pow(m1_, 2)>pow(m12, 2) || pow(m2_, 2)>pow(m12, 2)) s = -s;
+  if (m1_>m2_+m12 || m2_>m1_+m12) s = -s;
 
   Double_t g1_dyn=0;
   Double_t g2_dyn=0;

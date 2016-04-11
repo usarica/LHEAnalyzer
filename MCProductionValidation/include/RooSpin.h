@@ -34,6 +34,18 @@ public:
     kVdecayType_Zud=5
   };
 
+  enum{
+    prime_h1=2,
+    prime_h2=3,
+    prime_hs=5,
+    prime_Phi=7,
+    prime_Phi1=11,
+    prime_m1=13,
+    prime_m2=17,
+    prime_m12=19,
+    prime_Y=23
+  };
+
   struct modelMeasurables{
     RooAbsReal* h1;
     RooAbsReal* h2;
@@ -73,22 +85,16 @@ public:
 
   virtual void setDecayModes(RooSpin::VdecayType Vdecay1_, RooSpin::VdecayType Vdecay2_){ Vdecay1=Vdecay1_; Vdecay2=Vdecay2_; }
 
-protected:
+  virtual void defaultIntegration(){ intCodeStart=1; }
+  virtual void alwaysIntegrate(Int_t code=1);
 
-  enum{
-    prime_h1=2,
-    prime_h2=3,
-    prime_hs=5,
-    prime_Phi=7,
-    prime_Phi1=11,
-    prime_m1=13,
-    prime_m2=17,
-    prime_m12=19,
-    prime_Y=23
-  };
+
+protected:
 
   RooSpin::VdecayType Vdecay1;
   RooSpin::VdecayType Vdecay2;
+
+  Int_t intCodeStart;
 
   RooRealProxy h1;
   RooRealProxy h2;

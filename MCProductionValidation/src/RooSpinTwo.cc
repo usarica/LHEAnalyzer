@@ -90,7 +90,7 @@ void RooSpinTwo::calculateCi(std::vector<Double_t>& ciRe, std::vector<Double_t>&
   Double_t m12sq = pow(m12, 2);
 
   Double_t s = (m12sq-m1sq-m2sq)/2.;
-  if (m1sq>m12sq || m2sq>m12sq) s = -s;
+  if (m1_>m2_+m12 || m2_>m1_+m12) s = -s;
   Double_t kappa = s/pow(Lambda, 2);
 
   if (!isGammaV1 && !isGammaV2 && !(Vdecay1==RooSpin::kVdecayType_GammaOnshell || Vdecay2==RooSpin::kVdecayType_GammaOnshell)){ // ZZ/WW

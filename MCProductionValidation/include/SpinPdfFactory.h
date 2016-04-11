@@ -26,6 +26,9 @@ public:
   virtual void resetVdecayParams(Double_t mWval, Double_t gamWval, Double_t mZval, Double_t gamZval, Double_t Sin2ThetaWval, Double_t vevval);
   virtual void resetHiggsMassWidth(Double_t mXval, Double_t gamXval=0.);
 
+  virtual void defaultIntegration(){ PDF_base->defaultIntegration(); }
+  virtual void alwaysIntegrate(Int_t code=1){ PDF_base->alwaysIntegrate(code); }
+
 protected:
 
   RooSpin::VdecayType V1decay;

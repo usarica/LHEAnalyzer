@@ -290,7 +290,7 @@ Double_t RooSpinTwo_7DComplex_HVV::evaluate() const{
   }
   else if ((m1_+m2_) > m12 || ((m2_ <= 0. || m1_ <= 0.) && Vdecay1!=RooSpin::kVdecayType_GammaOnshell && Vdecay2!=RooSpin::kVdecayType_GammaOnshell)) return epsilon;
 
-  Int_t code = 1;
+  Int_t code = intCodeStart;
   if (Vdecay1==RooSpin::kVdecayType_GammaOnshell || Vdecay2==RooSpin::kVdecayType_GammaOnshell){
     code *= prime_Phi;
     if (Vdecay1==RooSpin::kVdecayType_GammaOnshell) code *= prime_h1;
@@ -322,7 +322,7 @@ Double_t RooSpinTwo_7DComplex_HVV::evaluate() const{
 }
 
 Int_t RooSpinTwo_7DComplex_HVV::getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* /*rangeName*/) const{
-  int code=1;
+  Int_t code = intCodeStart;
   if (checkFundamentalType(h1)){ if (matchArgs(allVars, analVars, h1) || Vdecay1==RooSpin::kVdecayType_GammaOnshell) code *= prime_h1; }
   if (checkFundamentalType(h2)){ if (matchArgs(allVars, analVars, h2) || Vdecay2==RooSpin::kVdecayType_GammaOnshell) code *= prime_h2; }
   if (checkFundamentalType(hs)){ if (matchArgs(allVars, analVars, hs)) code *= prime_hs; }

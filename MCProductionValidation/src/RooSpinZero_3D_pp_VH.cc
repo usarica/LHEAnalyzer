@@ -158,7 +158,7 @@ Double_t RooSpinZero_3D_pp_VH::evaluate() const{
   Double_t m2_=m2; if (Vdecay2==RooSpin::kVdecayType_GammaOnshell) m2_=0;
   if ((m12+m2_) > m1_ || (m2_ <= 0. && Vdecay2!=RooSpin::kVdecayType_GammaOnshell) || m1_ <= 0.) return epsilon;
 
-  Int_t code = 1;
+  Int_t code = intCodeStart;
   if (Vdecay2==RooSpin::kVdecayType_GammaOnshell) code *= prime_h2*prime_Phi;
 
   Double_t betaValSq = (1.-(pow(m12-m2_, 2)/pow(m1_, 2)))*(1.-(pow(m12+m2_, 2)/pow(m1_, 2)));
@@ -180,7 +180,7 @@ Double_t RooSpinZero_3D_pp_VH::evaluate() const{
 }
 
 Int_t RooSpinZero_3D_pp_VH::getAnalyticalIntegral(RooArgSet& allVars, RooArgSet& analVars, const char* /*rangeName*/) const{
-  int code=1;
+  Int_t code = intCodeStart;
   if (checkFundamentalType(h1)){ if (matchArgs(allVars, analVars, h1)) code *= prime_h1; }
   if (checkFundamentalType(h2)){ if (matchArgs(allVars, analVars, h2) || Vdecay2==RooSpin::kVdecayType_GammaOnshell) code *= prime_h2; }
   if (checkFundamentalType(hs)){ if (matchArgs(allVars, analVars, hs)) code *= prime_hs; }
