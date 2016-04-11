@@ -170,7 +170,6 @@ protected:
   virtual void evaluatePolarizationTerms(Double_t& A00term, Double_t& Appterm, Double_t& Ammterm, Double_t& A00ppterm, Double_t& A00mmterm, Double_t& Appmmterm, const Int_t code, bool isGammaV1=false, bool isGammaV2=false) const = 0;
 
   virtual void calculateAi(Double_t& a1Re, Double_t& a1Im, Double_t& a2Re, Double_t& a2Im, Double_t& a3Re, Double_t& a3Im, bool isGammaV1=false, bool isGammaV2=false) const;
-  virtual void calculateAmplitudeScale(bool isGammaV1=false, bool isGammaV2=false) const;
   virtual void calculateAmplitudes(Double_t& A00Re, Double_t& A00Im, Double_t& AppRe, Double_t& AppIm, Double_t& AmmRe, Double_t& AmmIm, bool isGammaV1=false, bool isGammaV2=false) const;
 
 };

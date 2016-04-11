@@ -69,7 +69,6 @@ protected:
   virtual void evaluatePolarizationTerms(std::vector<Double_t>& Axxyyterm, const Int_t code, bool isGammaV1=false, bool isGammaV2=false) const = 0;
   
   virtual void calculateCi(std::vector<Double_t>& ciRe, std::vector<Double_t>& ciIm, bool isGammaV1=false, bool isGammaV2=false) const;
-  virtual void calculateAmplitudeScale(bool isGammaV1=false, bool isGammaV2=false) const;
   virtual void calculateAmplitudes(
     Double_t& A00Re, Double_t& A00Im,
     Double_t& AppRe, Double_t& AppIm, Double_t& A0pRe, Double_t& A0pIm, Double_t& Ap0Re, Double_t& Ap0Im,

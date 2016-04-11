@@ -136,9 +136,6 @@ void RooSpinTwo::calculateCi(std::vector<Double_t>& ciRe, std::vector<Double_t>&
     Double_t c7Im = 0; ciIm.push_back(c7Im);
   }
 }
-void RooSpinTwo::calculateAmplitudeScale(bool isGammaV1, bool isGammaV2)const{
-
-}
 void RooSpinTwo::calculateAmplitudes(
   Double_t& A00Re, Double_t& A00Im,
   Double_t& AppRe, Double_t& AppIm, Double_t& A0pRe, Double_t& A0pIm, Double_t& Ap0Re, Double_t& Ap0Im,
@@ -158,6 +155,8 @@ void RooSpinTwo::calculateAmplitudes(
   if (Vdecay1!=RooSpin::kVdecayType_GammaOnshell) calculatePropagator(propV1Re, propV1Im, m1_, (isGammaV1 ? 0 : 1));
   if (Vdecay2!=RooSpin::kVdecayType_GammaOnshell) calculatePropagator(propV2Re, propV2Im, m2_, (isGammaV2 ? 0 : 1));
   calculatePropagator(propHRe, propHIm, m12, 2);
+
+  Double_t ampScale = calculateAmplitudeScale(isGammaV1, isGammaV2);
 
   Double_t c1Re = ciRe.at(0);
   Double_t c2Re = ciRe.at(1);
@@ -417,34 +416,25 @@ void RooSpinTwo::calculateAmplitudes(
 
   //-----------------------------------------------------------------------
 
+  A00Re_tmp *= ampScale;
+  AmmRe_tmp *= ampScale;
+  AppRe_tmp *= ampScale;
+  A0mRe_tmp *= ampScale;
+  A0pRe_tmp *= ampScale;
+  Am0Re_tmp *= ampScale;
+  Ap0Re_tmp *= ampScale;
+  AmpRe_tmp *= ampScale;
+  ApmRe_tmp *= ampScale;
 
-  A00Re = ((A00Re_tmp*propV1Re - A00Im_tmp*propV1Im)*propV2Re - (A00Re_tmp*propV1Im + A00Im_tmp*propV1Re)*propV2Im);
-  A00Im = ((A00Re_tmp*propV1Re - A00Im_tmp*propV1Im)*propV2Im + (A00Re_tmp*propV1Im + A00Im_tmp*propV1Re)*propV2Re);
-  AmmRe = ((AmmRe_tmp*propV1Re - AmmIm_tmp*propV1Im)*propV2Re - (AmmRe_tmp*propV1Im + AmmIm_tmp*propV1Re)*propV2Im);
-  AmmIm = ((AmmRe_tmp*propV1Re - AmmIm_tmp*propV1Im)*propV2Im + (AmmRe_tmp*propV1Im + AmmIm_tmp*propV1Re)*propV2Re);
-  AppRe = ((AppRe_tmp*propV1Re - AppIm_tmp*propV1Im)*propV2Re - (AppRe_tmp*propV1Im + AppIm_tmp*propV1Re)*propV2Im);
-  AppIm = ((AppRe_tmp*propV1Re - AppIm_tmp*propV1Im)*propV2Im + (AppRe_tmp*propV1Im + AppIm_tmp*propV1Re)*propV2Re);
-  A0mRe = ((A0mRe_tmp*propV1Re - A0mIm_tmp*propV1Im)*propV2Re - (A0mRe_tmp*propV1Im + A0mIm_tmp*propV1Re)*propV2Im);
-  A0mIm = ((A0mRe_tmp*propV1Re - A0mIm_tmp*propV1Im)*propV2Im + (A0mRe_tmp*propV1Im + A0mIm_tmp*propV1Re)*propV2Re);
-  A0pRe = ((A0pRe_tmp*propV1Re - A0pIm_tmp*propV1Im)*propV2Re - (A0pRe_tmp*propV1Im + A0pIm_tmp*propV1Re)*propV2Im);
-  A0pIm = ((A0pRe_tmp*propV1Re - A0pIm_tmp*propV1Im)*propV2Im + (A0pRe_tmp*propV1Im + A0pIm_tmp*propV1Re)*propV2Re);
-  Am0Re = ((Am0Re_tmp*propV1Re - Am0Im_tmp*propV1Im)*propV2Re - (Am0Re_tmp*propV1Im + Am0Im_tmp*propV1Re)*propV2Im);
-  Am0Im = ((Am0Re_tmp*propV1Re - Am0Im_tmp*propV1Im)*propV2Im + (Am0Re_tmp*propV1Im + Am0Im_tmp*propV1Re)*propV2Re);
-  Ap0Re = ((Ap0Re_tmp*propV1Re - Ap0Im_tmp*propV1Im)*propV2Re - (Ap0Re_tmp*propV1Im + Ap0Im_tmp*propV1Re)*propV2Im);
-  Ap0Im = ((Ap0Re_tmp*propV1Re - Ap0Im_tmp*propV1Im)*propV2Im + (Ap0Re_tmp*propV1Im + Ap0Im_tmp*propV1Re)*propV2Re);
-  AmpRe = ((AmpRe_tmp*propV1Re - AmpIm_tmp*propV1Im)*propV2Re - (AmpRe_tmp*propV1Im + AmpIm_tmp*propV1Re)*propV2Im);
-  AmpIm = ((AmpRe_tmp*propV1Re - AmpIm_tmp*propV1Im)*propV2Im + (AmpRe_tmp*propV1Im + AmpIm_tmp*propV1Re)*propV2Re);
-  ApmRe = ((ApmRe_tmp*propV1Re - ApmIm_tmp*propV1Im)*propV2Re - (ApmRe_tmp*propV1Im + ApmIm_tmp*propV1Re)*propV2Im);
-  ApmIm = ((ApmRe_tmp*propV1Re - ApmIm_tmp*propV1Im)*propV2Im + (ApmRe_tmp*propV1Im + ApmIm_tmp*propV1Re)*propV2Re);
-  A00Re_tmp = A00Re; A00Im_tmp = A00Im; A00Re = (A00Re_tmp*propHRe - A00Im_tmp*propHIm); A00Im = (A00Re_tmp*propHRe + A00Im_tmp*propHIm);
-  AmmRe_tmp = AmmRe; AmmIm_tmp = AmmIm; AmmRe = (AmmRe_tmp*propHRe - AmmIm_tmp*propHIm); AmmIm = (AmmRe_tmp*propHRe + AmmIm_tmp*propHIm);
-  AppRe_tmp = AppRe; AppIm_tmp = AppIm; AppRe = (AppRe_tmp*propHRe - AppIm_tmp*propHIm); AppIm = (AppRe_tmp*propHRe + AppIm_tmp*propHIm);
-  A0mRe_tmp = A0mRe; A0mIm_tmp = A0mIm; A0mRe = (A0mRe_tmp*propHRe - A0mIm_tmp*propHIm); A0mIm = (A0mRe_tmp*propHRe + A0mIm_tmp*propHIm);
-  A0pRe_tmp = A0pRe; A0pIm_tmp = A0pIm; A0pRe = (A0pRe_tmp*propHRe - A0pIm_tmp*propHIm); A0pIm = (A0pRe_tmp*propHRe + A0pIm_tmp*propHIm);
-  Am0Re_tmp = Am0Re; Am0Im_tmp = Am0Im; Am0Re = (Am0Re_tmp*propHRe - Am0Im_tmp*propHIm); Am0Im = (Am0Re_tmp*propHRe + Am0Im_tmp*propHIm);
-  Ap0Re_tmp = Ap0Re; Ap0Im_tmp = Ap0Im; Ap0Re = (Ap0Re_tmp*propHRe - Ap0Im_tmp*propHIm); Ap0Im = (Ap0Re_tmp*propHRe + Ap0Im_tmp*propHIm);
-  AmpRe_tmp = AmpRe; AmpIm_tmp = AmpIm; AmpRe = (AmpRe_tmp*propHRe - AmpIm_tmp*propHIm); AmpIm = (AmpRe_tmp*propHRe + AmpIm_tmp*propHIm);
-  ApmRe_tmp = ApmRe; ApmIm_tmp = ApmIm; ApmRe = (ApmRe_tmp*propHRe - ApmIm_tmp*propHIm); ApmIm = (ApmRe_tmp*propHRe + ApmIm_tmp*propHIm);
+  std::vector<Double_t> A00_reals, A00_imags; A00_reals.push_back(A00Re_tmp); A00_imags.push_back(A00Im_tmp); A00_reals.push_back(propV1Re); A00_imags.push_back(propV1Im); A00_reals.push_back(propV2Re); A00_imags.push_back(propV2Im); A00_reals.push_back(propHRe); A00_imags.push_back(propHIm); AnaMelaHelpers::multiplyComplexNumbers(A00_reals, A00_imags, A00Re, A00Im);
+  std::vector<Double_t> Amm_reals, Amm_imags; Amm_reals.push_back(AmmRe_tmp); Amm_imags.push_back(AmmIm_tmp); Amm_reals.push_back(propV1Re); Amm_imags.push_back(propV1Im); Amm_reals.push_back(propV2Re); Amm_imags.push_back(propV2Im); Amm_reals.push_back(propHRe); Amm_imags.push_back(propHIm); AnaMelaHelpers::multiplyComplexNumbers(Amm_reals, Amm_imags, AmmRe, AmmIm);
+  std::vector<Double_t> App_reals, App_imags; App_reals.push_back(AppRe_tmp); App_imags.push_back(AppIm_tmp); App_reals.push_back(propV1Re); App_imags.push_back(propV1Im); App_reals.push_back(propV2Re); App_imags.push_back(propV2Im); App_reals.push_back(propHRe); App_imags.push_back(propHIm); AnaMelaHelpers::multiplyComplexNumbers(App_reals, App_imags, AppRe, AppIm);
+  std::vector<Double_t> A0m_reals, A0m_imags; A0m_reals.push_back(A0mRe_tmp); A0m_imags.push_back(A0mIm_tmp); A0m_reals.push_back(propV1Re); A0m_imags.push_back(propV1Im); A0m_reals.push_back(propV2Re); A0m_imags.push_back(propV2Im); A0m_reals.push_back(propHRe); A0m_imags.push_back(propHIm); AnaMelaHelpers::multiplyComplexNumbers(A0m_reals, A0m_imags, A0mRe, A0mIm);
+  std::vector<Double_t> A0p_reals, A0p_imags; A0p_reals.push_back(A0pRe_tmp); A0p_imags.push_back(A0pIm_tmp); A0p_reals.push_back(propV1Re); A0p_imags.push_back(propV1Im); A0p_reals.push_back(propV2Re); A0p_imags.push_back(propV2Im); A0p_reals.push_back(propHRe); A0p_imags.push_back(propHIm); AnaMelaHelpers::multiplyComplexNumbers(A0p_reals, A0p_imags, A0pRe, A0pIm);
+  std::vector<Double_t> Am0_reals, Am0_imags; Am0_reals.push_back(Am0Re_tmp); Am0_imags.push_back(Am0Im_tmp); Am0_reals.push_back(propV1Re); Am0_imags.push_back(propV1Im); Am0_reals.push_back(propV2Re); Am0_imags.push_back(propV2Im); Am0_reals.push_back(propHRe); Am0_imags.push_back(propHIm); AnaMelaHelpers::multiplyComplexNumbers(Am0_reals, Am0_imags, Am0Re, Am0Im);
+  std::vector<Double_t> Ap0_reals, Ap0_imags; Ap0_reals.push_back(Ap0Re_tmp); Ap0_imags.push_back(Ap0Im_tmp); Ap0_reals.push_back(propV1Re); Ap0_imags.push_back(propV1Im); Ap0_reals.push_back(propV2Re); Ap0_imags.push_back(propV2Im); Ap0_reals.push_back(propHRe); Ap0_imags.push_back(propHIm); AnaMelaHelpers::multiplyComplexNumbers(Ap0_reals, Ap0_imags, Ap0Re, Ap0Im);
+  std::vector<Double_t> Amp_reals, Amp_imags; Amp_reals.push_back(AmpRe_tmp); Amp_imags.push_back(AmpIm_tmp); Amp_reals.push_back(propV1Re); Amp_imags.push_back(propV1Im); Amp_reals.push_back(propV2Re); Amp_imags.push_back(propV2Im); Amp_reals.push_back(propHRe); Amp_imags.push_back(propHIm); AnaMelaHelpers::multiplyComplexNumbers(Amp_reals, Amp_imags, AmpRe, AmpIm);
+  std::vector<Double_t> Apm_reals, Apm_imags; Apm_reals.push_back(ApmRe_tmp); Apm_imags.push_back(ApmIm_tmp); Apm_reals.push_back(propV1Re); Apm_imags.push_back(propV1Im); Apm_reals.push_back(propV2Re); Apm_imags.push_back(propV2Im); Apm_reals.push_back(propHRe); Apm_imags.push_back(propHIm); AnaMelaHelpers::multiplyComplexNumbers(Apm_reals, Apm_imags, ApmRe, ApmIm);
 
 
   if (

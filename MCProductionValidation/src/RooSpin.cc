@@ -4,8 +4,38 @@
 #include "../include/RooSpin.h"
 #endif
 
-
 using namespace std;
+
+
+void AnaMelaHelpers::multiplyComplexNumbers(std::vector<Double_t> reals, std::vector<Double_t> imags, Double_t& resRe, Double_t& resIm){
+  resRe=0; resIm=0;
+  const unsigned int nreals = reals.size();
+  const unsigned int nimags = imags.size();
+  const unsigned int nloops = pow(2, min(nreals, nimags));
+  const unsigned int nterms = max(nreals, nimags);
+
+  for (unsigned int ic=0; ic<nloops; ic++){
+    Double_t termval=1;
+    unsigned int nimagsused=0;
+    bool doSkip=false;
+    for (unsigned int it=0; it<nterms; it++){
+      unsigned int code = (nreals>=nimags ? 0 : 1);
+      if (it<nloops) code = (ic >> it);
+      if (code%2==1){
+        nimagsused++;
+        termval*=imags.at(it);
+      }
+      else termval*=reals.at(it);
+      if (termval==0.){ doSkip=true; break; }
+    }
+    if (doSkip) continue;
+    if (nimagsused%4==0) resRe += termval;
+    else if (nimagsused%4==1) resIm += termval;
+    else if (nimagsused%4==2) resRe -= termval;
+    else resIm -= termval;
+  }
+}
+
 
 RooSpin::RooSpin(
   const char* name, const char* title,
@@ -104,9 +134,9 @@ void RooSpin::calculateGVGA(Double_t& gV, Double_t& gA, RooSpin::VdecayType Vdec
   const Double_t atomicCharge = 1.;
 
   const Double_t gW = 2.*mW/vev;
-  const Double_t overallFactorZ = gW*0.5/sqrt(1.-Sin2ThetaW);
-  const Double_t overallFactorGamma = gW*sqrt(Sin2ThetaW);
-  const Double_t overallFactorW = gW*0.5/sqrt(2.);
+  const Double_t overallFactorZ = gW*0.5/sqrt(1.-Sin2ThetaW); // i*g/(2*cos(thetaW))
+  const Double_t overallFactorGamma = -gW*sqrt(Sin2ThetaW); // -i*e*Qf
+  const Double_t overallFactorW = gW*0.5/sqrt(2.); // i*g/(2*sqrt(2))
 
   const Double_t Q_up = 2.*atomicCharge/3.;
   const Double_t Q_dn = -atomicCharge/3.;
@@ -127,11 +157,11 @@ void RooSpin::calculateGVGA(Double_t& gV, Double_t& gA, RooSpin::VdecayType Vdec
 
   if (Vdecay==RooSpin::kVdecayType_Zud){
     if (!isGamma){
-      gV = overallFactorZ*(2.*gV_up + 3.*gV_dn)/5.;
-      gA = overallFactorZ*(2.*gA_up + 3.*gA_dn)/5.;
+      gV = overallFactorZ*sqrt((2.*pow(gV_up, 2) + 3.*pow(gV_dn, 2))/5.);
+      gA = overallFactorZ*sqrt((2.*pow(gA_up, 2) + 3.*pow(gA_dn, 2))/5.);
     }
     else{
-      gV = overallFactorGamma*(2.*Q_up + 3.*Q_dn)/5.;
+      gV = overallFactorGamma*sqrt((2.*pow(Q_up, 2) + 3.*pow(Q_dn, 2))/5.);
       gA = 0;
     }
   }
@@ -196,6 +226,14 @@ void RooSpin::calculateR1R2(Double_t& R1Val, Double_t& R2Val, bool isGammaV1, bo
   R1Val = 2.*gV1*gA1/(pow(gV1, 2) + pow(gA1, 2));
   calculateGVGA(gV2, gA2, Vdecay2, isGammaV2);
   R2Val = 2.*gV2*gA2/(pow(gV2, 2) + pow(gA2, 2));
+}
+Double_t RooSpin::calculateAmplitudeScale(bool isGammaV1, bool isGammaV2)const{
+  Double_t gV1, gV2, gA1, gA2;
+  calculateGVGA(gV1, gA1, Vdecay1, isGammaV1);
+  calculateGVGA(gV2, gA2, Vdecay2, isGammaV2);
+
+  Double_t ampScale = sqrt((pow(gV1, 2) + pow(gA1, 2))*(pow(gV2, 2) + pow(gA2, 2)));
+  return ampScale;
 }
 void RooSpin::getMVGamV(Double_t* mV, Double_t* gamV)const{
   if (Vdecay1==RooSpin::kVdecayType_Wany){
