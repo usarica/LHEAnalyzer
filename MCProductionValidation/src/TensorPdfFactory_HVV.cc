@@ -5,8 +5,8 @@
 #endif
 
 
-TensorPdfFactory_HVV::TensorPdfFactory_HVV(RooSpin::modelMeasurables measurables_, RooSpin::VdecayType V1decay_, RooSpin::VdecayType V2decay_) :
-TensorPdfFactory(measurables_, V1decay_, V2decay_)
+TensorPdfFactory_HVV::TensorPdfFactory_HVV(RooSpin::modelMeasurables measurables_, RooSpin::VdecayType V1decay_, RooSpin::VdecayType V2decay_, Bool_t OnshellH_) :
+TensorPdfFactory(measurables_, V1decay_, V2decay_, OnshellH_)
 {
   measurables.Y=0;
   makeParamsConst(true);

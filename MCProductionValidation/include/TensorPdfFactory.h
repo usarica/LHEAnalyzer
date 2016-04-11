@@ -16,7 +16,7 @@ class TensorPdfFactory : public SpinPdfFactory {
 public:
   RooSpinTwo::modelCouplings couplings;
 
-  TensorPdfFactory(RooSpin::modelMeasurables measurables_, RooSpin::VdecayType V1decay_=RooSpin::kVdecayType_Zll, RooSpin::VdecayType V2decay_=RooSpin::kVdecayType_Zll);
+  TensorPdfFactory(RooSpin::modelMeasurables measurables_, RooSpin::VdecayType V1decay_=RooSpin::kVdecayType_Zll, RooSpin::VdecayType V2decay_=RooSpin::kVdecayType_Zll, Bool_t OnshellH_=true);
   virtual ~TensorPdfFactory();
 
   virtual void makeParamsConst(bool yesNo)=0;

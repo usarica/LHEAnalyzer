@@ -5,8 +5,8 @@
 #endif
 
 
-ScalarPdfFactory_VH::ScalarPdfFactory_VH(RooSpinZero::modelMeasurables measurables_, double sqrts_, RooSpin::VdecayType VHmode1_, RooSpin::VdecayType VHmode2_) :
-ScalarPdfFactory(measurables_, false, VHmode1_, VHmode2_),
+ScalarPdfFactory_VH::ScalarPdfFactory_VH(RooSpinZero::modelMeasurables measurables_, double sqrts_, RooSpin::VdecayType VHmode1_, RooSpin::VdecayType VHmode2_, Bool_t OnshellH_) :
+ScalarPdfFactory(measurables_, false, VHmode1_, VHmode2_, OnshellH_),
 sqrts(sqrts_)
 {
   if (VHmode1_==RooSpin::kVdecayType_Wany || VHmode1_==RooSpin::kVdecayType_Zuu || VHmode1_==RooSpin::kVdecayType_Zdd || VHmode1_==RooSpin::kVdecayType_Zud) PDFType = 1;
@@ -16,8 +16,8 @@ sqrts(sqrts_)
   makeParamsConst(true);
   initPDF();
 }
-ScalarPdfFactory_VH::ScalarPdfFactory_VH(RooSpinZero::modelMeasurables measurables_, double gRatio_[4][8], double gZGsRatio_[4][1], double gGsGsRatio_[3][1], double sqrts_, bool pmf_applied_, RooSpin::VdecayType VHmode1_, RooSpin::VdecayType VHmode2_) :
-ScalarPdfFactory(measurables_, gRatio_, gZGsRatio_, gGsGsRatio_, pmf_applied_, false, VHmode1_, VHmode2_),
+ScalarPdfFactory_VH::ScalarPdfFactory_VH(RooSpinZero::modelMeasurables measurables_, double gRatio_[4][8], double gZGsRatio_[4][1], double gGsGsRatio_[3][1], double sqrts_, bool pmf_applied_, RooSpin::VdecayType VHmode1_, RooSpin::VdecayType VHmode2_, Bool_t OnshellH_) :
+ScalarPdfFactory(measurables_, gRatio_, gZGsRatio_, gGsGsRatio_, pmf_applied_, false, VHmode1_, VHmode2_, OnshellH_),
 sqrts(sqrts_)
 {
   if (VHmode1_==RooSpin::kVdecayType_Wany || VHmode1_==RooSpin::kVdecayType_Zuu || VHmode1_==RooSpin::kVdecayType_Zdd || VHmode1_==RooSpin::kVdecayType_Zud) PDFType = 1;

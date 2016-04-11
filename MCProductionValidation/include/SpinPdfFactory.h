@@ -15,7 +15,7 @@ public:
   RooSpin::modelMeasurables measurables;
   RooSpin::modelParameters parameters;
 
-  SpinPdfFactory(RooSpin::modelMeasurables measurables_, RooSpin::VdecayType V1decay_=RooSpin::kVdecayType_Zll, RooSpin::VdecayType V2decay_=RooSpin::kVdecayType_Zll);
+  SpinPdfFactory(RooSpin::modelMeasurables measurables_, RooSpin::VdecayType V1decay_=RooSpin::kVdecayType_Zll, RooSpin::VdecayType V2decay_=RooSpin::kVdecayType_Zll, Bool_t OnshellH_=true);
   virtual ~SpinPdfFactory();
 
   virtual void getMVGamV(Double_t* mV=0, Double_t* gamV=0) const;
@@ -23,12 +23,17 @@ public:
   virtual void makeParamsConst(bool yesNo)=0;
   virtual void resetHypotheses()=0;
   virtual void resetVdecay(RooSpin::VdecayType V1decay_, RooSpin::VdecayType V2decay_);
+  virtual void resetVdecayParams(Double_t mWval, Double_t gamWval, Double_t mZval, Double_t gamZval, Double_t Sin2ThetaWval, Double_t vevval);
+  virtual void resetHiggsMassWidth(Double_t mXval, Double_t gamXval=0.);
 
 protected:
-  RooSpin* PDF_base;
 
   RooSpin::VdecayType V1decay;
   RooSpin::VdecayType V2decay;
+
+  Bool_t OnshellH;
+
+  RooSpin* PDF_base;
 
   virtual void initMeasurables(RooSpin::modelMeasurables measurables_);
 

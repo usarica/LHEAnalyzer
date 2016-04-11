@@ -13,7 +13,7 @@
 class TensorPdfFactory_HVV : public TensorPdfFactory {
 public:
 
-  TensorPdfFactory_HVV(RooSpin::modelMeasurables measurables_, RooSpin::VdecayType V1decay_=RooSpin::kVdecayType_Zll, RooSpin::VdecayType V2decay_=RooSpin::kVdecayType_Zll);
+  TensorPdfFactory_HVV(RooSpin::modelMeasurables measurables_, RooSpin::VdecayType V1decay_=RooSpin::kVdecayType_Zll, RooSpin::VdecayType V2decay_=RooSpin::kVdecayType_Zll, Bool_t OnshellH_=true);
   ~TensorPdfFactory_HVV();
 
   void makeParamsConst(bool yesNo=true);
