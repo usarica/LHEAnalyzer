@@ -1,5 +1,7 @@
 #include "../interface/ZZCandidate.h"
 
+using namespace PDGHelpers;
+
 void ZZCandidate::sortDaughters(){
   if (debugVars::debugFlag) std::cout << "Starting ZZCandidate::sortDaughtersInitial" << std::endl;
   sortDaughtersInitial();
@@ -9,6 +11,26 @@ void ZZCandidate::sortDaughters(){
   createSortedVs();
 }
 
+std::vector<int> ZZCandidate::getDaughterIds()const{
+  std::vector<int> result;
+  for (unsigned int idau=0; idau<sortedDaughters.size(); idau++){
+    if (sortedDaughters.at(idau)!=0) result.push_back(sortedDaughters.at(idau)->id);
+  }
+  return result;
+}
+std::vector<int> ZZCandidate::getAssociatedParticleIds()const{
+  std::vector<int> result;
+  for (unsigned int ip=0; ip<associatedLeptons.size(); ip++){
+    if (associatedLeptons.at(ip)!=0) result.push_back(associatedLeptons.at(ip)->id);
+  }
+  for (unsigned int ip=0; ip<associatedPhotons.size(); ip++){
+    if (associatedPhotons.at(ip)!=0) result.push_back(associatedPhotons.at(ip)->id);
+  }
+  for (unsigned int ip=0; ip<associatedJets.size(); ip++){
+    if (associatedJets.at(ip)!=0) result.push_back(associatedJets.at(ip)->id);
+  }
+  return result;
+}
 Particle* ZZCandidate::getSortedDaughter(int index) const{
   if ((int)sortedDaughters.size()>index) return sortedDaughters.at(index);
   else return 0;
@@ -31,6 +53,10 @@ Particle* ZZCandidate::getAssociatedPhoton(int index)const{
 }
 Particle* ZZCandidate::getAssociatedJet(int index)const{
   if ((int)associatedJets.size()>index) return associatedJets.at(index);
+  else return 0;
+}
+TopCandidate* ZZCandidate::getAssociatedTop(int index)const{
+  if ((int)associatedTops.size()>index) return associatedTops.at(index);
   else return 0;
 }
 void ZZCandidate::sortDaughtersInitial(){
@@ -60,10 +86,10 @@ void ZZCandidate::sortDaughtersInitial(){
     (df[0]!=0 && df[1]!=0)
     &&
     (
+    // Order by ubar(0)v(1)
     (df[0]->id<df[1]->id && (PDGHelpers::HVVmass==PDGHelpers::Zmass || PDGHelpers::HVVmass==PDGHelpers::Zeromass))
     ||
-    //(std::abs(df[0]->id)<std::abs(df[1]->id) && PDGHelpers::HVVmass==PDGHelpers::Wmass) // Order by nu(0)l(1) / u(0)d(1)
-    (df[0]->id<df[1]->id && df[0]->id<0 && PDGHelpers::HVVmass==PDGHelpers::Wmass) // Order by ubar(0)v(1)
+    (df[0]->id<df[1]->id && df[0]->id<0 && PDGHelpers::HVVmass==PDGHelpers::Wmass)
     )
     ){
     Particle* dtmp = df[0];
@@ -74,10 +100,10 @@ void ZZCandidate::sortDaughtersInitial(){
     (ds[0]!=0 && ds[1]!=0)
     &&
     (
+    // Order by ubar(0)v(1)
     (ds[0]->id<ds[1]->id && (PDGHelpers::HVVmass==PDGHelpers::Zmass || PDGHelpers::HVVmass==PDGHelpers::Zeromass))
     ||
-    //(std::abs(ds[0]->id)<std::abs(ds[1]->id) && PDGHelpers::HVVmass==PDGHelpers::Wmass) // Order by nu(0)l(1) / u(0)d(1)
-    (ds[0]->id<ds[1]->id && ds[0]->id<0 && PDGHelpers::HVVmass==PDGHelpers::Wmass) // Order by ubar(0)v(1)
+    (ds[0]->id<ds[1]->id && ds[0]->id<0 && PDGHelpers::HVVmass==PDGHelpers::Wmass)
     )
     ){
     Particle* dtmp = ds[0];
@@ -104,6 +130,7 @@ void ZZCandidate::sortDaughtersByBestZ1(){
   TLorentzVector pZ1(0, 0, 0, 0);
   TLorentzVector pZ2(0, 0, 0, 0);
   if (sortedDaughters.size()>2){ // WW, ZZ, ZG
+    bool dauDiffType = true;
     if (debugVars::debugFlag) std::cout << "Ndaughters>2" << std::endl;
 
     for (int d=0; d<std::min(2, (int)sortedDaughters.size()); d++){
@@ -115,8 +142,35 @@ void ZZCandidate::sortDaughtersByBestZ1(){
 
     if (debugVars::debugFlag) std::cout << "Preliminary pZ1 and pZ2 calculated!" << std::endl;
 
+    if (sortedDaughters.size()>=4){
+      if (
+        (PDGHelpers::HVVmass==PDGHelpers::Zmass || PDGHelpers::HVVmass==PDGHelpers::Zeromass)
+        &&
+        (
+        (isALepton(sortedDaughters.at(0)->id) && isALepton(sortedDaughters.at(1)->id) && isALepton(sortedDaughters.at(2)->id) && isALepton(sortedDaughters.at(3)->id))
+        ||
+        (isANeutrino(sortedDaughters.at(0)->id) && isANeutrino(sortedDaughters.at(1)->id) && isANeutrino(sortedDaughters.at(2)->id) && isANeutrino(sortedDaughters.at(3)->id))
+        ||
+        (isAPhoton(sortedDaughters.at(0)->id) && isAPhoton(sortedDaughters.at(1)->id) && isAPhoton(sortedDaughters.at(2)->id) && isAPhoton(sortedDaughters.at(3)->id))
+        ||
+        (isAJet(sortedDaughters.at(0)->id) && isAJet(sortedDaughters.at(1)->id) && isAJet(sortedDaughters.at(2)->id) && isAJet(sortedDaughters.at(3)->id))
+        )
+        ) dauDiffType=false;
+    }
+
     if (
-      (std::abs(pZ1.M() - PDGHelpers::HVVmass)<std::abs(pZ2.M() - PDGHelpers::HVVmass) && (PDGHelpers::HVVmass==PDGHelpers::Zmass || PDGHelpers::HVVmass==PDGHelpers::Zeromass)) // Z1 / Z2
+      (dauDiffType && (PDGHelpers::HVVmass==PDGHelpers::Zmass || PDGHelpers::HVVmass==PDGHelpers::Zeromass) && sortedDaughters.size()<4)
+      ||
+      (
+      dauDiffType && (PDGHelpers::HVVmass==PDGHelpers::Zmass || PDGHelpers::HVVmass==PDGHelpers::Zeromass) && sortedDaughters.size()>=4 && (
+      isALepton(sortedDaughters.at(0)->id) ||
+      (isANeutrino(sortedDaughters.at(0)->id) && !isALepton(sortedDaughters.at(2)->id)) ||
+      (isAPhoton(sortedDaughters.at(0)->id) && !isALepton(sortedDaughters.at(2)->id) && !isANeutrino(sortedDaughters.at(2)->id)) ||
+      (isAJet(sortedDaughters.at(0)->id) && !isALepton(sortedDaughters.at(2)->id) && !isANeutrino(sortedDaughters.at(2)->id) && !isAPhoton(sortedDaughters.at(2)->id))
+      )
+      )
+      ||
+      (std::abs(pZ1.M() - PDGHelpers::HVVmass)<std::abs(pZ2.M() - PDGHelpers::HVVmass) && !dauDiffType && (PDGHelpers::HVVmass==PDGHelpers::Zmass || PDGHelpers::HVVmass==PDGHelpers::Zeromass)) // Z1 / Z2
       ||
       ((sortedDaughters.at(0)!=0 && sortedDaughters.at(1)!=0 && PDGHelpers::HVVmass==PDGHelpers::Wmass) && sortedDaughters.at(0)->charge()+sortedDaughters.at(1)->charge()>0) // W+ / W-
       ){
@@ -188,7 +242,7 @@ void ZZCandidate::sortDaughtersByBestZ1(){
       pZ1p = pZ2p;
       pZ2p = ptmp;
     }
-    if (std::abs(pZ1p.M() - PDGHelpers::HVVmass)<std::abs(pZ1.M() - PDGHelpers::HVVmass) || (std::abs(pZ1p.M() - PDGHelpers::HVVmass)==std::abs(pZ1.M() - PDGHelpers::HVVmass) && pZ2p.Pt()>pZ2.Pt()) ){
+    if (std::abs(pZ1p.M() - PDGHelpers::HVVmass)<std::abs(pZ1.M() - PDGHelpers::HVVmass) || (std::abs(pZ1p.M() - PDGHelpers::HVVmass)==std::abs(pZ1.M() - PDGHelpers::HVVmass) && pZ2p.Pt()>pZ2.Pt())){
       for (int i=0; i<2; i++){
         for (int j=0; j<2; j++) orderedDs[i][j] = orderedDps[i][j];
       }
@@ -263,6 +317,17 @@ TLorentzVector ZZCandidate::getAlternativeVMomentum(int index)const{
   }
   else return nullFourVector;
 }
+bool ZZCandidate::daughtersInterfere()const{
+  bool doInterfere = false;
+  if (sortedDaughters.size()>3) doInterfere = (
+    (sortedDaughters.at(0))->id == (sortedDaughters.at(2))->id
+    &&
+    (sortedDaughters.at(1))->id == (sortedDaughters.at(3))->id
+    &&
+    !PDGHelpers::isAnUnknownJet(sortedDaughters.at(0)->id) && !PDGHelpers::isAnUnknownJet(sortedDaughters.at(2)->id)
+    );
+  return doInterfere;
+}
 
 bool ZZCandidate::checkDaughtership(Particle* myParticle)const{
   for (int dd=0; dd<getNDaughters(); dd++){
@@ -286,10 +351,30 @@ void ZZCandidate::addAssociatedPhotons(Particle* myParticle){
 void ZZCandidate::addAssociatedJets(Particle* myParticle){
   if (!checkDaughtership(myParticle)) addByHighestPt(myParticle, associatedJets);
 }
+void ZZCandidate::addAssociatedTops(TopCandidate* myParticle){
+  addByHighestPt(myParticle, associatedTops);
+}
 void ZZCandidate::addByHighestPt(Particle* myParticle, std::vector<Particle*>& particleArray){
   bool inserted = checkParticleExists(myParticle, particleArray); // Test if the particle is already in the vector
   if (!inserted){
+    if (!associatedByHighestPt){ particleArray.push_back(myParticle); return; }
+
     for (std::vector<Particle*>::iterator it = particleArray.begin(); it<particleArray.end(); it++){
+      if ((*it)->pt()<myParticle->pt()){
+        inserted=true;
+        particleArray.insert(it, myParticle);
+        break;
+      }
+    }
+    if (!inserted) particleArray.push_back(myParticle);
+  }
+}
+void ZZCandidate::addByHighestPt(TopCandidate* myParticle, std::vector<TopCandidate*>& particleArray){
+  bool inserted = checkTopCandidateExists(myParticle, particleArray); // Test if the particle is already in the vector
+  if (!inserted){
+    if (!associatedByHighestPt){ particleArray.push_back(myParticle); return; }
+
+    for (std::vector<TopCandidate*>::iterator it = particleArray.begin(); it<particleArray.end(); it++){
       if ((*it)->pt()<myParticle->pt()){
         inserted=true;
         particleArray.insert(it, myParticle);
@@ -316,15 +401,15 @@ void ZZCandidate::createAssociatedVs(std::vector<Particle*>& particleArray){
       int bosonId=-1;
       if ((Qi+Qj)==0 && (id_i+id_j)==0) bosonId = (id_i==0 ? 0 : 23);
       else if (
-          abs(Qi+Qj)==1 // W boson
-          &&
-          (
-            ((PDGHelpers::isALepton(id_i) || PDGHelpers::isALepton(id_j)) && std::abs(id_i+id_j)==1) // Require SF lnu particle-antiparticle pairs
-          ||
-            (PDGHelpers::isUpTypeQuark(id_i) && PDGHelpers::isDownTypeQuark(id_j)) // Require ud- or du-type pairs, qqbar requirement is satisfied with charge.
-          ||
-            (PDGHelpers::isDownTypeQuark(id_i) && PDGHelpers::isUpTypeQuark(id_j))
-          )
+        abs(Qi+Qj)==1 // W boson
+        &&
+        (
+        ((PDGHelpers::isALepton(id_i) || PDGHelpers::isALepton(id_j)) && std::abs(id_i+id_j)==1) // Require SF lnu particle-antiparticle pairs
+        ||
+        (PDGHelpers::isUpTypeQuark(id_i) && PDGHelpers::isDownTypeQuark(id_j)) // Require ud- or du-type pairs, qqbar requirement is satisfied with charge.
+        ||
+        (PDGHelpers::isDownTypeQuark(id_i) && PDGHelpers::isUpTypeQuark(id_j))
+        )
         ) bosonId=24*(Qi+Qj);
 
       if (bosonId!=-1){
@@ -334,7 +419,8 @@ void ZZCandidate::createAssociatedVs(std::vector<Particle*>& particleArray){
         if (
           (particleArray.at(firstdaughter)->id<particleArray.at(seconddaughter)->id && !PDGHelpers::isAWBoson(bosonId))
           ||
-          (std::abs(particleArray.at(firstdaughter)->id)<std::abs(particleArray.at(seconddaughter)->id) && PDGHelpers::isAWBoson(bosonId))
+          //(std::abs(particleArray.at(firstdaughter)->id)<std::abs(particleArray.at(seconddaughter)->id) && PDGHelpers::isAWBoson(bosonId)) // Order by nu-l / u-d
+          (particleArray.at(firstdaughter)->id<particleArray.at(seconddaughter)->id && particleArray.at(firstdaughter)->id<0 && PDGHelpers::isAWBoson(bosonId)) // Order by f-f'b
           ){
           firstdaughter = j; seconddaughter = i;
         }
@@ -353,6 +439,13 @@ void ZZCandidate::testPreSelectedDaughters(){
       break;
     }
   }
+}
+
+bool ZZCandidate::checkTopCandidateExists(TopCandidate* myParticle, std::vector<TopCandidate*>& particleArray){
+  for (std::vector<TopCandidate*>::iterator it = particleArray.begin(); it<particleArray.end(); it++){
+    if ((*it)==myParticle) return true;
+  }
+  return false;
 }
 
 
