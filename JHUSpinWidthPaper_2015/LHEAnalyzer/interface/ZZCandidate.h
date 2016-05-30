@@ -6,10 +6,9 @@
 
 class ZZCandidate : public Particle{
 public:
-  ZZCandidate(int id_, TLorentzVector p4_, bool associatedByHighestPt_=false) : Particle(id_, p4_), associatedByHighestPt(associatedByHighestPt_) {}
-
-  ~ZZCandidate(){ for (unsigned int i=0; i<sortedVs.size(); i++) delete sortedVs.at(i); sortedVs.clear(); sortedDaughters.clear(); associatedTops.clear(); associatedJets.clear(); associatedLeptons.clear(); associatedNeutrinos.clear(); associatedPhotons.clear(); }
-
+  ZZCandidate(int id_, TLorentzVector p4_, bool associatedByHighestPt_=false);
+  ~ZZCandidate();
+  ZZCandidate* shallowCopy();
 
   // Member functions
 
@@ -43,12 +42,15 @@ public:
 
   void sortDaughters();
   void testPreSelectedDaughters();
+  bool testShallowCopy();
 
   bool daughtersInterfere()const;
-  void setAddAssociatedByHighestPt(bool associatedByHighestPt_){ associatedByHighestPt=associatedByHighestPt_; }
+  void setAddAssociatedByHighestPt(bool associatedByHighestPt_);
+  void setShallowCopy(bool flag);
 
 protected:
   bool associatedByHighestPt;
+  bool isShallowCopy;
 
   std::vector<Particle*> associatedLeptons;
   std::vector<Particle*> associatedNeutrinos;

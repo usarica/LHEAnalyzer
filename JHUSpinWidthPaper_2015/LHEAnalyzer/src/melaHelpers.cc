@@ -461,7 +461,8 @@ void melaHelpers::computeAngles(
   float& costheta1,
   float& costheta2,
   float& Phi,
-  float& Phi1){
+  float& Phi1
+  ){
   /*
   cout << "dec begin" << endl;
   cout << "Entry:\n";
@@ -487,18 +488,17 @@ void melaHelpers::computeAngles(
   TLorentzVector p4Z2 = p4M21 + p4M22;
 
   // Sort Z1 leptons so that:
-  if ((Z1_lept1Id*Z1_lept2Id<0 && Z1_lept1Id<0) || // for OS pairs: lep1 must be the negative one
-    (Z1_lept1Id*Z1_lept2Id>0 && p4M11.Phi()<=p4M12.Phi()) //for SS pairs: use random deterministic convention
-    ) {
-    swap(p4M11, p4M12);
-  }
-
+  if (
+    (Z1_lept1Id*Z1_lept2Id<0 && Z1_lept1Id<0) // for OS pairs: lep1 must be the negative one
+    ||
+    ((Z1_lept1Id*Z1_lept2Id>0 || (Z1_lept1Id==0 && Z1_lept2Id==0)) && p4M11.Phi()<=p4M12.Phi()) //for SS pairs: use random deterministic convention
+    ) swap(p4M11, p4M12);
   // Same for Z2 leptons
-  if ((Z2_lept1Id*Z2_lept2Id<0 && Z2_lept1Id<0) ||
-    (Z2_lept1Id*Z2_lept2Id>0 && p4M21.Phi()<=p4M22.Phi())
-    ) {
-    swap(p4M21, p4M22);
-  }
+  if (
+    (Z2_lept1Id*Z2_lept2Id<0 && Z2_lept1Id<0)
+    ||
+    ((Z2_lept1Id*Z2_lept2Id>0 || (Z2_lept1Id==0 && Z2_lept2Id==0)) && p4M21.Phi()<=p4M22.Phi())
+    ) swap(p4M21, p4M22);
 
   // BEGIN THE CALCULATION
 
@@ -585,18 +585,18 @@ void melaHelpers::computeAngles(
   //// Phi
   float tmpSgnPhi = p3V1_BX.Dot(normal1_BX.Cross(normal2_BX));
   float sgnPhi = 0;
-  if (fabs(tmpSgnPhi)>0) sgnPhi = tmpSgnPhi/fabs(tmpSgnPhi);
+  if (fabs(tmpSgnPhi)>0.) sgnPhi = tmpSgnPhi/fabs(tmpSgnPhi);
   float dot_BX12 = normal1_BX.Dot(normal2_BX);
-  if (fabs(dot_BX12)>=1) dot_BX12 *= 1./fabs(dot_BX12);
+  if (fabs(dot_BX12)>=1.) dot_BX12 *= 1./fabs(dot_BX12);
   Phi = sgnPhi * acos(-1.*dot_BX12);
 
 
   //// Phi1
   float tmpSgnPhi1 = p3V1_BX.Dot(normal1_BX.Cross(normalSC_BX));
   float sgnPhi1 = 0;
-  if (fabs(tmpSgnPhi1)>0) sgnPhi1 = tmpSgnPhi1/fabs(tmpSgnPhi1);
+  if (fabs(tmpSgnPhi1)>0.) sgnPhi1 = tmpSgnPhi1/fabs(tmpSgnPhi1);
   float dot_BX1SC = normal1_BX.Dot(normalSC_BX);
-  if (fabs(dot_BX1SC)>=1) dot_BX1SC *= 1./fabs(dot_BX1SC);
+  if (fabs(dot_BX1SC)>=1.) dot_BX1SC *= 1./fabs(dot_BX1SC);
   Phi1 = sgnPhi1 * acos(dot_BX1SC);
 
   if (isnan(costhetastar) || isnan(costheta1) || isnan(costheta2) || isnan(Phi) || isnan(Phi1)){
@@ -858,7 +858,8 @@ void melaHelpers::computeVHangles(
     costheta1,
     costheta2,
     Phi,
-    Phi1);
+    Phi1
+    );
 }
 
 

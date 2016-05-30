@@ -9,9 +9,9 @@ public:
   TopCandidate(Particle* lightQuark_, Particle* Wferm_, Particle* Wfermbar_);
   ~TopCandidate(){}
 
-  Particle* setLightQuark(Particle* myParticle){ lightQuark=myParticle; }
-  Particle* setWFermion(Particle* myParticle){ Wferm=myParticle; }
-  Particle* setWAntifermion(Particle* myParticle){ Wfermbar=myParticle; }
+  Particle* setLightQuark(Particle* myParticle);
+  Particle* setWFermion(Particle* myParticle);
+  Particle* setWAntifermion(Particle* myParticle);
 
   Particle* getLightQuark(){ return lightQuark; }
   Particle* getWFermion(){ return Wferm; }

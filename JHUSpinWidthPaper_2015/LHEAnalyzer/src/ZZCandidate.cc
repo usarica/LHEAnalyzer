@@ -2,6 +2,54 @@
 
 using namespace PDGHelpers;
 
+ZZCandidate::ZZCandidate(int id_, TLorentzVector p4_, bool associatedByHighestPt_) :
+Particle(id_, p4_),
+associatedByHighestPt(associatedByHighestPt_),
+isShallowCopy(false)
+{}
+ZZCandidate::~ZZCandidate(){
+  if (!isShallowCopy){ // Delete owned objjects, or not
+    for (unsigned int i=0; i<sortedVs.size(); i++) delete sortedVs.at(i);
+  }
+  sortedVs.clear();
+
+  sortedDaughters.clear();
+  associatedTops.clear();
+  associatedJets.clear();
+  associatedLeptons.clear();
+  associatedNeutrinos.clear();
+  associatedPhotons.clear();
+}
+
+ZZCandidate* ZZCandidate::shallowCopy(){
+  ZZCandidate* cand = new ZZCandidate(id, p4, associatedByHighestPt);
+
+  // Copy particle content
+  cand->setSelected(passSelection);
+  cand->setGenStatus(genStatus);
+  cand->setLifetime(lifetime);
+  for (unsigned int ip=0; ip<mothers.size(); ip++) (cand->mothers).push_back(mothers.at(ip));
+  for (unsigned int ip=0; ip<daughters.size(); ip++) (cand->daughters).push_back(daughters.at(ip));
+
+  // Copy candidate content
+  cand->setShallowCopy(true);
+  for (unsigned int ip=0; ip<sortedDaughters.size(); ip++) (cand->sortedDaughters).push_back(sortedDaughters.at(ip));
+  for (unsigned int ip=0; ip<associatedJets.size(); ip++) (cand->associatedJets).push_back(associatedJets.at(ip));
+  for (unsigned int ip=0; ip<associatedNeutrinos.size(); ip++) (cand->associatedNeutrinos).push_back(associatedNeutrinos.at(ip));
+  for (unsigned int ip=0; ip<associatedLeptons.size(); ip++) (cand->associatedLeptons).push_back(associatedLeptons.at(ip));
+  for (unsigned int ip=0; ip<associatedPhotons.size(); ip++) (cand->associatedPhotons).push_back(associatedPhotons.at(ip));
+  for (unsigned int ip=0; ip<associatedTops.size(); ip++) (cand->associatedTops).push_back(associatedTops.at(ip));
+  for (unsigned int ip=0; ip<sortedVs.size(); ip++) (cand->sortedVs).push_back(sortedVs.at(ip));
+
+  return cand;
+}
+
+
+void ZZCandidate::setAddAssociatedByHighestPt(bool associatedByHighestPt_){ associatedByHighestPt=associatedByHighestPt_; }
+void ZZCandidate::setShallowCopy(bool flag){ isShallowCopy=flag; }
+bool ZZCandidate::testShallowCopy(){ return isShallowCopy; }
+
+
 void ZZCandidate::sortDaughters(){
   if (debugVars::debugFlag) std::cout << "Starting ZZCandidate::sortDaughtersInitial" << std::endl;
   sortDaughtersInitial();
@@ -90,12 +138,15 @@ void ZZCandidate::sortDaughtersInitial(){
     (df[0]->id<df[1]->id && (PDGHelpers::HVVmass==PDGHelpers::Zmass || PDGHelpers::HVVmass==PDGHelpers::Zeromass))
     ||
     (df[0]->id<df[1]->id && df[0]->id<0 && PDGHelpers::HVVmass==PDGHelpers::Wmass)
+    ||
+    ((df[0]->id*df[1]->id>0 || (df[0]->id==0 && df[1]->id==0)) && df[0]->phi()<df[1]->phi())
     )
     ){
     Particle* dtmp = df[0];
     df[0] = df[1];
     df[1] = dtmp;
   }
+
   if (
     (ds[0]!=0 && ds[1]!=0)
     &&
@@ -104,6 +155,8 @@ void ZZCandidate::sortDaughtersInitial(){
     (ds[0]->id<ds[1]->id && (PDGHelpers::HVVmass==PDGHelpers::Zmass || PDGHelpers::HVVmass==PDGHelpers::Zeromass))
     ||
     (ds[0]->id<ds[1]->id && ds[0]->id<0 && PDGHelpers::HVVmass==PDGHelpers::Wmass)
+    ||
+    ((ds[0]->id*ds[1]->id>0 || (ds[0]->id==0 && ds[1]->id==0)) && ds[0]->phi()<ds[1]->phi())
     )
     ){
     Particle* dtmp = ds[0];
@@ -271,20 +324,32 @@ void ZZCandidate::createSortedVs(){
     V1id=25;
   }
   else{
+    double Vcharge[2]={ 0 };
     for (int d=0; d<icutoff; d++){
       if (sortedDaughters.at(d)!=0){
         pZ1 = pZ1 + sortedDaughters.at(d)->p4;
-        if (icutoff==2) V1id=VID;
+        if (icutoff==2){
+          V1id=VID;
+          Vcharge[0] += sortedDaughters.at(d)->charge();
+        }
         else if (icutoff==1) V1id=sortedDaughters.at(d)->id;
       }
     }
     for (int d=icutoff; d<imax; d++){
       if (sortedDaughters.at(d)!=0){
         pZ2 = pZ2 + sortedDaughters.at(d)->p4;
-        if ((imax-icutoff)==2) V2id=VID;
+        if ((imax-icutoff)==2){
+          V2id=VID;
+          Vcharge[1] += sortedDaughters.at(d)->charge();
+        }
         else if ((imax-icutoff)==1) V2id=sortedDaughters.at(d)->id;
       }
     }
+    // Override HVVmass if charges indicate some other final state
+    if (fabs(Vcharge[0]-1.)<0.001) V1id=24;
+    else if (fabs(Vcharge[0]+1.)<0.001) V1id=-24;
+    if (fabs(Vcharge[1]-1.)<0.001) V2id=24;
+    else if (fabs(Vcharge[1]+1.)<0.001) V2id=-24;
   }
 
   // If the number of Zs is less than 2, should still create empty particles
