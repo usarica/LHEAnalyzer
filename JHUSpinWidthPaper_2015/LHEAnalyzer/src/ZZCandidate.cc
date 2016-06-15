@@ -115,7 +115,15 @@ void ZZCandidate::sortDaughtersInitial(){
     if (
       (dtmp->charge()+df[0]->charge()==0 && (PDGHelpers::HVVmass==PDGHelpers::Zmass || PDGHelpers::HVVmass==PDGHelpers::Zeromass))
       ||
-      (std::abs(dtmp->charge()+df[0]->charge())==1 && PDGHelpers::HVVmass==PDGHelpers::Wmass)
+      (
+      PDGHelpers::HVVmass==PDGHelpers::Wmass
+      &&
+      (
+      (std::abs(dtmp->charge()+df[0]->charge())==1 && TMath::Sign(1, dtmp->id)==-TMath::Sign(1, df[0]->id))
+      ||
+      (PDGHelpers::isAnUnknownJet(dtmp->id) && PDGHelpers::isAnUnknownJet(df[0]->id))
+      )
+      )
       ){
       df[1] = dtmp;
       tmpDindex[1] = j;
@@ -163,7 +171,7 @@ void ZZCandidate::sortDaughtersInitial(){
     ds[0] = ds[1];
     ds[1] = dtmp;
   }
-  if (df[1]==0 && df[0]!=0 && ds[0]!=0 && ds[1]!=0){
+  if (df[1]==0 && df[0]!=0 && ds[0]!=0 && ds[1]!=0){ // Swap GZ to ZG
     for (int ip=0; ip<2; ip++){
       Particle* dtmp = ds[ip];
       ds[ip] = df[ip];
@@ -206,7 +214,13 @@ void ZZCandidate::sortDaughtersByBestZ1(){
         ||
         (isAPhoton(sortedDaughters.at(0)->id) && isAPhoton(sortedDaughters.at(1)->id) && isAPhoton(sortedDaughters.at(2)->id) && isAPhoton(sortedDaughters.at(3)->id))
         ||
-        (isAJet(sortedDaughters.at(0)->id) && isAJet(sortedDaughters.at(1)->id) && isAJet(sortedDaughters.at(2)->id) && isAJet(sortedDaughters.at(3)->id))
+        (isDownTypeQuark(sortedDaughters.at(0)->id) && isDownTypeQuark(sortedDaughters.at(1)->id) && isDownTypeQuark(sortedDaughters.at(2)->id) && isDownTypeQuark(sortedDaughters.at(3)->id))
+        ||
+        (isUpTypeQuark(sortedDaughters.at(0)->id) && isUpTypeQuark(sortedDaughters.at(1)->id) && isUpTypeQuark(sortedDaughters.at(2)->id) && isUpTypeQuark(sortedDaughters.at(3)->id))
+        ||
+        (isAGluon(sortedDaughters.at(0)->id) && isAGluon(sortedDaughters.at(1)->id) && isAGluon(sortedDaughters.at(2)->id) && isAGluon(sortedDaughters.at(3)->id))
+        ||
+        (isAnUnknownJet(sortedDaughters.at(0)->id) && isAnUnknownJet(sortedDaughters.at(1)->id) && isAnUnknownJet(sortedDaughters.at(2)->id) && isAnUnknownJet(sortedDaughters.at(3)->id))
         )
         ) dauDiffType=false;
     }
@@ -219,7 +233,10 @@ void ZZCandidate::sortDaughtersByBestZ1(){
       isALepton(sortedDaughters.at(0)->id) ||
       (isANeutrino(sortedDaughters.at(0)->id) && !isALepton(sortedDaughters.at(2)->id)) ||
       (isAPhoton(sortedDaughters.at(0)->id) && !isALepton(sortedDaughters.at(2)->id) && !isANeutrino(sortedDaughters.at(2)->id)) ||
-      (isAJet(sortedDaughters.at(0)->id) && !isALepton(sortedDaughters.at(2)->id) && !isANeutrino(sortedDaughters.at(2)->id) && !isAPhoton(sortedDaughters.at(2)->id))
+      (isDownTypeQuark(sortedDaughters.at(0)->id) && !isALepton(sortedDaughters.at(2)->id) && !isANeutrino(sortedDaughters.at(2)->id) && !isAPhoton(sortedDaughters.at(2)->id)) ||
+      (isUpTypeQuark(sortedDaughters.at(0)->id) && !isALepton(sortedDaughters.at(2)->id) && !isANeutrino(sortedDaughters.at(2)->id) && !isAPhoton(sortedDaughters.at(2)->id) && !isDownTypeQuark(sortedDaughters.at(2)->id)) ||
+      (isAGluon(sortedDaughters.at(0)->id) && !isALepton(sortedDaughters.at(2)->id) && !isANeutrino(sortedDaughters.at(2)->id) && !isAPhoton(sortedDaughters.at(2)->id) && !isDownTypeQuark(sortedDaughters.at(2)->id) && !isUpTypeQuark(sortedDaughters.at(2)->id)) ||
+      (isAnUnknownJet(sortedDaughters.at(0)->id) && !isALepton(sortedDaughters.at(2)->id) && !isANeutrino(sortedDaughters.at(2)->id) && !isAPhoton(sortedDaughters.at(2)->id) && !isDownTypeQuark(sortedDaughters.at(2)->id) && !isUpTypeQuark(sortedDaughters.at(2)->id) && !isAGluon(sortedDaughters.at(2)->id))
       )
       )
       ||

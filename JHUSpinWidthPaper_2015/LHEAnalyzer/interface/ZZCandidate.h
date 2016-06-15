@@ -6,7 +6,7 @@
 
 class ZZCandidate : public Particle{
 public:
-  ZZCandidate(int id_, TLorentzVector p4_, bool associatedByHighestPt_=false);
+  ZZCandidate(int id_, TLorentzVector p4_, bool associatedByHighestPt_=true);
   ~ZZCandidate();
   ZZCandidate* shallowCopy();
 
