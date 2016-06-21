@@ -61,6 +61,13 @@ Particle* Particle::getDaughter(int index)const{
   if ((int)daughters.size()>index) return daughters.at(index);
   else return 0;
 }
+std::vector<int> Particle::getDaughterIds()const{
+  std::vector<int> result;
+  for (unsigned int idau=0; idau<daughters.size(); idau++){
+    if (daughters.at(idau)!=0) result.push_back(daughters.at(idau)->id);
+  }
+  return result;
+}
 
 double Particle::charge()const{
   double cpos=0;

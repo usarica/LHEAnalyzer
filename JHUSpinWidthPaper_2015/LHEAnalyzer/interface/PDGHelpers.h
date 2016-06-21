@@ -21,7 +21,9 @@ namespace PDGHelpers{
 
   bool isALepton(int id);
   bool isANeutrino(int id);
-  bool isAJet(int id);
+  bool isAJet(const int id);
+  bool isAnUnknownJet(const int id);
+  bool isInvalid(const int id);
   bool isAQuark(int id);
   bool isUpTypeQuark(int id);
   bool isDownTypeQuark(int id);

@@ -47,7 +47,11 @@ $(OUTLIB)Particle.o: $(INCLUDEDIR)Particle.cc $(OUTLIB)PDGHelpers.o
 	@mkdir -p $(OUTLIB)
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)Particle.o $(GLIBS) $<
 
-$(OUTLIB)ZZCandidate.o: $(INCLUDEDIR)ZZCandidate.cc $(OUTLIB)Particle.o
+$(OUTLIB)TopCandidate.o: $(INCLUDEDIR)TopCandidate.cc $(OUTLIB)Particle.o
+	@mkdir -p $(OUTLIB)
+	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)TopCandidate.o $(GLIBS) $<
+
+$(OUTLIB)ZZCandidate.o: $(INCLUDEDIR)ZZCandidate.cc $(OUTLIB)TopCandidate.o
 	@mkdir -p $(OUTLIB)
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)ZZCandidate.o $(GLIBS) $<
 

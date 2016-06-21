@@ -4,8 +4,16 @@ namespace PDGHelpers{
    double HVVmass = Zmass;
 }
 
-bool PDGHelpers::isAJet(int id){
-  if (id==0 || PDGHelpers::isAQuark(id) || PDGHelpers::isAGluon(id)) return true;
+bool PDGHelpers::isAJet(const int id){
+  if (PDGHelpers::isAnUnknownJet(id) || PDGHelpers::isAQuark(id) || PDGHelpers::isAGluon(id)) return true;
+  else return false;
+}
+bool PDGHelpers::isAnUnknownJet(const int id){
+  if (id==0) return true;
+  else return false;
+}
+bool PDGHelpers::isInvalid(const int id){
+  if (id==-9000) return true;
   else return false;
 }
 bool PDGHelpers::isAQuark(int id){
