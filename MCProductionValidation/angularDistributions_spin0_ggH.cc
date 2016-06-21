@@ -76,7 +76,7 @@ void angularDistributions_spin0_ggH(string cinput, double g1Re=1, double g2Re=0,
       return;
     }
   }
-  else if (decaytype.find("GG")!=string::npos && decaytype.find("GGto")==string::npos){ nToPlot-=5; Vdecay1=RooSpin::kVdecayType_GammaOnshell; Vdecay2=RooSpin::kVdecayType_GammaOnshell; }
+  else if (decaytype.find("GG")!=string::npos && decaytype.find("GGto")==string::npos){ nToPlot-=6; Vdecay1=RooSpin::kVdecayType_GammaOnshell; Vdecay2=RooSpin::kVdecayType_GammaOnshell; }
   else if (decaytype.find("ZZ")!=string::npos){
     if (decaytype.find("4l")!=string::npos){ Vdecay1=RooSpin::kVdecayType_Zll; Vdecay2=RooSpin::kVdecayType_Zll; }
     else if (decaytype.find("4nu")!=string::npos){ Vdecay1=RooSpin::kVdecayType_Znn; Vdecay2=RooSpin::kVdecayType_Znn; }
