@@ -372,7 +372,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
       std::cout << "21: " << Vj1->id << '\t' << Vj1->x() << '\t' << Vj1->y() << '\t' << Vj1->z() << '\t' << Vj1->t() << '\t' << std::endl;
       std::cout << "22: " << Vj2->id << '\t' << Vj2->x() << '\t' << Vj2->y() << '\t' << Vj2->z() << '\t' << Vj2->t() << '\t' << std::endl;
       */
-      if (Vi1==Vj1 || Vi2==Vj2) continue;
+      if (Vi1==Vj1 || (Vi2==Vj2 && Vi2 != 0)) continue;
 
       if (debugVars::debugFlag){
         if (Vi1!=0) std::cout << "Vi1 not zero. Id: " << Vi1->id << std::endl;

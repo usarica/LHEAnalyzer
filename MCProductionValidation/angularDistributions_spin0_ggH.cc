@@ -26,7 +26,7 @@
 using namespace RooFit;
 using namespace std;
 
-void angularDistributions_spin0_ggH(string cinput, double g1Re=1, double g2Re=0, double g4Re=0, double g1L1Re=0, double g2Im=0, double g4Im=0, double g1L1Im=0, int nbins=80, double mPOLE = 125., int useTaus=0){
+void angularDistributions_spin0_ggH(string cinput, double g1Re=1, double g2Re=0, double g4Re=0, double g1L1Re=0, double g2Im=0, double g4Im=0, double g1L1Im=0, int nbins=80, double mPOLE = 125., int useTaus=0, string decaytype="", string coutput=""){
   RooRealVar* mzz = new RooRealVar("GenHMass", "M_{ZZ} (GeV)", mPOLE, mPOLE-0.02, mPOLE+0.02);
   RooRealVar* z1mass = new RooRealVar("GenZ1Mass", "m_{Z1} (GeV)", 0.0, min(120., mPOLE));
   RooRealVar* z2mass = new RooRealVar("GenZ2Mass", "m_{Z2} (GeV)", 0.0, min(120., (mPOLE-90.)*20./35.+55.));
@@ -61,34 +61,35 @@ void angularDistributions_spin0_ggH(string cinput, double g1Re=1, double g2Re=0,
   };
   TString strGenLepId[4]={ "GenLep1Id", "GenLep2Id", "GenLep3Id", "GenLep4Id" };
   int GenLepId[4]={ 0 };
-  RooSpin::VdecayType Vdecay1=(cinput.find("WW")!=string::npos ? RooSpin::kVdecayType_Wany : RooSpin::kVdecayType_Zll);
-  RooSpin::VdecayType Vdecay2=(cinput.find("WW")!=string::npos ? RooSpin::kVdecayType_Wany : RooSpin::kVdecayType_Zll);
+  if (decaytype == "") decaytype = cinput;  //try to find the decay type in the input file name
+  RooSpin::VdecayType Vdecay1=(decaytype.find("WW")!=string::npos ? RooSpin::kVdecayType_Wany : RooSpin::kVdecayType_Zll);
+  RooSpin::VdecayType Vdecay2=(decaytype.find("WW")!=string::npos ? RooSpin::kVdecayType_Wany : RooSpin::kVdecayType_Zll);
   int nToPlot=nPlots;
-  if (cinput.find("ZG")!=string::npos){
+  if (decaytype.find("ZG")!=string::npos){
     nToPlot-=3;
     Vdecay2=RooSpin::kVdecayType_GammaOnshell;
-    if (cinput.find("2l")!=string::npos) Vdecay1=RooSpin::kVdecayType_Zll;
-    else if (cinput.find("2nu")!=string::npos) Vdecay1=RooSpin::kVdecayType_Znn;
-    else if (cinput.find("2q")!=string::npos) Vdecay1=RooSpin::kVdecayType_Zud;
+    if (decaytype.find("2l")!=string::npos) Vdecay1=RooSpin::kVdecayType_Zll;
+    else if (decaytype.find("2nu")!=string::npos) Vdecay1=RooSpin::kVdecayType_Znn;
+    else if (decaytype.find("2q")!=string::npos) Vdecay1=RooSpin::kVdecayType_Zud;
     else{
       cerr << "Could not find the Z decays! Exiting." << endl;
       return;
     }
   }
-  else if (cinput.find("GG")!=string::npos && cinput.find("GGto")==string::npos){ nToPlot-=5; Vdecay1=RooSpin::kVdecayType_GammaOnshell; Vdecay2=RooSpin::kVdecayType_GammaOnshell; }
-  else if (cinput.find("ZZ")!=string::npos){
-    if (cinput.find("4l")!=string::npos){ Vdecay1=RooSpin::kVdecayType_Zll; Vdecay2=RooSpin::kVdecayType_Zll; }
-    else if (cinput.find("4nu")!=string::npos){ Vdecay1=RooSpin::kVdecayType_Znn; Vdecay2=RooSpin::kVdecayType_Znn; }
-    else if (cinput.find("4q")!=string::npos){ Vdecay1=RooSpin::kVdecayType_Zud; Vdecay2=RooSpin::kVdecayType_Zud; }
-    else if (cinput.find("2l2q")!=string::npos || cinput.find("2q2l")!=string::npos){ Vdecay1=RooSpin::kVdecayType_Zll; Vdecay2=RooSpin::kVdecayType_Zud; }
-    else if (cinput.find("2l2nu")!=string::npos || cinput.find("2nu2l")!=string::npos){ Vdecay1=RooSpin::kVdecayType_Zll; Vdecay2=RooSpin::kVdecayType_Znn; }
-    else if (cinput.find("2q2nu")!=string::npos || cinput.find("2nu2q")!=string::npos){ Vdecay1=RooSpin::kVdecayType_Zll; Vdecay2=RooSpin::kVdecayType_Zud; }
+  else if (decaytype.find("GG")!=string::npos && decaytype.find("GGto")==string::npos){ nToPlot-=6; Vdecay1=RooSpin::kVdecayType_GammaOnshell; Vdecay2=RooSpin::kVdecayType_GammaOnshell; }
+  else if (decaytype.find("ZZ")!=string::npos){
+    if (decaytype.find("4l")!=string::npos){ Vdecay1=RooSpin::kVdecayType_Zll; Vdecay2=RooSpin::kVdecayType_Zll; }
+    else if (decaytype.find("4nu")!=string::npos){ Vdecay1=RooSpin::kVdecayType_Znn; Vdecay2=RooSpin::kVdecayType_Znn; }
+    else if (decaytype.find("4q")!=string::npos){ Vdecay1=RooSpin::kVdecayType_Zud; Vdecay2=RooSpin::kVdecayType_Zud; }
+    else if (decaytype.find("2l2q")!=string::npos || decaytype.find("2q2l")!=string::npos){ Vdecay1=RooSpin::kVdecayType_Zll; Vdecay2=RooSpin::kVdecayType_Zud; }
+    else if (decaytype.find("2l2nu")!=string::npos || decaytype.find("2nu2l")!=string::npos){ Vdecay1=RooSpin::kVdecayType_Zll; Vdecay2=RooSpin::kVdecayType_Znn; }
+    else if (decaytype.find("2q2nu")!=string::npos || decaytype.find("2nu2q")!=string::npos){ Vdecay1=RooSpin::kVdecayType_Zll; Vdecay2=RooSpin::kVdecayType_Zud; }
     else{
       cerr << "Could not find the Z decays! Exiting." << endl;
       return;
     }
   }
-  else if (cinput.find("WW")==string::npos){
+  else if (decaytype.find("WW")==string::npos){
     cerr << "Could not find the V decays! Exiting." << endl;
     return;
   }
@@ -126,11 +127,13 @@ void angularDistributions_spin0_ggH(string cinput, double g1Re=1, double g2Re=0,
   }
   someHiggs->makeParamsConst(true);
 
-  size_t lastSlash = cinput.find_last_of("/\\");
-  string finName;
-  finName=cinput;
-  finName.resize(lastSlash+1);
-  string coutput = finName + "Validation/";
+  if (coutput == ""){
+    size_t lastSlash = cinput.find_last_of("/\\");
+    string finName;
+    finName=cinput;
+    finName.resize(lastSlash+1);
+    coutput = finName + "Validation/";
+  }
   cout << "Output folder is " << coutput << endl;
   string strCmd = "mkdir -p ";
   strCmd.append(coutput);
