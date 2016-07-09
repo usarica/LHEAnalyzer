@@ -369,8 +369,15 @@ void OptionParser::printOptionsHelp(){
   cout << "- GH / GaH / GammaH / wPOLE: Width of the generated Higgs. Used in generator objects. Default=4.07 (MeV)\n\n";
   cout << "- GHSM / GaHSM / GammaHSM / wPOLEStandard: Standard SM width. Used in scaling Mela probabilities properly. Default=4.07 (MeV).\n\n";
   cout << "- includeGenInfo, includeRecoInfo: Flags to control the writing of gen. and reco. info., respectively. Cannot be both false (0). Default=(1, 1)\n\n";
-  cout << "- isGenHZZ, isRecoHZZ: Gen. or reco. H->VV decay. -1==H undecayed (gen.-only), 0==H->WW decay, 1==H->ZZ decay. isGenHZZ also (re)sets the default V mass in H->VV decay. Defaults=(1, 1)\n\n";
-  cout << "- genDecayMode, recoDecayMode: Gen. or reco. H->VV->final states. Defaults=(0, 0)\n\tIf H->ZZ decay is specified, -1 - 5==Any, 4l, 4q, 2l2q, 2l2nu, 2q2nu, 4nu.\n\tIf H->WW decay is specified, -1 - 2==Any, 2l2nu, 4nu, lnu2q.\n\n";
+  cout << "- isGenHZZ, isRecoHZZ: Gen. or reco. H->VV decay. -1==H undecayed (gen.-only), 0==H->WW decay, 1==H->ZZ decay, 2==H->ffb decay, 3==H->Zgamma decay, 4==H->gammagamma decay, 5==Z->ffb decay. isGenHZZ also (re)sets the default V mass in H->VV decay. Defaults=(1, 1)\n\n";
+  cout << "- genDecayMode, recoDecayMode: Gen. or reco. H->VV->final states. Defaults=(0, 0)\n"
+    << "\tIf H->ZZ decay (1) is specified, -1 - 5==Any, 4l, 4q, 2l2q, 2l2nu, 2q2nu, 4nu\n"
+    << "\tIf H->WW decay (0) is specified, -1 - 2==Any, 2l2nu, 4nu, lnu2q\n"
+    << "\tIf H->ffb decay (2) is specified, -1, 0, 1, 5==Any, 4l, 4q, 4nu\n"
+    << "\tIf H->Zgamma decay (3) is specified, -1, 0, 1, 5==Any, 2l+gamma, 2q+gamma, 2nu+gamma\n"
+    << "\tIf H->gammagamma decay (4) is specified, -1, 0==Stable gamma\n"
+    << "\tIf Z->ffb decay (5) is specified, -1, 0, 1, 5==Any, 2l, 2q, 2nu\n"
+    << "\n";
   cout << "- recoSelBehavior / recoSelBehaviour: Selection behaviour on all reco. final states. Default=0.\n\t0==Apply selection in LHE and Pythia modes, apply no re-selection in ReadMode.\n\t1==Opposite of 0. Also enables the computation of all angles in ReadMode, overriding the relevant command line options.\n\n";
   cout << "- recoSmearBehavior / recoSmearBehaviour: Smearing behaviour on all reco. final states. Does not apply to ReadMode. Default=0.\n\t0==Apply smearing in LHE mode, no smearing in Pythia mode\n\t1==Opposite of 0\n\n";
   cout << "- genCandidateSelection, recoCandidateSelection: Higgs candidate selection algorithm. Values accepted are\n\t->BestZ1ThenZ2 (=BestZ1ThenZ2ScSumPt).\n\tDefaults==(BestZ1ThenZ2, BestZ1ThenZ2)\n\n";

@@ -182,6 +182,7 @@ void convertPythia::run(){
         genParticleList.clear();
 
         globalNEvents++;
+        if (globalNEvents % 100000 == 0) cout << "Event " << globalNEvents << "..." << endl;
       }
       fin->Close();
       cout << "Processed number of events from the input file (recorded events / sample size observed / cumulative traversed): " << nProcessed << " / " << nInputEvents << " / " << globalNEvents << endl;
