@@ -117,7 +117,7 @@ void convertPythia::run(){
                 }
               }
             }
-            else genCand = HiggsComparators::candidateSelector(genEvent, options->getHiggsCandidateSelectionScheme(true), options->doGenHZZdecay());
+            if (genCand==0) genCand = HiggsComparators::candidateSelector(genEvent, options->getHiggsCandidateSelectionScheme(true), options->doGenHZZdecay());
             if (genCand!=0) tree->fillCandidate(genCand, true);
             else{
               cout << cinput << " (" << ev << "): No gen. level Higgs candidate was found!" << endl;

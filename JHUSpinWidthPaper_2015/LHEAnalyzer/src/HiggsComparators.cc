@@ -4,9 +4,10 @@ ZZCandidate* HiggsComparators::matchAHiggsToParticle(Event& ev, Particle* genH){
   ZZCandidate* cand=0;
   for (int t=0; t<ev.getNZZCandidates(); t++){
     ZZCandidate* tmpCand = ev.getZZCandidate(t);
-    double massdiff = fabs(genH->m()-tmpCand->m());
+    double genhmassquant = genH->m()+genH->pt()+fabs(genH->z());
+    double massdiff = fabs(genhmassquant-tmpCand->m()-tmpCand->pt()-fabs(tmpCand->z()));
     double massratio = 0;
-    if (genH->m()>0) massratio = massdiff / genH->m();
+    if (genhmassquant>0) massratio = massdiff / genhmassquant;
     if (massratio<0.001){
       if (cand==0) cand = tmpCand;
       else{
