@@ -108,6 +108,9 @@ void Event::constructVVCandidates(int isZZ, int fstype){
   fstype=4: 2q2nu / -      / -         / -      / -        / -
   fstype=5: 4nu   / -      / -         / 2nu    / -        / 2nu
   fstype=-1: Any
+  fstype=-2: 2l2X
+  fstype=-3: 2nu2X
+  fstype=-4: 2q2X
   */
 
   if (
@@ -117,13 +120,17 @@ void Event::constructVVCandidates(int isZZ, int fstype){
     ||
     (isZZ==2 && fstype>1)
     ||
-    (isZZ==3 && (fstype>0 && fstype!=5))
+    (isZZ==3 && (fstype>1 && fstype!=5))
     ||
-    (isZZ==4 && fstype>1)
+    (isZZ==4 && fstype>0)
     ||
     (isZZ==5 && (fstype>1 && fstype!=5))
     ||
     isZZ>5
+    ||
+    (fstype<-1 && isZZ>1)
+    ||
+    fstype<-4
     ){
     if (isZZ<0) std::cerr << "No " << "undecayed" << " candidate with final state " << fstype << " is possible!" << std::endl;
     else if (isZZ==0) std::cerr << "No " << "WW" << " candidate with final state " << fstype << " is possible!" << std::endl;
@@ -173,7 +180,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
 
   if (isZZ==1 || isZZ==3 || isZZ==5){ // ZZ
 
-    if (fstype==-1 || (isZZ==1 && (fstype==0 || fstype==2 || fstype==3)) || (isZZ==3 && fstype==0)){ // Z->2l
+    if (fstype<0 || (isZZ==1 && (fstype==0 || fstype==2 || fstype==3)) || (isZZ==3 && fstype==0)){ // Z->2l
       for (int c=0; c<3; c++){
         for (unsigned int i=0; i<lepMinusPlus[c][0].size(); i++){
           for (unsigned int j=0; j<lepMinusPlus[c][1].size(); j++){
@@ -186,7 +193,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
         }
       }
     }
-    if (fstype==-1 || (isZZ==1 && (fstype==3 || fstype==4 || fstype==5)) || (isZZ==3 && fstype==5)){ // Z->2nu
+    if (fstype<0 || (isZZ==1 && (fstype==3 || fstype==4 || fstype==5)) || (isZZ==3 && fstype==5)){ // Z->2nu
       for (int c=0; c<3; c++){
         for (unsigned int i=0; i<lepNuNubar[c][0].size(); i++){
           for (unsigned int j=0; j<lepNuNubar[c][1].size(); j++){
@@ -199,7 +206,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
         }
       }
     }
-    if (fstype==-1 || (isZZ==1 && (fstype==1 || fstype==2 || fstype==4)) || (isZZ==3 && fstype==1)){ // Z->2q
+    if (fstype<0 || (isZZ==1 && (fstype==1 || fstype==2 || fstype==4)) || (isZZ==3 && fstype==1)){ // Z->2q
       for (int c=1; c<7; c++){
         for (unsigned int i=0; i<quarkAntiquark[c][0].size(); i++){
           for (unsigned int j=0; j<quarkAntiquark[c][1].size(); j++){
@@ -216,7 +223,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
   }
   else if(isZZ==0){ // WW
 
-    if (fstype==-1 || fstype==0 || fstype==2){ // W->lnu
+    if (fstype<0 || fstype==0 || fstype==2){ // W->lnu
       for (int c=0; c<3; c++){
         for (unsigned int i=0; i<lepMinusPlus[c][1].size(); i++){
           for (unsigned int j=0; j<lepNuNubar[c][0].size(); j++){
@@ -238,7 +245,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
         }
       }
     }
-    if (fstype==-1 || fstype==1 || fstype==2){ // W->2q
+    if (fstype<0 || fstype==1 || fstype==2){ // W->2q
       for (int c=1; c<7; c++){
         for (int d=1; d<7; d++){
           if (d==c) continue;
@@ -260,7 +267,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
   }
   else if (isZZ==2){ // H->f fbar
 
-    if (fstype==-1 || fstype==0){ // H->2l
+    if (fstype<0 || fstype==0){ // H->2l
       for (int c=0; c<3; c++){
         for (unsigned int i=0; i<lepMinusPlus[c][0].size(); i++){
           for (unsigned int j=0; j<lepMinusPlus[c][1].size(); j++){
@@ -281,7 +288,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
         }
       }
     }
-    if (fstype==-1 || fstype==1){ // H->2q
+    if (fstype<0 || fstype==1){ // H->2q
       for (int c=1; c<7; c++){
         for (unsigned int i=0; i<quarkAntiquark[c][0].size(); i++){
           for (unsigned int j=0; j<quarkAntiquark[c][1].size(); j++){
@@ -306,7 +313,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
   }
   else if (isZZ==5){ // Z->f fbar
 
-    if (fstype==-1 || fstype==0){ // Z->2l
+    if (fstype<0 || fstype==0){ // Z->2l
       for (int c=0; c<3; c++){
         for (unsigned int i=0; i<lepMinusPlus[c][0].size(); i++){
           for (unsigned int j=0; j<lepMinusPlus[c][1].size(); j++){
@@ -327,7 +334,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
         }
       }
     }
-    if (fstype==-1 || fstype==1){ // Z->2q
+    if (fstype<0 || fstype==1){ // Z->2q
       for (int c=1; c<7; c++){
         for (unsigned int i=0; i<quarkAntiquark[c][0].size(); i++){
           for (unsigned int j=0; j<quarkAntiquark[c][1].size(); j++){
@@ -348,7 +355,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
         }
       }
     }
-    if (fstype==-1 || fstype==5){ // Z->2nu
+    if (fstype<0 || fstype==5){ // Z->2nu
       for (int c=0; c<3; c++){
         for (unsigned int i=0; i<lepNuNubar[c][0].size(); i++){
           for (unsigned int j=0; j<lepNuNubar[c][1].size(); j++){
@@ -400,13 +407,13 @@ void Event::constructVVCandidates(int isZZ, int fstype){
   if (debugVars::debugFlag) std::cout << "Number of V/ZZ after sorting photons: " << tmpVhandle.size() << " " << getNZZCandidates() << std::endl;
 
   if (
-    ((fstype==-1 || fstype==1 || fstype==2 || fstype==4) && (isZZ==0 || isZZ==1)) // W/Z->2j reco.-level
+    ((fstype<0 || fstype==1 || fstype==2 || fstype==4) && (isZZ==0 || isZZ==1)) // W/Z->2j reco.-level
     ||
-    ((fstype==-1 || fstype==1) && isZZ==2) // H->2j reco.-level
+    ((fstype<0 || fstype==1) && isZZ==2) // H->2j reco.-level
     ||
-    ((fstype==-1 || fstype==1) && isZZ==3) // H->Zgam with Z->2j
+    ((fstype<0 || fstype==1) && isZZ==3) // H->Zgam with Z->2j
     ||
-    ((fstype==-1 || fstype==1) && isZZ==5) // Z+2jets with Z->2j
+    ((fstype<0 || fstype==1) && isZZ==5) // Z+2jets with Z->2j
     ){
     for (unsigned int i=0; i<quarkAntiquark[0][0].size(); i++){
       if (quarkAntiquark[0][0].at(i)->id!=0) continue;
@@ -472,6 +479,30 @@ void Event::constructVVCandidates(int isZZ, int fstype){
       std::cout << "22: " << Vj2->id << '\t' << Vj2->x() << '\t' << Vj2->y() << '\t' << Vj2->z() << '\t' << Vj2->t() << '\t' << std::endl;
       */
       if (Vi1==Vj1 || (Vi2==Vj2 && Vi2 != 0)) continue;
+      bool createCandidate=true;
+      if (isZZ<=1 && fstype<-1){
+        unsigned int partcounter=0;
+        if (fstype==-2){ // Count leptons
+          if (Vi1!=0 && PDGHelpers::isALepton(Vi1->id)) partcounter++;
+          if (Vi2!=0 && PDGHelpers::isALepton(Vi2->id)) partcounter++;
+          if (Vj1!=0 && PDGHelpers::isALepton(Vj1->id)) partcounter++;
+          if (Vj2!=0 && PDGHelpers::isALepton(Vj2->id)) partcounter++;
+        }
+        else if (fstype==-3){ // Count neutrinos
+          if (Vi1!=0 && PDGHelpers::isANeutrino(Vi1->id)) partcounter++;
+          if (Vi2!=0 && PDGHelpers::isANeutrino(Vi2->id)) partcounter++;
+          if (Vj1!=0 && PDGHelpers::isANeutrino(Vj1->id)) partcounter++;
+          if (Vj2!=0 && PDGHelpers::isANeutrino(Vj2->id)) partcounter++;
+        }
+        else if (fstype==-4){ // Count jets
+          if (Vi1!=0 && PDGHelpers::isAJet(Vi1->id)) partcounter++;
+          if (Vi2!=0 && PDGHelpers::isAJet(Vi2->id)) partcounter++;
+          if (Vj1!=0 && PDGHelpers::isAJet(Vj1->id)) partcounter++;
+          if (Vj2!=0 && PDGHelpers::isAJet(Vj2->id)) partcounter++;
+        }
+        if (partcounter<2) createCandidate=false;
+      }
+      if (!createCandidate) continue;
 
       if (debugVars::debugFlag){
         if (Vi1!=0) std::cout << "Vi1 not zero. Id: " << Vi1->id << std::endl;

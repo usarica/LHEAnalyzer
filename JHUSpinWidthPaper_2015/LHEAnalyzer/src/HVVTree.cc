@@ -668,9 +668,13 @@ void HVVTree::fillAssociatedInfo(ZZCandidate* pH, bool isGen){
       Particle* apart = pH->getAssociatedNeutrino(aa);
       tmpAssociatedParticle.push_back(apart);
     }
+    for (int aa=0; aa<pH->getNAssociatedPhotons(); aa++){
+      Particle* apart = pH->getAssociatedPhoton(aa);
+      tmpAssociatedParticle.push_back(apart);
+    }
   }
 
-  while (tmpAssociatedParticle.size()>0){ // Re-sort all associated particles by leading pT (categories are individually soreted, but mixing categories loses this sorting)
+  while (tmpAssociatedParticle.size()>0){ // Re-sort all associated particles by leading pT (categories are individually sorted, but mixing categories loses this sorting)
     Particle* tmpPart=0;
     int pos=0;
     for (unsigned int el=0; el<tmpAssociatedParticle.size(); el++){
