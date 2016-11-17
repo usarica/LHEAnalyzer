@@ -275,7 +275,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
             Particle* F2 = lepMinusPlus[c][1].at(j);
 
             TLorentzVector pH = F1->p4+F2->p4;
-            ZZCandidate* cand = new ZZCandidate(25, pH);
+            ZZCandidate* cand = new ZZCandidate(25, pH, true);
             cand->addDaughter(F1);
             cand->addDaughter(F2);
 
@@ -296,7 +296,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
             Particle* F2 = quarkAntiquark[c][1].at(j);
 
             TLorentzVector pH = F1->p4+F2->p4;
-            ZZCandidate* cand = new ZZCandidate(25, pH);
+            ZZCandidate* cand = new ZZCandidate(25, pH, true);
             cand->addDaughter(F1);
             cand->addDaughter(F2);
 
@@ -321,7 +321,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
             Particle* F2 = lepMinusPlus[c][1].at(j);
 
             TLorentzVector pCand = F1->p4+F2->p4;
-            ZZCandidate* cand = new ZZCandidate(23, pCand);
+            ZZCandidate* cand = new ZZCandidate(23, pCand, true);
             cand->addDaughter(F1);
             cand->addDaughter(F2);
 
@@ -342,7 +342,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
             Particle* F2 = quarkAntiquark[c][1].at(j);
 
             TLorentzVector pCand = F1->p4+F2->p4;
-            ZZCandidate* cand = new ZZCandidate(23, pCand);
+            ZZCandidate* cand = new ZZCandidate(23, pCand, true);
             cand->addDaughter(F1);
             cand->addDaughter(F2);
 
@@ -363,7 +363,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
             Particle* F2 = lepNuNubar[c][1].at(j);
 
             TLorentzVector pCand = F1->p4+F2->p4;
-            ZZCandidate* cand = new ZZCandidate(23, pCand);
+            ZZCandidate* cand = new ZZCandidate(23, pCand, true);
             cand->addDaughter(F1);
             cand->addDaughter(F2);
 
@@ -382,7 +382,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
     for (std::vector<Particle*>::iterator it = intermediates.begin(); it<intermediates.end(); it++){ // Add directly
       if (isAHiggs((*it)->id)){
         TLorentzVector pH = (*it)->p4;
-        ZZCandidate* cand = new ZZCandidate(25, pH);
+        ZZCandidate* cand = new ZZCandidate(25, pH, true);
 
         double defaultHVVmass = HVVmass;
         setHVVmass(Zeromass);
@@ -431,7 +431,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
           Particle* F2 = quarkAntiquark[0][0].at(j);
 
           TLorentzVector pH = F1->p4+F2->p4;
-          ZZCandidate* cand = new ZZCandidate(25, pH);
+          ZZCandidate* cand = new ZZCandidate(25, pH, true);
           cand->addDaughter(F1);
           cand->addDaughter(F2);
 
@@ -446,7 +446,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
           Particle* F2 = quarkAntiquark[0][0].at(j);
 
           TLorentzVector pCand = F1->p4+F2->p4;
-          ZZCandidate* cand = new ZZCandidate(23, pCand);
+          ZZCandidate* cand = new ZZCandidate(23, pCand, true);
           cand->addDaughter(F1);
           cand->addDaughter(F2);
 
@@ -516,7 +516,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
       if (Vi2!=0) pH = pH + Vi2->p4;
       if (Vj1!=0) pH = pH + Vj1->p4;
       if (Vj2!=0) pH = pH + Vj2->p4;
-      ZZCandidate* cand = new ZZCandidate(25, pH);
+      ZZCandidate* cand = new ZZCandidate(25, pH, true);
 
       if (Vi1!=0) cand->addDaughter(Vi1);
       if (Vi2!=0) cand->addDaughter(Vi2);

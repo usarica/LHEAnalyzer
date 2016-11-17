@@ -3,29 +3,29 @@
 #include "TList.h"
 #include "TRandom.h"
 #include "TLorentzVector.h"
-#include "../interface/convertPythia.h"
+#include "../interface/PythiaConverter.h"
 
 using namespace PDGHelpers;
 
-convertPythia::convertPythia(OptionParser* options_) : converter(options_){
+PythiaConverter::PythiaConverter(OptionParser* options_) : converter(options_){
   configure();
   run();
 }
 
-void convertPythia::configure(){
+void PythiaConverter::configure(){
   string tmpdir = options->getTempDir();
   string strCmd = "mkdir -p ";
   strCmd.append(tmpdir);
   gSystem->Exec(strCmd.c_str());
 }
-void convertPythia::finalizeRun(){
+void PythiaConverter::finalizeRun(){
   string tmpdir = options->getTempDir();
   string strCmdcore = "rm -rf ";
   string strCmd = strCmdcore;
   strCmd.append(tmpdir);
   gSystem->Exec(strCmd.c_str());
 }
-void convertPythia::run(){
+void PythiaConverter::run(){
   Float_t MC_weight=0;
   Int_t isSelected=0;
 
@@ -192,7 +192,7 @@ void convertPythia::run(){
 }
 
 
-TFile* convertPythia::getIntermediateFile(string cinput){
+TFile* PythiaConverter::getIntermediateFile(string cinput){
   string coutput = options->getTempDir();
   const bool usePython = true;
   stringstream streamCmd;
@@ -218,7 +218,7 @@ TFile* convertPythia::getIntermediateFile(string cinput){
 }
 
 
-void convertPythia::readEvent(TTree* tin, int ev, vector<Particle*>& genCollection, bool& genSuccess, vector<Particle*>& recoCollection, bool& smearedSuccess, double& eventWeight){
+void PythiaConverter::readEvent(TTree* tin, int ev, vector<Particle*>& genCollection, bool& genSuccess, vector<Particle*>& recoCollection, bool& smearedSuccess, double& eventWeight){
   int nEvents = tin->GetEntries();
   vectorDouble weights;
   if (ev>=nEvents){

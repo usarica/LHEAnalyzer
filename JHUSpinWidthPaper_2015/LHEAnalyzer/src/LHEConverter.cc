@@ -11,19 +11,19 @@
 #include "TList.h"
 #include "TRandom.h"
 #include "TLorentzVector.h"
-#include "../interface/convertLHE.h"
+#include "../interface/LHEConverter.h"
 
 using namespace PDGHelpers;
 using namespace LHEParticleSmear;
 
-convertLHE::convertLHE(OptionParser* options_) : converter(options_){
+LHEConverter::LHEConverter(OptionParser* options_) : converter(options_){
   configure();
   run();
 }
 
-void convertLHE::configure(){}
-void convertLHE::finalizeRun(){}
-void convertLHE::run(){
+void LHEConverter::configure(){}
+void LHEConverter::finalizeRun(){}
+void LHEConverter::run(){
   double weight;
   Float_t MC_weight=0;
   Int_t isSelected=0;
@@ -182,7 +182,7 @@ void convertLHE::run(){
   finalizeRun();
 }
 
-vector<Particle*> convertLHE::readEvent(ifstream& input_lhe, int& fline, double& weight){
+vector<Particle*> LHEConverter::readEvent(ifstream& input_lhe, int& fline, double& weight){
   string event_beginning = "<event>";
   string event_end = "</event>";
   string file_closing = "</LesHouchesEvents>";

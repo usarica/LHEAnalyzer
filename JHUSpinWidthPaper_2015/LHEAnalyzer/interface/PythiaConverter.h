@@ -1,5 +1,5 @@
-#ifndef CONVERT_PYTHIA_H
-#define CONVERT_PYTHIA_H
+#ifndef PYTHIACONVERTER_H
+#define PYTHIACONVERTER_H
 
 #include "converter.h"
 #include <cstdlib>
@@ -26,10 +26,10 @@
 //#include "DataFormats/PatCandidates/interface/Tau.h"
 //#include "DataFormats/PatCandidates/interface/PackedTriggerPrescales.h"
 
-class convertPythia : public converter{
+class PythiaConverter : public converter{
 public:
-  convertPythia(OptionParser* options_);
-  ~convertPythia(){};
+  PythiaConverter(OptionParser* options_);
+  ~PythiaConverter(){};
   void run();
 
 protected:

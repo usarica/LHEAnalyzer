@@ -32,41 +32,21 @@ OUTLIB           = $(COMPILEPATH)lib/
 RUNDIR           = $(COMPILEPATH)
 
 
-$(OUTLIB)PDGHelpers.o: $(INCLUDEDIR)PDGHelpers.cc
-	@mkdir -p $(OUTLIB)
-	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)PDGHelpers.o $(GLIBS) $<
-
 $(OUTLIB)LHEParticleSmear.o: $(INCLUDEDIR)LHEParticleSmear.cc
 	@mkdir -p $(OUTLIB)
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)LHEParticleSmear.o $(GLIBS) $<
 
-
-
-
-$(OUTLIB)Particle.o: $(INCLUDEDIR)Particle.cc $(OUTLIB)PDGHelpers.o
-	@mkdir -p $(OUTLIB)
-	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)Particle.o $(GLIBS) $<
-
-$(OUTLIB)TopCandidate.o: $(INCLUDEDIR)TopCandidate.cc $(OUTLIB)Particle.o
-	@mkdir -p $(OUTLIB)
-	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)TopCandidate.o $(GLIBS) $<
-
-$(OUTLIB)ZZCandidate.o: $(INCLUDEDIR)ZZCandidate.cc $(OUTLIB)TopCandidate.o
-	@mkdir -p $(OUTLIB)
-	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)ZZCandidate.o $(GLIBS) $<
-
-$(OUTLIB)ParticleComparators.o: $(INCLUDEDIR)ParticleComparators.cc $(OUTLIB)Particle.o
+$(OUTLIB)ParticleComparators.o: $(INCLUDEDIR)ParticleComparators.cc
 	@mkdir -p $(OUTLIB)
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)ParticleComparators.o $(GLIBS) $<
 
-$(OUTLIB)Event.o: $(INCLUDEDIR)Event.cc $(OUTLIB)ZZCandidate.o $(OUTLIB)ParticleComparators.o
+$(OUTLIB)Event.o: $(INCLUDEDIR)Event.cc $(OUTLIB)ParticleComparators.o
 	@mkdir -p $(OUTLIB)
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)Event.o $(GLIBS) $<
 
 $(OUTLIB)melaHelpers.o: $(INCLUDEDIR)melaHelpers.cc $(OUTLIB)Event.o
 	@mkdir -p $(OUTLIB)
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)melaHelpers.o $(GLIBS) $<
-
 
 
 $(OUTLIB)HiggsComparators.o: $(INCLUDEDIR)HiggsComparators.cc $(OUTLIB)Event.o
@@ -90,19 +70,19 @@ $(OUTLIB)converter.o: $(INCLUDEDIR)converter.cc $(OUTLIB)HVVTree.o $(OUTLIB)LHEP
 	@mkdir -p $(OUTLIB)
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)converter.o $(GLIBS) $<
 
-$(OUTLIB)convertLHE.o: $(INCLUDEDIR)convertLHE.cc $(OUTLIB)converter.o
+$(OUTLIB)LHEConverter.o: $(INCLUDEDIR)LHEConverter.cc $(OUTLIB)converter.o
 	@mkdir -p $(OUTLIB)
-	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)convertLHE.o $(GLIBS) $<
+	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)LHEConverter.o $(GLIBS) $<
 
-$(OUTLIB)convertPythia.o: $(INCLUDEDIR)convertPythia.cc $(OUTLIB)converter.o
+$(OUTLIB)PythiaConverter.o: $(INCLUDEDIR)PythiaConverter.cc $(OUTLIB)converter.o
 	@mkdir -p $(OUTLIB)
-	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)convertPythia.o $(GLIBS) $<
+	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)PythiaConverter.o $(GLIBS) $<
 
 $(OUTLIB)Reader.o: $(INCLUDEDIR)Reader.cc $(OUTLIB)converter.o
 	@mkdir -p $(OUTLIB)
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)Reader.o $(GLIBS) $<
 
-$(OUTLIB)main.o: $(INCLUDEDIR)main.cc $(OUTLIB)Reader.o $(OUTLIB)convertPythia.o $(OUTLIB)convertLHE.o
+$(OUTLIB)main.o: $(INCLUDEDIR)main.cc $(OUTLIB)Reader.o $(OUTLIB)PythiaConverter.o $(OUTLIB)LHEConverter.o
 	@mkdir -p $(OUTLIB)
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)main.o $(GLIBS) $<
 

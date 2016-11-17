@@ -1,14 +1,14 @@
-#ifndef CONVERT_LHE_H
-#define CONVERT_LHE_H
+#ifndef LHECONVERTER_H
+#define LHECONVERTER_H
 
 #include "converter.h"
 
 using namespace std;
 
-class convertLHE : public converter{
+class LHEConverter : public converter{
 public:
-  convertLHE(OptionParser* options_);
-  ~convertLHE(){};
+  LHEConverter(OptionParser* options_);
+  ~LHEConverter(){};
   void run();
 
 protected:

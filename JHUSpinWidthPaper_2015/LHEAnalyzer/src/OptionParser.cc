@@ -224,7 +224,7 @@ void OptionParser::configureMela(){
   }
   melaHelpers::setSamplePoleWidth(wPOLE);
   melaHelpers::setStandardPoleWidth(wPOLEStandard);
-  mela::applyLeptonMassCorrection(doRemoveLepMasses()); // Remains fixed, so nota problem to set it here
+  TUtil::applyLeptonMassCorrection(doRemoveLepMasses()); // Remains fixed, so nota problem to set it here
 }
 void OptionParser::deconfigureMela(){
   if (melaHelpers::melaHandle!=0) delete melaHelpers::melaHandle;
@@ -239,11 +239,15 @@ void OptionParser::extractMelaGenProdId(string rawoption){
   else{
     TVar::Production tmpProd; TVar::MatrixElement tmpME;
 
-    if (prod_me_pair.at(0) == "JJGG") tmpProd = TVar::JJGG;
+    if (prod_me_pair.at(0) == "JJQCD") tmpProd = TVar::JJQCD;
     else if (prod_me_pair.at(0) == "JJVBF") tmpProd = TVar::JJVBF;
-    else if (prod_me_pair.at(0) == "JH") tmpProd = TVar::JH;
-    else if (prod_me_pair.at(0) == "ZH") tmpProd = TVar::ZH;
-    else if (prod_me_pair.at(0) == "WH") tmpProd = TVar::WH;
+    else if (prod_me_pair.at(0) == "JJEW") tmpProd = TVar::JJEW;
+    else if (prod_me_pair.at(0) == "JQCD") tmpProd = TVar::JQCD;
+    else if (prod_me_pair.at(0) == "GammaH") tmpProd = TVar::GammaH;
+    else if (prod_me_pair.at(0) == "Had_ZH") tmpProd = TVar::Had_ZH;
+    else if (prod_me_pair.at(0) == "Had_WH") tmpProd = TVar::Had_WH;
+    else if (prod_me_pair.at(0) == "Lep_ZH") tmpProd = TVar::Lep_ZH;
+    else if (prod_me_pair.at(0) == "Lep_WH") tmpProd = TVar::Lep_WH;
     else if (prod_me_pair.at(0) == "ttH") tmpProd = TVar::ttH;
     else if (prod_me_pair.at(0) == "bbH") tmpProd = TVar::bbH;
     else tmpProd = TVar::ZZGG;
