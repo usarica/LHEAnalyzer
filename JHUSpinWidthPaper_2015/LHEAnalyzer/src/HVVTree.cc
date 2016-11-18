@@ -1,7 +1,7 @@
 #include "../interface/HVVTree.h"
 
 
-bool HVVTree::reserveBranch(string branchname, BaseTree::BranchTypes branchtype, bool doSetAddress){
+bool HVVTree::reserveBranch(string branchname, const BaseTree::BranchTypes& branchtype, const bool& doSetAddress){
   bool isAvailable = true;
   if (options->isAnExcludedBranch(branchname)){
     isAvailable=false;
@@ -15,7 +15,7 @@ bool HVVTree::reserveBranch(string branchname, BaseTree::BranchTypes branchtype,
   if (isAvailable) bookBranch(branchname, branchtype, doSetAddress);
   return isAvailable;
 }
-void HVVTree::bookAllBranches(bool doSetAddress){
+void HVVTree::bookAllBranches(const bool& doSetAddress){
   if (!options){
     cerr << "HVVTree::bookAllBranches -> No options are set for the HVVTree!" << endl;
     return;
@@ -83,7 +83,7 @@ void HVVTree::bookAllBranches(bool doSetAddress){
 }
 
 
-void HVVTree::bookPtEtaPhiMassIdBranches(string owner, BaseTree::BranchTypes btype, bool doSetAddress, bool addId, bool usePz, bool isGen){
+void HVVTree::bookPtEtaPhiMassIdBranches(const string& owner, const BaseTree::BranchTypes& btype, const bool& doSetAddress, const bool& addId, const bool& usePz, bool isGen){
   vector<string> tmpBranchList;
   getPtEtaPhiMIdBranches(tmpBranchList, owner, addId, usePz, isGen);
   for (unsigned int b=0; b<tmpBranchList.size(); b++){
@@ -96,7 +96,7 @@ void HVVTree::bookPtEtaPhiMassIdBranches(string owner, BaseTree::BranchTypes bty
     }
   }
 }
-void HVVTree::getPtEtaPhiMIdBranches(vector<string>& blist, string owner, bool addId, bool usePz, bool isGen){
+void HVVTree::getPtEtaPhiMIdBranches(vector<string>& blist, const string& owner, const bool& addId, const bool& usePz, bool isGen){
   string strGen = "Gen";
   vector<string> strtmp;
 
@@ -114,7 +114,7 @@ void HVVTree::getPtEtaPhiMIdBranches(vector<string>& blist, string owner, bool a
     blist.push_back(varname);
   }
 }
-void HVVTree::bookAngularBranches(bool doSetAddress){
+void HVVTree::bookAngularBranches(const bool& doSetAddress){
   vector<string> tmpBranchList;
   if (options->processGenInfo()){
     if (options->doComputeDecayAngles() || doSetAddress) getAngularBranches(tmpBranchList, 0, true);
@@ -142,7 +142,7 @@ void HVVTree::bookAngularBranches(bool doSetAddress){
     reserveBranch(tmpBranchList.at(b), BaseTree::bFloat, doSetAddress);
   }
 }
-void HVVTree::getAngularBranches(vector<string>& blist, Int_t prodFlag /* 0: Decay, 1: VBF, 2: VH */, bool isGen){
+void HVVTree::getAngularBranches(vector<string>& blist, const Int_t& prodFlag /* 0: Decay, 1: VBF, 2: VH */, bool isGen){
   string strGen = "Gen";
   vector<string> strtmp;
   if (prodFlag==0){
@@ -175,7 +175,7 @@ void HVVTree::getAngularBranches(vector<string>& blist, Int_t prodFlag /* 0: Dec
 }
 
 
-void HVVTree::bookMELABranches(bool doSetAddress){
+void HVVTree::bookMELABranches(const bool& doSetAddress){
   vector<string> tmpBranchList = constructMELABranchList(doSetAddress);
   for (unsigned int b=0; b<tmpBranchList.size(); b++){
     bool isReserved = reserveBranch(tmpBranchList.at(b), BaseTree::bFloat, doSetAddress);
@@ -184,7 +184,8 @@ void HVVTree::bookMELABranches(bool doSetAddress){
     }
   }
 }
-vector<string> HVVTree::constructMELABranchList(bool doSetAddress){
+
+vector<string> HVVTree::constructMELABranchList(const bool& doSetAddress){
   vector<string> blist;
   return blist;
 }
@@ -197,7 +198,7 @@ vector<string> HVVTree::getMELASignalMEBranches(TVar::Production prod, TVar::Mat
 }
 
 
-void HVVTree::fillMotherInfo(Particle* mother){
+void HVVTree::fillMotherInfo(const Particle* mother){
   if (options!=0 && options->processGenInfo() && mother!=0){
     setVal("GenMotherMass", mother->m());
     setVal("GenMotherPt", mother->pt());
@@ -795,7 +796,7 @@ void HVVTree::fillMELAProbabilities(ZZCandidate* pH, bool isGen){
 }
 
 
-void HVVTree::fillEventVariables(Float_t weight, Int_t passSelection){
+void HVVTree::fillEventVariables(const Float_t& weight, const Int_t& passSelection){
   setVal("MC_weight", weight);
   if (options!=0 && options->processRecoInfo()) setVal("isSelected", passSelection);
 }

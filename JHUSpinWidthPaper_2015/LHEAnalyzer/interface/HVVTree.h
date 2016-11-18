@@ -14,11 +14,11 @@ public:
   void setOptions(OptionParser* options_){ options=options_; }
   vector<string> getMELABranchList()const;
 
-  bool reserveBranch(string branchname, BaseTree::BranchTypes branchtype, bool doSetAddress);
-  void bookAllBranches(bool doSetAddress);
+  bool reserveBranch(string branchname, const BaseTree::BranchTypes& branchtype, const bool& doSetAddress);
+  void bookAllBranches(const bool& doSetAddress);
 
-  void fillEventVariables(Float_t weight, Int_t passSelection);
-  void fillMotherInfo(Particle* mother);
+  void fillEventVariables(const Float_t& weight, const Int_t& passSelection);
+  void fillMotherInfo(const Particle* mother);
 
   void fillCandidate(ZZCandidate* pH, bool isGen=false);
   void fillCandidateDaughters(ZZCandidate* pH, bool isGen=false);
@@ -32,14 +32,15 @@ public:
   void fillMELAProbabilities(ZZCandidate* pH, bool isGen);
 
 protected:
-  void bookPtEtaPhiMassIdBranches(string owner, BaseTree::BranchTypes btype, bool doSetAddress, bool addId, bool usePz, bool isGen);
-  void getPtEtaPhiMIdBranches(vector<string>& blist, string owner, bool addId, bool usePz, bool isGen);
+  void bookPtEtaPhiMassIdBranches(const string& owner, const BaseTree::BranchTypes& btype, const bool& doSetAddress, const bool& addId, const bool& usePz, bool isGen);
+  void getPtEtaPhiMIdBranches(vector<string>& blist, const string& owner, const bool& addId, const bool& usePz, bool isGen);
 
-  void bookAngularBranches(bool doSetAddress);
-  void getAngularBranches(vector<string>& blist, Int_t prodFlag /* 0: Decay, 1: VBF, 2: VH */, bool isGen);
+  void bookAngularBranches(const bool& doSetAddress);
+  void getAngularBranches(vector<string>& blist, const Int_t& prodFlag /* 0: Decay, 1: VBF, 2: VH */, bool isGen);
 
-  void bookMELABranches(bool doSetAddress);
-  vector<string> constructMELABranchList(bool doSetAddress);
+  void bookMELABranches(const bool& doSetAddress);
+
+  vector<string> constructMELABranchList(const bool& doSetAddress);
   void setupMELASignalMECases(vector<string>& accumulatedlist, TVar::Production prod, TVar::MatrixElement me, bool isGen, bool isProdME, bool doSetAddress);
   vector<string> getMELASignalMEBranches(TVar::Production prod, TVar::MatrixElement me, vector<string> gList, vector<int> gCountRe, vector<int> gCountIm, bool isGen, bool isProdME, bool doSetAddress);
 

@@ -192,7 +192,7 @@ void PythiaConverter::run(){
 }
 
 
-TFile* PythiaConverter::getIntermediateFile(string cinput){
+TFile* PythiaConverter::getIntermediateFile(const string& cinput){
   string coutput = options->getTempDir();
   const bool usePython = true;
   stringstream streamCmd;
@@ -218,7 +218,7 @@ TFile* PythiaConverter::getIntermediateFile(string cinput){
 }
 
 
-void PythiaConverter::readEvent(TTree* tin, int ev, vector<Particle*>& genCollection, bool& genSuccess, vector<Particle*>& recoCollection, bool& smearedSuccess, double& eventWeight){
+void PythiaConverter::readEvent(TTree* tin, const int& ev, vector<Particle*>& genCollection, bool& genSuccess, vector<Particle*>& recoCollection, bool& smearedSuccess, double& eventWeight){
   int nEvents = tin->GetEntries();
   vectorDouble weights;
   if (ev>=nEvents){

@@ -22,15 +22,15 @@ public:
   ~OptionParser(){ deconfigureMela(); };
 
   void analyze();
-  void splitOption(string rawoption, string& wish, string& value, char delimiter='=');
-  void splitOptionRecursive(string rawoption, vector<string>& splitoptions, char delimiter=',');
-  void interpretOption(string wish, string value);
+  void splitOption(const string& rawoption, string& wish, string& value, char delimiter='=');
+  void splitOptionRecursive(const string& rawoption, vector<string>& splitoptions, char delimiter=',');
+  void interpretOption(const string& wish, string value);
   void printOptionsHelp();
   void printOptionSummary();
 
   Bool_t processGenInfo(){ bool doProcess=true; if (includeGenInfo==0) doProcess=false; return doProcess; }
   Bool_t processRecoInfo(){ bool doProcess=true; if (includeRecoInfo==0) doProcess=false; return doProcess; }
-  Bool_t isAnExcludedBranch(string branchname);
+  Bool_t isAnExcludedBranch(const string& branchname);
   Int_t analysisLevel(){ return fileLevel; }
   Int_t pythiaType(){ return pythiaStep; }
   string jetAlgorithm(){ return jetAlgo; }
@@ -62,22 +62,22 @@ public:
   Bool_t doComputeVBFAngles(){ bool doProcess=true; if (computeVBFAngles==0) doProcess=false; return doProcess; }
   Bool_t doComputeVHAngles(){ bool doProcess=true; if (computeVHAngles==0) doProcess=false; return doProcess; }
   Int_t computeVHAnglesOrder(){ return computeVHAngles; }
-  Bool_t hasGenDecayME(string str);
-  Bool_t hasRecoDecayME(string str);
-  Bool_t hasGenProdME(string str);
-  Bool_t hasRecoProdME(string str);
+  Bool_t hasGenDecayME(const string& str);
+  Bool_t hasRecoDecayME(const string& str);
+  Bool_t hasGenProdME(const string& str);
+  Bool_t hasRecoProdME(const string& str);
   pair<TVar::Production, TVar::MatrixElement> getSampleProductionId(){ return sampleProductionId; }
 
 
 protected:
-  void extractSkippedEvents(string rawoption);
-  void extractGlobalRecordSet(string rawoption);
+  void extractSkippedEvents(const string& rawoption);
+  void extractGlobalRecordSet(const string& rawoption);
 
   void configureMela();
   void deconfigureMela();
   void extractMelaGenProdId(string rawoption);
 
-  Bool_t checkListVariable(vector<string>& list, string var);
+  Bool_t checkListVariable(const vector<string>& list, const string& var)const;
 
   vector<string> rawOptions;
 

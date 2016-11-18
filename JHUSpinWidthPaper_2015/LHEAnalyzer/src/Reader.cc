@@ -114,8 +114,6 @@ void Reader::synchMappedBranches(){
   }
 }
 
-
-
 void Reader::run(){
   Float_t MC_weight=0;
   Int_t isSelected=0;
@@ -252,8 +250,6 @@ void Reader::run(){
   }
   finalizeRun();
 }
-
-
 
 void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen){
   string varname;

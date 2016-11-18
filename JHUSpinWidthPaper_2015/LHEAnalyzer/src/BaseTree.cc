@@ -10,7 +10,7 @@ void BaseTree::getTreeFromFile(string treename, TFile* fin){
   if (hvvtree==0) cout << "Failed to extract the tree named " << treename << "!" << endl;
 }
 
-bool BaseTree::bookBranch(string branchname, BaseTree::BranchTypes bType, bool doSetAddress){
+bool BaseTree::bookBranch(string& branchname, const BaseTree::BranchTypes& bType, const bool& doSetAddress){
   bool success=true;
   if (hvvtree!=0){
     if (bType==BaseTree::bInt){
@@ -55,7 +55,7 @@ bool BaseTree::bookBranch(string branchname, BaseTree::BranchTypes bType, bool d
   if (!success) cerr << "BaseTree::bookBranch: Failed to book branch named " << branchname << "!" << endl;
   return success;
 }
-bool BaseTree::actuateBranches(bool doSetAddress){
+bool BaseTree::actuateBranches(const bool& doSetAddress){
   bool success=true;
   if (hvvtree!=0){
     if (!doSetAddress){
@@ -96,7 +96,7 @@ vector<string> BaseTree::getBranchList(){
   return branchlist;
 }
 
-BaseTree::BranchTypes BaseTree::searchArray(string branchname, int& position){
+BaseTree::BranchTypes BaseTree::searchArray(const string& branchname, int& position){
   for (unsigned int el=0; el<intBranches.size(); el++){
     if (branchname==intBranches.at(el).first){
       position = el;

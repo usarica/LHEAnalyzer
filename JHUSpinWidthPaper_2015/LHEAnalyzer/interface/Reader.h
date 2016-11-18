@@ -19,7 +19,7 @@ public:
   template<typename returnType> bool setVariable(const Event* ev, string& branchname, returnType(*evalVar)(const Event*, string&));
 
   // Add the branch name - function pointer pairs to the arrays for easier access.
-  template<typename returnType> void addFunction(string branchname, returnType(*evalVar)(const Event*, string&, int)){
+  template<typename returnType> void addFunction(string& branchname, returnType(*evalVar)(const Event*, string&, int)){
     int varposition=-1;
     BaseTree::BranchTypes varbranchtype = tree->searchArray(branchname, varposition);
     if (varposition==-1 || varbranchtype==BaseTree::nBranchTypes){

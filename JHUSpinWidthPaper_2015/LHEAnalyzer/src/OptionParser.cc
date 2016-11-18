@@ -112,7 +112,7 @@ void OptionParser::analyze(){
   // Initialize the global Mela if needed
   configureMela();
 }
-void OptionParser::splitOption(string rawoption, string& wish, string& value, char delimiter){
+void OptionParser::splitOption(const string& rawoption, string& wish, string& value, char delimiter){
   size_t posEq = rawoption.find(delimiter);
   if (posEq!=string::npos){
     wish=rawoption;
@@ -124,7 +124,7 @@ void OptionParser::splitOption(string rawoption, string& wish, string& value, ch
     value=rawoption;
   }
 }
-void OptionParser::splitOptionRecursive(string rawoption, vector<string>& splitoptions, char delimiter){
+void OptionParser::splitOptionRecursive(const string& rawoption, vector<string>& splitoptions, char delimiter){
   string suboption=rawoption, result=rawoption;
   string remnant;
   while (result!=""){
@@ -134,7 +134,7 @@ void OptionParser::splitOptionRecursive(string rawoption, vector<string>& splito
   }
   if (remnant!="") splitoptions.push_back(remnant);
 }
-Bool_t OptionParser::isAnExcludedBranch(string branchname){
+Bool_t OptionParser::isAnExcludedBranch(const string& branchname){
   bool isExcluded=false;
   for (unsigned int eb=0; eb<excludedBranch.size(); eb++){
     if (branchname.find(excludedBranch.at(eb))!=string::npos && !(branchname.find("Gen")!=string::npos && excludedBranch.at(eb).find("Gen")==string::npos)){
@@ -144,7 +144,7 @@ Bool_t OptionParser::isAnExcludedBranch(string branchname){
   }
   return isExcluded;
 }
-void OptionParser::extractSkippedEvents(string rawoption){
+void OptionParser::extractSkippedEvents(const string& rawoption){
   vector<string> skipPair;
   splitOptionRecursive(rawoption, skipPair, ',');
   for (unsigned int p=0; p<skipPair.size(); p++){
@@ -194,7 +194,7 @@ void OptionParser::extractSkippedEvents(string rawoption){
     eventSkipRanges.push_back(tmpPair);
   }
 }
-void OptionParser::extractGlobalRecordSet(string rawoption){
+void OptionParser::extractGlobalRecordSet(const string& rawoption){
   vector<string> compositePair;
   splitOptionRecursive(rawoption, compositePair, ',');
   for (int p=0; p<compositePair.size(); p++){
@@ -259,38 +259,38 @@ void OptionParser::extractMelaGenProdId(string rawoption){
     sampleProductionId = tmpPair;
   }
 }
-Bool_t OptionParser::checkListVariable(vector<string>& list, string var){
+Bool_t OptionParser::checkListVariable(const vector<string>& list, const string& var)const{
   for (unsigned int v=0; v<list.size(); v++){
     if (list.at(v)==var) return true; // Look for exact match
   }
   return false;
 }
-Bool_t OptionParser::hasGenDecayME(string str){
+Bool_t OptionParser::hasGenDecayME(const string& str){
   if (str=="" || str=="*"){
     return (includeGenDecayProb.size()>0 && processGenInfo());
   }
   return (checkListVariable(includeGenDecayProb, str) && processGenInfo());
 }
-Bool_t OptionParser::hasRecoDecayME(string str){
+Bool_t OptionParser::hasRecoDecayME(const string& str){
   if (str=="" || str=="*"){
     return (includeRecoDecayProb.size()>0 && processGenInfo());
   }
   return (checkListVariable(includeRecoDecayProb, str) && processRecoInfo());
 }
-Bool_t OptionParser::hasRecoProdME(string str){
+Bool_t OptionParser::hasRecoProdME(const string& str){
   if (str=="" || str=="*"){
     return (includeRecoProdProb.size()>0 && processGenInfo());
   }
   return (checkListVariable(includeRecoProdProb, str) && processRecoInfo());
 }
-Bool_t OptionParser::hasGenProdME(string str){ // This one is a little bit trickier to avoid unneeded gen. prod. MEs
+Bool_t OptionParser::hasGenProdME(const string& str){ // This one is a little bit trickier to avoid unneeded gen. prod. MEs
   if (str=="" || str=="*"){
     return (includeGenProdProb.size()>0 && processGenInfo());
   }
   return (checkListVariable(includeGenProdProb, str) && processGenInfo());
 }
 
-void OptionParser::interpretOption(string wish, string value){
+void OptionParser::interpretOption(const string& wish, string value){
   if (wish.empty()){
     if (value.find(".lhe")!=string::npos || value.find(".root")!=string::npos) filename.push_back(value);
     else if (value.find("help")!= string::npos) printOptionsHelp();

@@ -35,11 +35,11 @@ public:
 
   // This is where things get complicated pretty quickly
   enum BranchTypes{ bInt, bFloat, bVectorInt, bVectorDouble, nBranchTypes };
-  bool bookBranch(string branchname, BaseTree::BranchTypes bType, bool doSetAddress);
-  bool actuateBranches(bool doSetAddress);
+  bool bookBranch(string& branchname, const BaseTree::BranchTypes& bType, const bool& doSetAddress);
+  bool actuateBranches(const bool& doSetAddress);
   vector<string> getBranchList();
-  BranchTypes searchArray(string branchname, int& position);
-  template<typename varType> void setVal(string branchname, varType value){
+  BranchTypes searchArray(const string& branchname, int& position);
+  template<typename varType> void setVal(const string& branchname, const varType& value){
     int varposition=-1;
     BaseTree::BranchTypes varbranchtype = searchArray(branchname, varposition);
     if (varposition==-1 || varbranchtype==BaseTree::nBranchTypes){
@@ -52,7 +52,7 @@ public:
       else if (varbranchtype==BaseTree::bVectorDouble) vectorDoubleBranches.at(varposition).second->push_back(value);
     }
   }
-  void* getBranchHandleRef(string branchname){
+  void* getBranchHandleRef(const string& branchname){
     int varposition=-1;
     BaseTree::BranchTypes varbranchtype = searchArray(branchname, varposition);
     if (varposition==-1 || varbranchtype==BaseTree::nBranchTypes){
