@@ -17,6 +17,63 @@
 using namespace std;
 
 class OptionParser{
+protected:
+  void extractSkippedEvents(const string& rawoption);
+  void extractGlobalRecordSet(const string& rawoption);
+
+  void configureMela();
+  void deconfigureMela();
+  void extractMelaGenProdId(string rawoption);
+
+  Bool_t checkListVariable(const vector<string>& list, const string& var)const;
+
+  vector<string> rawOptions;
+
+  Double_t mPOLE;
+  Double_t wPOLE;
+  Double_t wPOLEStandard;
+  Int_t erg_tev;
+  Int_t includeGenInfo;
+  Int_t includeRecoInfo;
+  Int_t removeDaughterMasses;
+  Int_t computeDecayAngles;
+  Int_t computeVBFAngles;
+  Int_t computeVHAngles;
+  Int_t fileLevel;
+  Int_t pythiaStep;
+  Int_t isGenHZZ;
+  Int_t isRecoHZZ;
+  Int_t genDecayMode;
+  Int_t recoDecayMode;
+  Int_t recoSelBehaviour;
+  Int_t recoSmearBehaviour;
+  HiggsComparators::CandidateSelection genHiggsCandidateSelectionScheme;
+  HiggsComparators::CandidateSelection recoHiggsCandidateSelectionScheme;
+
+  Bool_t recastGenTopologyToLOQCDVH;
+  Bool_t recastGenTopologyToLOQCDVBF;
+
+  Double_t jetDeltaRIso;
+  string jetAlgo;
+
+  string indir;
+  string outdir;
+  string coutput;
+  string tmpDir;
+  vector<string> filename;
+  vector<string> excludedBranch;
+  Int_t maxEvents;
+
+  // Mela probabilities to include, has to be in abbreviated form (eg. "All", "None", "p0plus", "g1", "g1_prime2" etc.)
+  pair<TVar::Production, TVar::MatrixElement> sampleProductionId;
+  vector<string> includeGenDecayProb;
+  vector<string> includeRecoDecayProb;
+  vector<string> includeGenProdProb;
+  vector<string> includeRecoProdProb;
+
+  vector < pair<Int_t, Int_t> > eventSkipRanges;
+  vector < pair<string, string> > globalRecordSet;
+
 public:
   OptionParser(int argc, char** argv);
   ~OptionParser(){ deconfigureMela(); };
@@ -66,62 +123,12 @@ public:
   Bool_t hasRecoDecayME(const string& str);
   Bool_t hasGenProdME(const string& str);
   Bool_t hasRecoProdME(const string& str);
+
+  const Bool_t& doRecastGenTopologyToLOQCDVH() const{ return recastGenTopologyToLOQCDVH; }
+  const Bool_t& doRecastGenTopologyToLOQCDVBF() const{ return recastGenTopologyToLOQCDVBF; }
+
   pair<TVar::Production, TVar::MatrixElement> getSampleProductionId(){ return sampleProductionId; }
 
-
-protected:
-  void extractSkippedEvents(const string& rawoption);
-  void extractGlobalRecordSet(const string& rawoption);
-
-  void configureMela();
-  void deconfigureMela();
-  void extractMelaGenProdId(string rawoption);
-
-  Bool_t checkListVariable(const vector<string>& list, const string& var)const;
-
-  vector<string> rawOptions;
-
-  Double_t mPOLE;
-  Double_t wPOLE;
-  Double_t wPOLEStandard;
-  Int_t erg_tev;
-  Int_t includeGenInfo;
-  Int_t includeRecoInfo;
-  Int_t removeDaughterMasses;
-  Int_t computeDecayAngles;
-  Int_t computeVBFAngles;
-  Int_t computeVHAngles;
-  Int_t fileLevel;
-  Int_t pythiaStep;
-  Int_t isGenHZZ;
-  Int_t isRecoHZZ;
-  Int_t genDecayMode;
-  Int_t recoDecayMode;
-  Int_t recoSelBehaviour;
-  Int_t recoSmearBehaviour;
-  HiggsComparators::CandidateSelection genHiggsCandidateSelectionScheme;
-  HiggsComparators::CandidateSelection recoHiggsCandidateSelectionScheme;
-  Double_t jetDeltaRIso;
-
-  string jetAlgo;
-
-  string indir;
-  string outdir;
-  string coutput;
-  string tmpDir;
-  vector<string> filename;
-  vector<string> excludedBranch;
-  Int_t maxEvents;
-
-  // Mela probabilities to include, has to be in abbreviated form (eg. "All", "None", "p0plus", "g1", "g1_prime2" etc.)
-  pair<TVar::Production, TVar::MatrixElement> sampleProductionId;
-  vector<string> includeGenDecayProb;
-  vector<string> includeRecoDecayProb;
-  vector<string> includeGenProdProb;
-  vector<string> includeRecoProdProb;
-
-  vector < pair<Int_t, Int_t> > eventSkipRanges;
-  vector < pair<string, string> > globalRecordSet;
 };
 
 #endif

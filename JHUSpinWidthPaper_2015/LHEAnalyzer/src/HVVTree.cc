@@ -214,23 +214,48 @@ void HVVTree::fillCandidate(ZZCandidate* pH, bool isGen){
   if ((!options->processGenInfo() && isGen) || (!options->processRecoInfo() && !isGen)) return;
   if (pH==0) return;
 
+  ZZCandidate* pHactive=pH;
+  MELACandidateRecaster* recaster=0;
+  if (isGen){
+    if (options->doRecastGenTopologyToLOQCDVH()){
+      recaster = new MELACandidateRecaster(options->getSampleProductionId().first);
+      MELACandidate* candModified=nullptr;
+      MELAParticle* bestAV = MELACandidateRecaster::getBestAssociatedV(pHactive, options->getSampleProductionId().first);
+      if (bestAV){
+        recaster->copyCandidate(pHactive, candModified);
+        recaster->deduceLOVHTopology(candModified);
+        pHactive = candModified;
+      }
+    }
+    else if (options->doRecastGenTopologyToLOQCDVH()){
+      recaster = new MELACandidateRecaster(TVar::JJVBF);
+      MELACandidate* candModified=nullptr;
+      recaster->copyCandidate(pHactive, candModified);
+      recaster->reduceJJtoQuarks(candModified);
+      pHactive = candModified;
+    }
+  }
+
   string varname;
   string strcore = "ZZ";
   if (isGen) strcore = "GenH";
 
-  varname = strcore + "Mass"; setVal(varname, (pH!=0 ? pH->m() : 0.));
-  varname = strcore + "Pt"; setVal(varname, (pH!=0 ? pH->pt() : 0));
-  varname = strcore + "Pz"; setVal(varname, (pH!=0 ? pH->z() : 0));
-  varname = strcore + "Phi"; setVal(varname, (pH!=0 ? pH->phi() : 0));
+  varname = strcore + "Mass"; setVal(varname, (pHactive!=0 ? pHactive->m() : 0.));
+  varname = strcore + "Pt"; setVal(varname, (pHactive!=0 ? pHactive->pt() : 0));
+  varname = strcore + "Pz"; setVal(varname, (pHactive!=0 ? pHactive->z() : 0));
+  varname = strcore + "Phi"; setVal(varname, (pHactive!=0 ? pHactive->phi() : 0));
 
-  fillCandidateDaughters(pH, isGen);
-  fillDaughterProducts(pH, isGen);
-  fillAssociatedInfo(pH, isGen);
-  if (options->doComputeDecayAngles()) fillDecayAngles(pH, isGen);
-  if (options->doComputeVBFAngles()) fillVBFProductionAngles(pH, isGen);
-  if (options->doComputeVHAngles()) fillVHProductionAngles(pH, isGen);
+  fillCandidateDaughters(pHactive, isGen);
+  fillDaughterProducts(pHactive, isGen);
+  fillAssociatedInfo(pHactive, isGen);
+  if (options->doComputeDecayAngles()) fillDecayAngles(pHactive, isGen);
+  if (options->doComputeVBFAngles()) fillVBFProductionAngles(pHactive, isGen);
+  if (options->doComputeVHAngles()) fillVHProductionAngles(pHactive, isGen);
 
-  if (melaProbBranches.size()>0) fillMELAProbabilities(pH, isGen); // Do it at the last step
+  if (melaProbBranches.size()>0) fillMELAProbabilities(pHactive, isGen); // Do it at the last step
+
+  if (pHactive!=pH) delete pHactive;
+  if (recaster) delete recaster;
 }
 void HVVTree::fillCandidateDaughters(ZZCandidate* pH, bool isGen){
   string varname;

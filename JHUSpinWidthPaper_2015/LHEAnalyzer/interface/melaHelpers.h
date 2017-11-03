@@ -8,6 +8,7 @@
 #include <utility>
 #include <algorithm>
 #include <ZZMatrixElement/MELA/interface/Mela.h>
+#include <MelaAnalytics/CandidateLOCaster/interface/MELACandidateRecaster.h>
 #include "Event.h"
 #include "TLorentzRotation.h"
 

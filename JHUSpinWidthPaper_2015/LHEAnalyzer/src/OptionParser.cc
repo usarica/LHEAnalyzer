@@ -23,8 +23,11 @@ recoSelBehaviour(0),
 recoSmearBehaviour(0),
 genHiggsCandidateSelectionScheme(HiggsComparators::BestZ1ThenZ2ScSumPt),
 recoHiggsCandidateSelectionScheme(HiggsComparators::BestZ1ThenZ2ScSumPt),
-jetDeltaRIso(0.5),
 
+recastGenTopologyToLOQCDVH(false),
+recastGenTopologyToLOQCDVBF(false),
+
+jetDeltaRIso(0.5),
 jetAlgo("ak"),
 
 indir("./"),
@@ -89,6 +92,8 @@ void OptionParser::analyze(){
   if (hasGenProdProb && sampleProductionId.first==TVar::ZZGG){ cerr << "sampleProductionId==ZZGG is not a valid option (ME is not implemented). Use decay MEs instead for ZZGG or specify another production." << endl; if (!hasInvalidOption) hasInvalidOption=true; }
   if (!(((jetDeltaRIso==0.4 || jetDeltaRIso==0.5 || jetDeltaRIso==0.8) && jetAlgo=="ak") || ((jetDeltaRIso==0.4 || jetDeltaRIso==0.6) && jetAlgo=="kt"))){ cerr << "Jet algorithm can only be used with object isolations 0.4, 0.5 or 0.8 for ak, and 0.4 or 0.6 for kt jets at this moment." << endl; if (!hasInvalidOption) hasInvalidOption=true; }
   else{ jetAlgo.append(std::to_string((int)(10*jetDeltaRIso))); if(hasJetAlgo) cout << "Jet algorithm string " << jetAlgo << " has the isolation appended." << endl; }
+  if (recastGenTopologyToLOQCDVH && recastGenTopologyToLOQCDVBF){ cerr << "Cannot recast the gen. topology to both VH and VBF LO QCD. Please choose only one!" << endl; hasInvalidOption=true; }
+  if (recastGenTopologyToLOQCDVH && !(sampleProductionId.first==TVar::Had_ZH || sampleProductionId.first==TVar::Had_WH)){ cerr << "Cannot recast the gen. topology to VH without any dpecification of WH or ZH production!" << endl; hasInvalidOption=true; }
 
   // Warnings-only
   if (!redefinedOutputFile) cout << "WARNING: No output file specified. Defaulting to " << coutput << "." << endl;
@@ -333,7 +338,9 @@ void OptionParser::interpretOption(const string& wish, string value){
   else if (wish=="GHSM" || wish=="GaHSM" || wish=="GammaHSM" || wish=="wPOLEStandard") wPOLEStandard = (double)atof(value.c_str());
   else if (wish=="sqrts") erg_tev = (int)atoi(value.c_str());
   else if (wish=="jetDeltaR" || wish=="jetIso" || wish=="jetIsolation" || wish=="jetDeltaRIso" || wish=="jetDeltaRIsolation") jetDeltaRIso = (double)atof(value.c_str());
-  else if (wish=="removeDaughterMasses") removeDaughterMasses = (int)atoi(value.c_str());
+  else if (wish=="recastGenTopologyToLOQCDVH") recastGenTopologyToLOQCDVH = ((int) atoi(value.c_str()))>0;
+  else if (wish=="recastGenTopologyToLOQCDVBF") recastGenTopologyToLOQCDVBF = ((int) atoi(value.c_str()))>0;
+  else if (wish=="removeDaughterMasses") removeDaughterMasses = (int) atoi(value.c_str());
   else if (wish=="computeDecayAngles") computeDecayAngles = (int)atoi(value.c_str());
   else if (wish=="computeVBFProdAngles") computeVBFAngles = (int)atoi(value.c_str());
   else if (wish=="computeVHProdAngles") computeVHAngles = (int)atoi(value.c_str());
@@ -385,6 +392,9 @@ void OptionParser::printOptionsHelp(){
   cout << "- recoSelBehavior / recoSelBehaviour: Selection behaviour on all reco. final states. Default=0.\n\t0==Apply selection in LHE and Pythia modes, apply no re-selection in ReadMode.\n\t1==Opposite of 0. Also enables the computation of all angles in ReadMode, overriding the relevant command line options.\n\n";
   cout << "- recoSmearBehavior / recoSmearBehaviour: Smearing behaviour on all reco. final states. Does not apply to ReadMode. Default=0.\n\t0==Apply smearing in LHE mode, no smearing in Pythia mode\n\t1==Opposite of 0\n\n";
   cout << "- genCandidateSelection, recoCandidateSelection: Higgs candidate selection algorithm. Values accepted are\n\t->BestZ1ThenZ2 (=BestZ1ThenZ2ScSumPt).\n\tDefaults==(BestZ1ThenZ2, BestZ1ThenZ2)\n\n";
+
+  cout << "- recastGenTopologyToLOQCDVH: Recast the V+N-jets topology back to LO V(+H) by merging gluons/extra quark pairs. Need to specify the sample production id (sampleProductionId) option as well. Default=0\n\n";
+  cout << "- recastGenTopologyToLOQCDVBF: Recast the JJ+N-jets topology back to VBF by merging gluons/extra quark pairs. Default=0\n\n";
 
   cout << "- JetAlgorithm / jetAlgorithm / jetalgorithm: Jet algorithm to use if available in the input tree. Isolation needs to be set separately if different from the default value. Default=ak\n\n";
   cout << "- jetDeltaR / jetIso / jetIsolation / jetDeltaRIso / jetDeltaRIsolation: deltaR_jet isolation cut used in selecting jets. This value (x10) is appended to the jet algorithm string and can only be 0.4, 0.5 or 0.8 for ak, and 0.4 or 0.6 for kt jets at the moment. Default=0.5\n\n";
