@@ -302,8 +302,8 @@ void OptionParser::interpretOption(const string& wish, string value){
   else if (wish=="pythiaStep" || wish=="pythialevel") pythiaStep = (int)atoi(value.c_str());
   else if (wish=="isGenHZZ"){
     isGenHZZ = (int)atoi(value.c_str());
-    if (isGenHZZ==0) PDGHelpers::setHVVmass(PDGHelpers::Wmass);
-    else PDGHelpers::setHVVmass(PDGHelpers::Zmass);
+    if (isGenHZZ==0) PDGHelpers::setCandidateDecayMode(TVar::CandidateDecay_WW);
+    else PDGHelpers::setCandidateDecayMode(TVar::CandidateDecay_ZZ);
   }
   else if (wish=="isRecoHZZ") isRecoHZZ = (int)atoi(value.c_str());
   else if (wish=="genDecayMode") genDecayMode = (int)atoi(value.c_str());

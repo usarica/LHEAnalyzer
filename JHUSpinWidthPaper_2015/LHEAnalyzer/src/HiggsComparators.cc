@@ -38,12 +38,19 @@ ZZCandidate* HiggsComparators::candidateSelector(Event& ev, HiggsComparators::Ca
 ZZCandidate* HiggsComparators::candComparator(ZZCandidate* cand1, ZZCandidate* cand2, HiggsComparators::CandidateSelection scheme, int isZZ){
   ZZCandidate* theChosenOne=0;
 
-  double defaultHVVmass = PDGHelpers::HVVmass;
+  TVar::CandidateDecayMode defaultHDecayMode = PDGHelpers::HDecayMode;
+  if (isZZ==0) PDGHelpers::setCandidateDecayMode(TVar::CandidateDecay_WW);
+  else if (isZZ==1) PDGHelpers::setCandidateDecayMode(TVar::CandidateDecay_ZZ);
+  else if (isZZ==3) PDGHelpers::setCandidateDecayMode(TVar::CandidateDecay_ZG);
+  else if (isZZ==4) PDGHelpers::setCandidateDecayMode(TVar::CandidateDecay_GG);
+  else PDGHelpers::setCandidateDecayMode(TVar::CandidateDecay_ff);
+
+  double HVVmass = PDGHelpers::Zeromass;
   if (isZZ==0){
-    PDGHelpers::setHVVmass(PDGHelpers::Wmass);
+    HVVmass = PDGHelpers::Wmass;
   }
   else if (isZZ==1){
-    PDGHelpers::setHVVmass(PDGHelpers::Zmass);
+    HVVmass = PDGHelpers::Zmass;
   }
 
   if (isZZ==-1){
@@ -57,8 +64,8 @@ ZZCandidate* HiggsComparators::candComparator(ZZCandidate* cand1, ZZCandidate* c
     else if (PDGHelpers::isAHiggs(cand1->id)) theChosenOne = cand1;
   }
   else if (scheme==HiggsComparators::BestZ1ThenZ2ScSumPt){
-    double diffmass1 = fabs(cand1->getSortedV(0)->m()-PDGHelpers::HVVmass);
-    double diffmass2 = fabs(cand2->getSortedV(0)->m()-PDGHelpers::HVVmass);
+    double diffmass1 = fabs(cand1->getSortedV(0)->m()-HVVmass);
+    double diffmass2 = fabs(cand2->getSortedV(0)->m()-HVVmass);
     double Z2scsumpt_cand1=0, Z2scsumpt_cand2=0;
     Particle* c11 = cand1->getSortedV(1)->getDaughter(0);
     Particle* c12 = cand1->getSortedV(1)->getDaughter(1);
@@ -76,7 +83,7 @@ ZZCandidate* HiggsComparators::candComparator(ZZCandidate* cand1, ZZCandidate* c
     else theChosenOne = cand1;
   }
 
-  PDGHelpers::setHVVmass(defaultHVVmass);
+  PDGHelpers::setCandidateDecayMode(defaultHDecayMode);
   return theChosenOne;
 }
 

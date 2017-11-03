@@ -279,10 +279,10 @@ void Event::constructVVCandidates(int isZZ, int fstype){
             cand->addDaughter(F1);
             cand->addDaughter(F2);
 
-            double defaultHVVmass = HVVmass;
-            setHVVmass(Zeromass);
+            TVar::CandidateDecayMode defaultHDecayMode = HDecayMode;
+            setCandidateDecayMode(TVar::CandidateDecay_ff);
             cand->sortDaughters();
-            setHVVmass(defaultHVVmass);
+            setCandidateDecayMode(defaultHDecayMode);
             addZZCandidate(cand);
           }
         }
@@ -300,10 +300,10 @@ void Event::constructVVCandidates(int isZZ, int fstype){
             cand->addDaughter(F1);
             cand->addDaughter(F2);
 
-            double defaultHVVmass = HVVmass;
-            setHVVmass(Zeromass);
+            TVar::CandidateDecayMode defaultHDecayMode = HDecayMode;
+            setCandidateDecayMode(TVar::CandidateDecay_ff);
             cand->sortDaughters();
-            setHVVmass(defaultHVVmass);
+            setCandidateDecayMode(defaultHDecayMode);
             addZZCandidate(cand);
           }
         }
@@ -325,10 +325,10 @@ void Event::constructVVCandidates(int isZZ, int fstype){
             cand->addDaughter(F1);
             cand->addDaughter(F2);
 
-            double defaultHVVmass = HVVmass;
-            setHVVmass(Zeromass);
+            TVar::CandidateDecayMode defaultHDecayMode = HDecayMode;
+            setCandidateDecayMode(TVar::CandidateDecay_ff);
             cand->sortDaughters();
-            setHVVmass(defaultHVVmass);
+            setCandidateDecayMode(defaultHDecayMode);
             addZZCandidate(cand);
           }
         }
@@ -346,10 +346,10 @@ void Event::constructVVCandidates(int isZZ, int fstype){
             cand->addDaughter(F1);
             cand->addDaughter(F2);
 
-            double defaultHVVmass = HVVmass;
-            setHVVmass(Zeromass);
+            TVar::CandidateDecayMode defaultHDecayMode = HDecayMode;
+            setCandidateDecayMode(TVar::CandidateDecay_ff);
             cand->sortDaughters();
-            setHVVmass(defaultHVVmass);
+            setCandidateDecayMode(defaultHDecayMode);
             addZZCandidate(cand);
           }
         }
@@ -367,10 +367,10 @@ void Event::constructVVCandidates(int isZZ, int fstype){
             cand->addDaughter(F1);
             cand->addDaughter(F2);
 
-            double defaultHVVmass = HVVmass;
-            setHVVmass(Zeromass);
+            TVar::CandidateDecayMode defaultHDecayMode = HDecayMode;
+            setCandidateDecayMode(TVar::CandidateDecay_ff);
             cand->sortDaughters();
-            setHVVmass(defaultHVVmass);
+            setCandidateDecayMode(defaultHDecayMode);
             addZZCandidate(cand);
           }
         }
@@ -384,10 +384,10 @@ void Event::constructVVCandidates(int isZZ, int fstype){
         TLorentzVector pH = (*it)->p4;
         ZZCandidate* cand = new ZZCandidate(25, pH, true);
 
-        double defaultHVVmass = HVVmass;
-        setHVVmass(Zeromass);
+        TVar::CandidateDecayMode defaultHDecayMode = HDecayMode;
+        setCandidateDecayMode(TVar::CandidateDecay_Stable);
         cand->sortDaughters();
-        setHVVmass(defaultHVVmass);
+        setCandidateDecayMode(defaultHDecayMode);
         addZZCandidate(cand);
       }
     }
@@ -435,10 +435,10 @@ void Event::constructVVCandidates(int isZZ, int fstype){
           cand->addDaughter(F1);
           cand->addDaughter(F2);
 
-          double defaultHVVmass = HVVmass;
-          setHVVmass(Zeromass);
+          TVar::CandidateDecayMode defaultHDecayMode = HDecayMode;
+          setCandidateDecayMode(TVar::CandidateDecay_ff);
           cand->sortDaughters();
-          setHVVmass(defaultHVVmass);
+          setCandidateDecayMode(defaultHDecayMode);
           addZZCandidate(cand);
         }
         else if (isZZ==5){
@@ -450,10 +450,10 @@ void Event::constructVVCandidates(int isZZ, int fstype){
           cand->addDaughter(F1);
           cand->addDaughter(F2);
 
-          double defaultHVVmass = HVVmass;
-          setHVVmass(Zeromass);
+          TVar::CandidateDecayMode defaultHDecayMode = HDecayMode;
+          setCandidateDecayMode(TVar::CandidateDecay_ff);
           cand->sortDaughters();
-          setHVVmass(defaultHVVmass);
+          setCandidateDecayMode(defaultHDecayMode);
           addZZCandidate(cand);
         }
       }
@@ -523,16 +523,16 @@ void Event::constructVVCandidates(int isZZ, int fstype){
       if (Vj1!=0) cand->addDaughter(Vj1);
       if (Vj2!=0) cand->addDaughter(Vj2);
 
-      double defaultHVVmass = HVVmass;
-      if (isZZ==0) setHVVmass(Wmass);
-      else if (isZZ!=4) setHVVmass(Zmass);
-      else setHVVmass(Zeromass);
-
+      TVar::CandidateDecayMode defaultHDecayMode = HDecayMode;
+      if (isZZ==0) setCandidateDecayMode(TVar::CandidateDecay_WW);
+      else if (isZZ==1) setCandidateDecayMode(TVar::CandidateDecay_ZZ);
+      else if (isZZ==3) setCandidateDecayMode(TVar::CandidateDecay_ZG);
+      else if (isZZ==4) setCandidateDecayMode(TVar::CandidateDecay_GG);
+      else setCandidateDecayMode(TVar::CandidateDecay_ff);
       if (debugVars::debugFlag) std::cout << "Sorting daughters..." << std::endl;
       cand->sortDaughters();
       if (debugVars::debugFlag) std::cout << "Sorted daughters successfully!" << std::endl;
-      setHVVmass(defaultHVVmass);
-
+      setCandidateDecayMode(defaultHDecayMode);
       addZZCandidate(cand);
 
       if (debugVars::debugFlag) std::cout << "Added candidate for V" << i << " V" << j << std::endl;
