@@ -3,7 +3,7 @@
 #include "TList.h"
 #include "TRandom.h"
 #include "TLorentzVector.h"
-#include "../interface/Reader.h"
+#include "Reader.h"
 
 using namespace PDGHelpers;
 
@@ -166,10 +166,10 @@ void Reader::run(){
           }
           if (doSkipEvent){ globalNEvents++; continue; }
 
-          vector<Particle*> genParticleList;
-          vector<Particle*> recoParticleList;
-          vector<ZZCandidate*> genCandList; // Bookkeeping
-          vector<ZZCandidate*> recoCandList; // Bookkeeping
+          vector<MELAParticle*> genParticleList;
+          vector<MELAParticle*> recoParticleList;
+          vector<MELACandidate*> genCandList; // Bookkeeping
+          vector<MELACandidate*> recoCandList; // Bookkeeping
 
           tree->initializeBranches();
 
@@ -177,59 +177,67 @@ void Reader::run(){
           synchMappedBranches();
 
           Event genEvent, recoEvent;
-          ZZCandidate* genCand=0;
-          ZZCandidate* recoCand=0;
+          MELACandidate* genCand=0;
+          MELACandidate* recoCand=0;
           if (options->processGenInfo()){
             readEvent(genEvent, genParticleList, true);
-            if (genEvent.getNZZCandidates()<=1) genCand = genEvent.getZZCandidate(0);
+            if (genEvent.getNMELACandidates()<=1) genCand = genEvent.getMELACandidate(0);
             else genCand = HiggsComparators::candidateSelector(genEvent, options->getHiggsCandidateSelectionScheme(true), options->doGenHZZdecay());
           }
           if (options->processRecoInfo()){
             readEvent(recoEvent, recoParticleList, false);
-            if (recoEvent.getNZZCandidates()<=1) recoCand = recoEvent.getZZCandidate(0);
+            if (recoEvent.getNMELACandidates()<=1) recoCand = recoEvent.getMELACandidate(0);
             else recoCand = HiggsComparators::candidateSelector(recoEvent, options->getHiggsCandidateSelectionScheme(false), options->doRecoHZZdecay());
           }
 
-          if (genCand!=0){
-            if (options->doComputeDecayAngles()) tree->fillDecayAngles(genCand, true);
-            if (options->doComputeVBFAngles()) tree->fillVBFProductionAngles(genCand, true);
-            if (options->doComputeVHAngles()) tree->fillVHProductionAngles(genCand, true);
-            if (options->initializeMELA()) tree->fillMELAProbabilities(genCand, true);
+          if (melaHelpers::melaHandle && genCand){
+            melaHelpers::melaHandle->setCurrentCandidate(genCand);
+
+            if (options->doComputeDecayAngles()) tree->fillDecayAngles(true);
+            if (options->doComputeVBFAngles()) tree->fillVBFProductionAngles(true);
+            if (options->doComputeVHAngles()) tree->fillVHProductionAngles(true);
+            if (options->initializeMELABranches()) tree->fillMELAProbabilities(true);
+
+            melaHelpers::melaHandle->resetInputEvent();
           }
-          if (recoCand!=0){
+          if (recoCand){
             if (options->recoSelectionMode()!=0){
               tree->fillCandidate(recoCand, false);
               tree->fillEventVariables(*((Float_t*)tree->getBranchHandleRef("MC_weight")), 0 /*isSelected*/);
             }
-            else{
-              if (options->doComputeDecayAngles()) tree->fillDecayAngles(recoCand, false);
-              if (options->doComputeVBFAngles()) tree->fillVBFProductionAngles(recoCand, false);
-              if (options->doComputeVHAngles()) tree->fillVHProductionAngles(recoCand, false);
-              if (options->initializeMELA()) tree->fillMELAProbabilities(recoCand, false);
+            else if (melaHelpers::melaHandle){
+              melaHelpers::melaHandle->setCurrentCandidate(recoCand);
+
+              if (options->doComputeDecayAngles()) tree->fillDecayAngles(false);
+              if (options->doComputeVBFAngles()) tree->fillVBFProductionAngles(false);
+              if (options->doComputeVHAngles()) tree->fillVHProductionAngles(false);
+              if (options->initializeMELABranches()) tree->fillMELAProbabilities(false); // Do it at the last step
+
+              melaHelpers::melaHandle->resetInputEvent();
             }
           }
           else if (options->recoSelectionMode()!=0) tree->fillEventVariables(*((Float_t*)tree->getBranchHandleRef("MC_weight")), 0 /*isSelected*/);
 
-          if ((recoCand!=0 && options->processRecoInfo()) || (genCand!=0 && options->processGenInfo())){
+          if ((recoCand && options->processRecoInfo()) || (genCand && options->processGenInfo())){
             tree->record();
             nProcessed++;
           }
 
           for (unsigned int p=0; p<recoCandList.size(); p++){ // Bookkeeping
-            ZZCandidate* tmpCand = (ZZCandidate*)recoCandList.at(p);
+            MELACandidate* tmpCand = (MELACandidate*)recoCandList.at(p);
             if (tmpCand!=0) delete tmpCand;
           }
           for (unsigned int p=0; p<recoParticleList.size(); p++){ // Bookkeeping
-            Particle* tmpPart = (Particle*)recoParticleList.at(p);
+            MELAParticle* tmpPart = (MELAParticle*)recoParticleList.at(p);
             if (tmpPart!=0) delete tmpPart;
           }
 
           for (unsigned int p=0; p<genCandList.size(); p++){ // Bookkeeping
-            ZZCandidate* tmpCand = (ZZCandidate*)genCandList.at(p);
+            MELACandidate* tmpCand = (MELACandidate*)genCandList.at(p);
             if (tmpCand!=0) delete tmpCand;
           }
           for (unsigned int p=0; p<genParticleList.size(); p++){ // Bookkeeping
-            Particle* tmpPart = (Particle*)genParticleList.at(p);
+            MELAParticle* tmpPart = (MELAParticle*)genParticleList.at(p);
             if (tmpPart!=0) delete tmpPart;
           }
 
@@ -251,7 +259,7 @@ void Reader::run(){
   finalizeRun();
 }
 
-void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen){
+void Reader::readEvent(Event& outEvent, vector<MELAParticle*>& particles, bool isGen){
   string varname;
 
   string isSelected = "isSelected";
@@ -264,7 +272,7 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
   if (isGen) strLepCore.insert(0, "Gen");
 
   // Search the tree for the Higgs daughters
-  vector<Particle*> candFinalDaughters;
+  vector<MELAParticle*> candFinalDaughters;
   for (int v=0; v<2; v++){
     for (int d=0; d<2; d++){
       int iPart = 2*v+d+1;
@@ -288,7 +296,7 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
       Int_t partId = *ref_partId;
       TLorentzVector partFV; partFV.SetPtEtaPhiM(*(ref_partFV[0]), *(ref_partFV[1]), *(ref_partFV[2]), *(ref_partFV[3]));
       if (partId==0 && partFV.P()==0 && partFV.T()==0) continue; // Not a real record
-      Particle* part = new Particle((int)partId, partFV);
+      MELAParticle* part = new MELAParticle((int)partId, partFV);
       if(isGen) part->setGenStatus(1);
       particles.push_back(part);
       candFinalDaughters.push_back(part);
@@ -296,7 +304,7 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
   }
 
   // Search the tree for the associated particles
-  vector<Particle*> associatedParticles;
+  vector<MELAParticle*> associatedParticles;
   string strAPCore = "AssociatedParticle";
   if (isGen) strAPCore.insert(0, "Gen");
   vectorDouble** ref_apartFV[4];
@@ -322,7 +330,7 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
     for (unsigned int el=0; el<idhandle->size(); el++){
       Int_t partId = idhandle->at(el);
       TLorentzVector partFV; partFV.SetPtEtaPhiM(fvhandle[0]->at(el), fvhandle[1]->at(el), fvhandle[2]->at(el), fvhandle[3]->at(el));
-      Particle* part = new Particle((int)partId, partFV);
+      MELAParticle* part = new MELAParticle((int)partId, partFV);
       if (isGen) part->setGenStatus(1);
       particles.push_back(part);
       associatedParticles.push_back(part);
@@ -333,7 +341,7 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
   if (isGen){ // Do not find the best combination, leave it to the input tree
 
     // First search the tree for the mothers
-    vector<Particle*> motherParticles;
+    vector<MELAParticle*> motherParticles;
     string strMPCore = "Mother";
     strMPCore.insert(0, "Gen");
     vectorDouble** ref_mpartFV[4];
@@ -359,7 +367,7 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
       for (unsigned int el=0; el<idhandle->size(); el++){
         Int_t partId = idhandle->at(el);
         TLorentzVector partFV; partFV.SetXYZM(fvhandle[0]->at(el)*cos(fvhandle[2]->at(el)), fvhandle[0]->at(el)*sin(fvhandle[2]->at(el)), fvhandle[1]->at(el), fvhandle[3]->at(el));
-        Particle* part = new Particle((int)partId, partFV);
+        MELAParticle* part = new MELAParticle((int)partId, partFV);
         part->setGenStatus(-1);
         particles.push_back(part);
         motherParticles.push_back(part);
@@ -367,7 +375,7 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
     }
 
     for (unsigned int d=0; d<candFinalDaughters.size(); d++){
-      Particle* part = candFinalDaughters.at(d);
+      MELAParticle* part = candFinalDaughters.at(d);
       if (isALepton(part->id)) outEvent.addLepton(part);
       else if (isANeutrino(part->id)) outEvent.addNeutrino(part);
       else if (isAPhoton(part->id)) outEvent.addPhoton(part);
@@ -377,11 +385,11 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
     }
     outEvent.constructVVCandidates(options->doGenHZZdecay(), options->genDecayProducts());
     for (unsigned int p=0; p<motherParticles.size(); p++){
-      Particle* part = motherParticles.at(p);
+      MELAParticle* part = motherParticles.at(p);
       outEvent.addVVCandidateMother(part);
     }
     for (unsigned int d=0; d<associatedParticles.size(); d++){
-      Particle* part = associatedParticles.at(d);
+      MELAParticle* part = associatedParticles.at(d);
       if (isALepton(part->id)) outEvent.addLepton(part);
       else if (isANeutrino(part->id)) outEvent.addNeutrino(part);
       else if (isAPhoton(part->id)) outEvent.addPhoton(part);
@@ -392,7 +400,7 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
   }
   else{
     for (unsigned int d=0; d<candFinalDaughters.size(); d++){
-      Particle* part = candFinalDaughters.at(d);
+      MELAParticle* part = candFinalDaughters.at(d);
       if (isALepton(part->id)) outEvent.addLepton(part);
       else if (isANeutrino(part->id)) outEvent.addNeutrino(part);
       else if (isAPhoton(part->id)) outEvent.addPhoton(part);
@@ -404,7 +412,7 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
     if (options->recoSelectionMode()==0){ // Do not find the best combination, leave it to the input tree
       outEvent.constructVVCandidates(options->doRecoHZZdecay(), options->recoDecayProducts());
       for (unsigned int d=0; d<associatedParticles.size(); d++){
-        Particle* part = associatedParticles.at(d);
+        MELAParticle* part = associatedParticles.at(d);
         if (isALepton(part->id)) outEvent.addLepton(part);
         else if (isANeutrino(part->id)) outEvent.addNeutrino(part);
         else if (isAPhoton(part->id)) outEvent.addPhoton(part);
@@ -415,7 +423,7 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
     }
     else{ // Find the best combination
       for (unsigned int d=0; d<associatedParticles.size(); d++){
-        Particle* part = associatedParticles.at(d);
+        MELAParticle* part = associatedParticles.at(d);
         if (isALepton(part->id)) outEvent.addLepton(part);
         else if (isANeutrino(part->id)) outEvent.addNeutrino(part);
         else if (isAPhoton(part->id)) outEvent.addPhoton(part);
@@ -430,18 +438,18 @@ void Reader::readEvent(Event& outEvent, vector<Particle*>& particles, bool isGen
   outEvent.addVVCandidateAppendages();
 
 /*
-  if (isGen) cout << "NGenCandidates: " << outEvent.getNZZCandidates() << endl;
-  else cout << "NRecoCandidates: " << outEvent.getNZZCandidates() << endl;
-  for (int cc=0; cc<outEvent.getNZZCandidates(); cc++){
-  cout << outEvent.getZZCandidate(cc)->m()
+  if (isGen) cout << "NGenCandidates: " << outEvent.getNMELACandidates() << endl;
+  else cout << "NRecoCandidates: " << outEvent.getNMELACandidates() << endl;
+  for (int cc=0; cc<outEvent.getNMELACandidates(); cc++){
+  cout << outEvent.getMELACandidate(cc)->m()
   << " ("
-  << outEvent.getZZCandidate(cc)->getSortedV(0)->m()
+  << outEvent.getMELACandidate(cc)->getSortedV(0)->m()
   << " -> "
-  << "pT = " << outEvent.getZZCandidate(cc)->getSortedV(0)->getDaughter(0)->pt() << " + " << outEvent.getZZCandidate(cc)->getSortedV(0)->getDaughter(1)->pt()
+  << "pT = " << outEvent.getMELACandidate(cc)->getSortedV(0)->getDaughter(0)->pt() << " + " << outEvent.getMELACandidate(cc)->getSortedV(0)->getDaughter(1)->pt()
   << ", "
-  << outEvent.getZZCandidate(cc)->getSortedV(1)->m()
+  << outEvent.getMELACandidate(cc)->getSortedV(1)->m()
   << " -> "
-  << "pT = " << outEvent.getZZCandidate(cc)->getSortedV(1)->getDaughter(0)->pt() << " + " << outEvent.getZZCandidate(cc)->getSortedV(1)->getDaughter(1)->pt()
+  << "pT = " << outEvent.getMELACandidate(cc)->getSortedV(1)->getDaughter(0)->pt() << " + " << outEvent.getMELACandidate(cc)->getSortedV(1)->getDaughter(1)->pt()
   << ")\n";
   }
   if (isGen) cout << "Recorded (m1, m2): (" << *((Float_t*)tree->getBranchHandleRef("GenZ1Mass")) << ", " << *((Float_t*)tree->getBranchHandleRef("GenZ2Mass")) << ")\n";

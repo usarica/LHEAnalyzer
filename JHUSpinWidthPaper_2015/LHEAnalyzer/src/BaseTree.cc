@@ -1,4 +1,4 @@
-#include "../interface/BaseTree.h"
+#include "BaseTree.h"
 
 BaseTree::BaseTree(string treename){ initTree(treename, ""); }
 BaseTree::BaseTree(string treename, string treetitle){ initTree(treename, treetitle); }

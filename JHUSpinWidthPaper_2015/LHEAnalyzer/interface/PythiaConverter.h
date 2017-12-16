@@ -35,7 +35,7 @@ public:
 protected:
   void configure(); // Set output file, tree
   void finalizeRun();
-  void readEvent(TTree* tin, const int& ev, vector<Particle*>& genCollection, bool& genSuccess, vector<Particle*>& recoCollection, bool& smearedSuccess, double& eventWeight);
+  void readEvent(TTree* tin, const int& ev, vector<MELAParticle*>& genCollection, bool& genSuccess, vector<MELAParticle*>& recoCollection, bool& smearedSuccess, double& eventWeight);
 
   TFile* getIntermediateFile(const string& cinput);
 };

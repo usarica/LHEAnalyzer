@@ -3,7 +3,7 @@
 #include "TList.h"
 #include "TRandom.h"
 #include "TLorentzVector.h"
-#include "../interface/PythiaConverter.h"
+#include "PythiaConverter.h"
 
 using namespace PDGHelpers;
 
@@ -70,10 +70,10 @@ void PythiaConverter::run(){
         double weight;
         bool genSuccess=false, smearedSuccess=false;
 
-        vector<Particle*> genParticleList;
-        vector<Particle*> smearedParticleList;
-        vector<ZZCandidate*> genCandList; // Bookkeeping
-        vector<ZZCandidate*> smearedCandList; // Bookkeeping
+        vector<MELAParticle*> genParticleList;
+        vector<MELAParticle*> smearedParticleList;
+        vector<MELACandidate*> genCandList; // Bookkeeping
+        vector<MELACandidate*> smearedCandList; // Bookkeeping
 
         tree->initializeBranches();
 
@@ -87,7 +87,7 @@ void PythiaConverter::run(){
             genEvent.setWeight(weight);
             vectorInt hasGenHiggs;
             for (unsigned int p=0; p<genParticleList.size(); p++){
-              Particle* genPart = genParticleList.at(p); // Has mother info from Pythia reading
+              MELAParticle* genPart = genParticleList.at(p); // Has mother info from Pythia reading
               if (isAHiggs(genPart->id)){
                 hasGenHiggs.push_back(p);
                 if (options->doGenHZZdecay()==-1 && (genPart->genStatus==1 || genPart->genStatus==2)) genEvent.addIntermediate(genPart);
@@ -103,14 +103,14 @@ void PythiaConverter::run(){
 
             genEvent.constructVVCandidates(options->doGenHZZdecay(), options->genDecayProducts());
             for (unsigned int p=0; p<genParticleList.size(); p++){
-              Particle* genPart = genParticleList.at(p);
+              MELAParticle* genPart = genParticleList.at(p);
               if (genPart->genStatus==-1) genEvent.addVVCandidateMother(genPart);
             }
             genEvent.addVVCandidateAppendages();
-            ZZCandidate* genCand=0;
+            MELACandidate* genCand=0;
             if (hasGenHiggs.size()>0){
               for (unsigned int gk=0; gk<hasGenHiggs.size(); gk++){
-                ZZCandidate* tmpCand = HiggsComparators::matchAHiggsToParticle(genEvent, genParticleList.at(hasGenHiggs.at(gk)));
+                MELACandidate* tmpCand = HiggsComparators::matchAHiggsToParticle(genEvent, genParticleList.at(hasGenHiggs.at(gk)));
                 if (tmpCand!=0){
                   if (genCand==0) genCand=tmpCand;
                   else genCand = HiggsComparators::candComparator(genCand, tmpCand, options->getHiggsCandidateSelectionScheme(true), options->doGenHZZdecay());
@@ -129,7 +129,7 @@ void PythiaConverter::run(){
           if (smearedSuccess){
             smearedEvent.setWeight(weight);
             for (unsigned int p=0; p<smearedParticleList.size(); p++){
-              Particle* smearedPart = smearedParticleList.at(p);
+              MELAParticle* smearedPart = smearedParticleList.at(p);
               if (isALepton(smearedPart->id)) smearedEvent.addLepton(smearedPart);
               else if (isANeutrino(smearedPart->id)) smearedEvent.addNeutrino(smearedPart);
               else if (isAPhoton(smearedPart->id)) smearedEvent.addPhoton(smearedPart);
@@ -139,7 +139,7 @@ void PythiaConverter::run(){
             smearedEvent.constructVVCandidates(options->doRecoHZZdecay(), options->recoDecayProducts());
             if (options->recoSelectionMode()==0) smearedEvent.applyParticleSelection();
             smearedEvent.addVVCandidateAppendages();
-            ZZCandidate* rCand = HiggsComparators::candidateSelector(smearedEvent, options->getHiggsCandidateSelectionScheme(false), options->doRecoHZZdecay());
+            MELACandidate* rCand = HiggsComparators::candidateSelector(smearedEvent, options->getHiggsCandidateSelectionScheme(false), options->doRecoHZZdecay());
             if (rCand!=0){
               isSelected=1;
               tree->fillCandidate(rCand, false);
@@ -158,20 +158,20 @@ void PythiaConverter::run(){
         }
 
         for (unsigned int p=0; p<smearedCandList.size(); p++){ // Bookkeeping
-          ZZCandidate* tmpCand = (ZZCandidate*)smearedCandList.at(p);
+          MELACandidate* tmpCand = (MELACandidate*)smearedCandList.at(p);
           if (tmpCand!=0) delete tmpCand;
         }
         for (unsigned int p=0; p<smearedParticleList.size(); p++){ // Bookkeeping
-          Particle* tmpPart = (Particle*)smearedParticleList.at(p);
+          MELAParticle* tmpPart = (MELAParticle*)smearedParticleList.at(p);
           if (tmpPart!=0) delete tmpPart;
         }
 
         for (unsigned int p=0; p<genCandList.size(); p++){ // Bookkeeping
-          ZZCandidate* tmpCand = (ZZCandidate*)genCandList.at(p);
+          MELACandidate* tmpCand = (MELACandidate*)genCandList.at(p);
           if (tmpCand!=0) delete tmpCand;
         }
         for (unsigned int p=0; p<genParticleList.size(); p++){ // Bookkeeping
-          Particle* tmpPart = (Particle*)genParticleList.at(p);
+          MELAParticle* tmpPart = (MELAParticle*)genParticleList.at(p);
           if (tmpPart!=0) delete tmpPart;
         }
 
@@ -218,7 +218,7 @@ TFile* PythiaConverter::getIntermediateFile(const string& cinput){
 }
 
 
-void PythiaConverter::readEvent(TTree* tin, const int& ev, vector<Particle*>& genCollection, bool& genSuccess, vector<Particle*>& recoCollection, bool& smearedSuccess, double& eventWeight){
+void PythiaConverter::readEvent(TTree* tin, const int& ev, vector<MELAParticle*>& genCollection, bool& genSuccess, vector<MELAParticle*>& recoCollection, bool& smearedSuccess, double& eventWeight){
   int nEvents = tin->GetEntries();
   vectorDouble weights;
   if (ev>=nEvents){
@@ -275,7 +275,7 @@ void PythiaConverter::readEvent(TTree* tin, const int& ev, vector<Particle*>& ge
       int idup = reco_GenParticle_id->at(a);
       TLorentzVector partFourVec(reco_GenParticle_FV[0]->at(a), reco_GenParticle_FV[1]->at(a), reco_GenParticle_FV[2]->at(a), reco_GenParticle_FV[3]->at(a));
 
-      Particle* onePart = new Particle(idup, partFourVec);
+      MELAParticle* onePart = new MELAParticle(idup, partFourVec);
       onePart->setGenStatus(PDGHelpers::convertPythiaStatus(istup));
       onePart->setLifetime(0);
       genCollection.push_back(onePart);
@@ -291,9 +291,9 @@ void PythiaConverter::readEvent(TTree* tin, const int& ev, vector<Particle*>& ge
       int idup = reco_GenJet_id->at(a);
       TLorentzVector partFourVec(reco_GenJet_FV[0]->at(a), reco_GenJet_FV[1]->at(a), reco_GenJet_FV[2]->at(a), reco_GenJet_FV[3]->at(a));
 
-      Particle* onePart = new Particle(idup, partFourVec);
+      MELAParticle* onePart = new MELAParticle(idup, partFourVec);
       if (options->recoSmearingMode()>0){ // Reverse of LHE mode
-        Particle* smearedPart = LHEParticleSmear::smearParticle(onePart);
+        MELAParticle* smearedPart = LHEParticleSmear::smearParticle(onePart);
         delete onePart;
         onePart = smearedPart;
       }

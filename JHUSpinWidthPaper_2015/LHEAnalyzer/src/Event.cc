@@ -1,5 +1,5 @@
 #include <iostream>
-#include "../interface/Event.h"
+#include "Event.h"
 
 using namespace PDGHelpers;
 using namespace ParticleComparators;
@@ -12,13 +12,13 @@ void Event::applyParticleSelection(){
   applyZZSelection(); // Order matters here
 }
 void Event::applyLeptonSelection(){
-  for (std::vector<Particle*>::iterator it = leptons.begin(); it<leptons.end(); it++){
+  for (std::vector<MELAParticle*>::iterator it = leptons.begin(); it<leptons.end(); it++){
     // Trigger and acceptance
     bool passAcceptance = true;
     if (std::abs((*it)->id)==11 && ((*it)->pt()<=electronPTCut || std::abs((*it)->eta())>=electronEtaAcceptanceCut)) passAcceptance = false;
     else if (std::abs((*it)->id)==13 && ((*it)->pt()<=muonPTCut || std::abs((*it)->eta())>=muonEtaAcceptanceCut)) passAcceptance = false;
     else if (std::abs((*it)->id)==15) passAcceptance = false;
-    for (std::vector<Particle*>::iterator it2 = leptons.begin(); it2<leptons.end(); it2++){
+    for (std::vector<MELAParticle*>::iterator it2 = leptons.begin(); it2<leptons.end(); it2++){
       if ((*it2)==(*it)) continue; // Every particle is their own ghost.
       else if ((*it)->deltaR((*it2)->p4)<=ghostDeltaRCut) passAcceptance = false; // Ghost removal
     }
@@ -26,16 +26,16 @@ void Event::applyLeptonSelection(){
   }
 }
 void Event::applyNeutrinoSelection(){
-  for (std::vector<Particle*>::iterator it = neutrinos.begin(); it<neutrinos.end(); it++) (*it)->setSelected(false);
+  for (std::vector<MELAParticle*>::iterator it = neutrinos.begin(); it<neutrinos.end(); it++) (*it)->setSelected(false);
 }
 void Event::applyPhotonSelection(){
-  for (std::vector<Particle*>::iterator it = photons.begin(); it<photons.end(); it++) (*it)->setSelected(true); // For now...
+  for (std::vector<MELAParticle*>::iterator it = photons.begin(); it<photons.end(); it++) (*it)->setSelected(true); // For now...
 }
 void Event::applyJetSelection(){
-  for (std::vector<Particle*>::iterator it = jets.begin(); it<jets.end(); it++){
+  for (std::vector<MELAParticle*>::iterator it = jets.begin(); it<jets.end(); it++){
     bool passAcceptance = true;
     if ((*it)->pt()<=jetPTCut || std::abs((*it)->eta())>=jetEtaAcceptanceCut) passAcceptance = false; // ZZ4l selection and acceptance
-    for (std::vector<Particle*>::iterator it2 = leptons.begin(); it2<leptons.end(); it2++){ // Clean from selected leptons
+    for (std::vector<MELAParticle*>::iterator it2 = leptons.begin(); it2<leptons.end(); it2++){ // Clean from selected leptons
       if ((*it2)->passSelection){ // If it is not selected at all, why would I care?
         if ((*it)->deltaR((*it2)->p4)<=jetDeltaR) passAcceptance = false;
       }
@@ -44,7 +44,7 @@ void Event::applyJetSelection(){
   }
 }
 void Event::applyZZSelection(){
-  for (std::vector<ZZCandidate*>::iterator it = ZZcandidates.begin(); it<ZZcandidates.end(); it++){
+  for (std::vector<MELACandidate*>::iterator it = ZZcandidates.begin(); it<ZZcandidates.end(); it++){
     (*it)->testPreSelectedDaughters();
     if (!(*it)->passSelection) continue;
 
@@ -56,7 +56,7 @@ void Event::applyZZSelection(){
       passAcceptance = false; (*it)->getSortedV(1)->setSelected(passAcceptance);
     } // Z2 selection
     for (int iZ=2; iZ<(*it)->getNSortedVs(); iZ++){
-      Particle* extraV = (*it)->getSortedV(iZ);
+      MELAParticle* extraV = (*it)->getSortedV(iZ);
       if (!isAZBoson(extraV->id)) continue;
       else{
         if (extraV->m()<=mllLowCut || extraV->m()>=mV12HighCut || (extraV->getDaughter(0)!=0 && isANeutrino(extraV->getDaughter(0)->id))) extraV->setSelected(false); // Extra Z selection, no effect on ZZ candidate
@@ -71,22 +71,22 @@ void Event::applyZZSelection(){
   }
 }
 
-void Event::addZZCandidate(ZZCandidate* myParticle){
-  bool isIdentical = (getNZZCandidates()>0);
-  for (int cc=0; cc<getNZZCandidates(); cc++){
-    ZZCandidate* testCand = ZZcandidates.at(cc);
+void Event::addMELACandidate(MELACandidate* myParticle){
+  bool isIdentical = (getNMELACandidates()>0);
+  for (int cc=0; cc<getNMELACandidates(); cc++){
+    MELACandidate* testCand = ZZcandidates.at(cc);
 
     for (int i=0; i<2; i++){
-      Particle* testV = testCand->getSortedV(i);
-      Particle* partV = myParticle->getSortedV(i);
+      MELAParticle* testV = testCand->getSortedV(i);
+      MELAParticle* partV = myParticle->getSortedV(i);
       if (partV==0 || testV==0){
         if (partV==0 && testV==0) continue; // Check the next intermediate V if there is any.
         else { isIdentical=false; break; } // They are definitely not the same.
       }
       if (testV->getNDaughters() != partV->getNDaughters()) { isIdentical=false;  break; }; // Again, they cannot be the same.
       for (int j=0; j<testV->getNDaughters(); j++){
-        Particle* testD = testV->getDaughter(j);
-        Particle* partD = partV->getDaughter(j);
+        MELAParticle* testD = testV->getDaughter(j);
+        MELAParticle* partD = partV->getDaughter(j);
         isIdentical = isIdentical && (testD==partD);
         if (!isIdentical) break;
       }
@@ -143,11 +143,11 @@ void Event::constructVVCandidates(int isZZ, int fstype){
     return;
   }
 
-  std::vector<Particle*> lepMinusPlus[3][2]; // l-, l+
-  std::vector<Particle*> lepNuNubar[3][2]; // nu, nub
-  std::vector<Particle*> quarkAntiquark[7][2]; // q, qb
+  std::vector<MELAParticle*> lepMinusPlus[3][2]; // l-, l+
+  std::vector<MELAParticle*> lepNuNubar[3][2]; // nu, nub
+  std::vector<MELAParticle*> quarkAntiquark[7][2]; // q, qb
 
-  for (std::vector<Particle*>::iterator it = leptons.begin(); it<leptons.end(); it++){ // Leptons
+  for (std::vector<MELAParticle*>::iterator it = leptons.begin(); it<leptons.end(); it++){ // Leptons
     int iFirst=0;
     int iSecond=0;
 
@@ -157,7 +157,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
     if ((*it)->id<0) iSecond=1;
     lepMinusPlus[iFirst][iSecond].push_back(*it);
   }
-  for (std::vector<Particle*>::iterator it = neutrinos.begin(); it<neutrinos.end(); it++){ // Neutrinos
+  for (std::vector<MELAParticle*>::iterator it = neutrinos.begin(); it<neutrinos.end(); it++){ // Neutrinos
     int iFirst=0;
     int iSecond=0;
 
@@ -167,7 +167,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
     if ((*it)->id<0) iSecond=1;
     lepNuNubar[iFirst][iSecond].push_back(*it);
   }
-  for (std::vector<Particle*>::iterator it = jets.begin(); it<jets.end(); it++){ // Jets
+  for (std::vector<MELAParticle*>::iterator it = jets.begin(); it<jets.end(); it++){ // Jets
     int iFirst=abs((*it)->id); // Yes, 0-6, 0 being unknown
     if (PDGHelpers::isAGluon(iFirst)) continue;
     int iSecond=0;
@@ -176,7 +176,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
     quarkAntiquark[iFirst][iSecond].push_back(*it);
   }
 
-  std::vector<Particle*> tmpVhandle;
+  std::vector<MELAParticle*> tmpVhandle;
 
   if (isZZ==1 || isZZ==3 || isZZ==5){ // ZZ
 
@@ -185,7 +185,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
         for (unsigned int i=0; i<lepMinusPlus[c][0].size(); i++){
           for (unsigned int j=0; j<lepMinusPlus[c][1].size(); j++){
             TLorentzVector pV = lepMinusPlus[c][0].at(i)->p4+lepMinusPlus[c][1].at(j)->p4;
-            Particle* V = new Particle(23, pV);
+            MELAParticle* V = new MELAParticle(23, pV);
             V->addDaughter(lepMinusPlus[c][0].at(i));
             V->addDaughter(lepMinusPlus[c][1].at(j));
             tmpVhandle.push_back(V);
@@ -198,7 +198,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
         for (unsigned int i=0; i<lepNuNubar[c][0].size(); i++){
           for (unsigned int j=0; j<lepNuNubar[c][1].size(); j++){
             TLorentzVector pV = lepNuNubar[c][0].at(i)->p4+lepNuNubar[c][1].at(j)->p4;
-            Particle* V = new Particle(23, pV);
+            MELAParticle* V = new MELAParticle(23, pV);
             V->addDaughter(lepNuNubar[c][0].at(i));
             V->addDaughter(lepNuNubar[c][1].at(j));
             tmpVhandle.push_back(V);
@@ -211,7 +211,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
         for (unsigned int i=0; i<quarkAntiquark[c][0].size(); i++){
           for (unsigned int j=0; j<quarkAntiquark[c][1].size(); j++){
             TLorentzVector pV = quarkAntiquark[c][0].at(i)->p4+quarkAntiquark[c][1].at(j)->p4;
-            Particle* V = new Particle(23, pV);
+            MELAParticle* V = new MELAParticle(23, pV);
             V->addDaughter(quarkAntiquark[c][0].at(i));
             V->addDaughter(quarkAntiquark[c][1].at(j));
             tmpVhandle.push_back(V);
@@ -228,7 +228,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
         for (unsigned int i=0; i<lepMinusPlus[c][1].size(); i++){
           for (unsigned int j=0; j<lepNuNubar[c][0].size(); j++){
             TLorentzVector pV = lepMinusPlus[c][1].at(i)->p4+lepNuNubar[c][0].at(j)->p4;
-            Particle* V = new Particle(24, pV);
+            MELAParticle* V = new MELAParticle(24, pV);
             V->addDaughter(lepMinusPlus[c][1].at(i));
             V->addDaughter(lepNuNubar[c][0].at(j));
             tmpVhandle.push_back(V);
@@ -237,7 +237,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
         for (unsigned int i=0; i<lepMinusPlus[c][0].size(); i++){
           for (unsigned int j=0; j<lepNuNubar[c][1].size(); j++){
             TLorentzVector pV = lepMinusPlus[c][0].at(i)->p4+lepNuNubar[c][1].at(j)->p4;
-            Particle* V = new Particle(-24, pV);
+            MELAParticle* V = new MELAParticle(-24, pV);
             V->addDaughter(lepMinusPlus[c][0].at(i));
             V->addDaughter(lepNuNubar[c][1].at(j));
             tmpVhandle.push_back(V);
@@ -255,7 +255,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
               if (abs(totalcharge)!=1) continue;
 
               TLorentzVector pV = quarkAntiquark[c][0].at(i)->p4+quarkAntiquark[d][1].at(j)->p4;
-              Particle* V = new Particle(24*totalcharge, pV);
+              MELAParticle* V = new MELAParticle(24*totalcharge, pV);
               V->addDaughter(quarkAntiquark[c][0].at(i));
               V->addDaughter(quarkAntiquark[d][1].at(j));
               tmpVhandle.push_back(V);
@@ -271,11 +271,11 @@ void Event::constructVVCandidates(int isZZ, int fstype){
       for (int c=0; c<3; c++){
         for (unsigned int i=0; i<lepMinusPlus[c][0].size(); i++){
           for (unsigned int j=0; j<lepMinusPlus[c][1].size(); j++){
-            Particle* F1 = lepMinusPlus[c][0].at(i);
-            Particle* F2 = lepMinusPlus[c][1].at(j);
+            MELAParticle* F1 = lepMinusPlus[c][0].at(i);
+            MELAParticle* F2 = lepMinusPlus[c][1].at(j);
 
             TLorentzVector pH = F1->p4+F2->p4;
-            ZZCandidate* cand = new ZZCandidate(25, pH, true);
+            MELACandidate* cand = new MELACandidate(25, pH, true);
             cand->addDaughter(F1);
             cand->addDaughter(F2);
 
@@ -283,7 +283,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
             setCandidateDecayMode(TVar::CandidateDecay_ff);
             cand->sortDaughters();
             setCandidateDecayMode(defaultHDecayMode);
-            addZZCandidate(cand);
+            addMELACandidate(cand);
           }
         }
       }
@@ -292,11 +292,11 @@ void Event::constructVVCandidates(int isZZ, int fstype){
       for (int c=1; c<7; c++){
         for (unsigned int i=0; i<quarkAntiquark[c][0].size(); i++){
           for (unsigned int j=0; j<quarkAntiquark[c][1].size(); j++){
-            Particle* F1 = quarkAntiquark[c][0].at(i);
-            Particle* F2 = quarkAntiquark[c][1].at(j);
+            MELAParticle* F1 = quarkAntiquark[c][0].at(i);
+            MELAParticle* F2 = quarkAntiquark[c][1].at(j);
 
             TLorentzVector pH = F1->p4+F2->p4;
-            ZZCandidate* cand = new ZZCandidate(25, pH, true);
+            MELACandidate* cand = new MELACandidate(25, pH, true);
             cand->addDaughter(F1);
             cand->addDaughter(F2);
 
@@ -304,7 +304,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
             setCandidateDecayMode(TVar::CandidateDecay_ff);
             cand->sortDaughters();
             setCandidateDecayMode(defaultHDecayMode);
-            addZZCandidate(cand);
+            addMELACandidate(cand);
           }
         }
       }
@@ -317,11 +317,11 @@ void Event::constructVVCandidates(int isZZ, int fstype){
       for (int c=0; c<3; c++){
         for (unsigned int i=0; i<lepMinusPlus[c][0].size(); i++){
           for (unsigned int j=0; j<lepMinusPlus[c][1].size(); j++){
-            Particle* F1 = lepMinusPlus[c][0].at(i);
-            Particle* F2 = lepMinusPlus[c][1].at(j);
+            MELAParticle* F1 = lepMinusPlus[c][0].at(i);
+            MELAParticle* F2 = lepMinusPlus[c][1].at(j);
 
             TLorentzVector pCand = F1->p4+F2->p4;
-            ZZCandidate* cand = new ZZCandidate(23, pCand, true);
+            MELACandidate* cand = new MELACandidate(23, pCand, true);
             cand->addDaughter(F1);
             cand->addDaughter(F2);
 
@@ -329,7 +329,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
             setCandidateDecayMode(TVar::CandidateDecay_ff);
             cand->sortDaughters();
             setCandidateDecayMode(defaultHDecayMode);
-            addZZCandidate(cand);
+            addMELACandidate(cand);
           }
         }
       }
@@ -338,11 +338,11 @@ void Event::constructVVCandidates(int isZZ, int fstype){
       for (int c=1; c<7; c++){
         for (unsigned int i=0; i<quarkAntiquark[c][0].size(); i++){
           for (unsigned int j=0; j<quarkAntiquark[c][1].size(); j++){
-            Particle* F1 = quarkAntiquark[c][0].at(i);
-            Particle* F2 = quarkAntiquark[c][1].at(j);
+            MELAParticle* F1 = quarkAntiquark[c][0].at(i);
+            MELAParticle* F2 = quarkAntiquark[c][1].at(j);
 
             TLorentzVector pCand = F1->p4+F2->p4;
-            ZZCandidate* cand = new ZZCandidate(23, pCand, true);
+            MELACandidate* cand = new MELACandidate(23, pCand, true);
             cand->addDaughter(F1);
             cand->addDaughter(F2);
 
@@ -350,7 +350,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
             setCandidateDecayMode(TVar::CandidateDecay_ff);
             cand->sortDaughters();
             setCandidateDecayMode(defaultHDecayMode);
-            addZZCandidate(cand);
+            addMELACandidate(cand);
           }
         }
       }
@@ -359,11 +359,11 @@ void Event::constructVVCandidates(int isZZ, int fstype){
       for (int c=0; c<3; c++){
         for (unsigned int i=0; i<lepNuNubar[c][0].size(); i++){
           for (unsigned int j=0; j<lepNuNubar[c][1].size(); j++){
-            Particle* F1 = lepNuNubar[c][0].at(i);
-            Particle* F2 = lepNuNubar[c][1].at(j);
+            MELAParticle* F1 = lepNuNubar[c][0].at(i);
+            MELAParticle* F2 = lepNuNubar[c][1].at(j);
 
             TLorentzVector pCand = F1->p4+F2->p4;
-            ZZCandidate* cand = new ZZCandidate(23, pCand, true);
+            MELACandidate* cand = new MELACandidate(23, pCand, true);
             cand->addDaughter(F1);
             cand->addDaughter(F2);
 
@@ -371,7 +371,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
             setCandidateDecayMode(TVar::CandidateDecay_ff);
             cand->sortDaughters();
             setCandidateDecayMode(defaultHDecayMode);
-            addZZCandidate(cand);
+            addMELACandidate(cand);
           }
         }
       }
@@ -379,32 +379,32 @@ void Event::constructVVCandidates(int isZZ, int fstype){
 
   }
   else{ // Undecayed
-    for (std::vector<Particle*>::iterator it = intermediates.begin(); it<intermediates.end(); it++){ // Add directly
+    for (std::vector<MELAParticle*>::iterator it = intermediates.begin(); it<intermediates.end(); it++){ // Add directly
       if (isAHiggs((*it)->id)){
         TLorentzVector pH = (*it)->p4;
-        ZZCandidate* cand = new ZZCandidate(25, pH, true);
+        MELACandidate* cand = new MELACandidate(25, pH, true);
 
         TVar::CandidateDecayMode defaultHDecayMode = HDecayMode;
         setCandidateDecayMode(TVar::CandidateDecay_Stable);
         cand->sortDaughters();
         setCandidateDecayMode(defaultHDecayMode);
-        addZZCandidate(cand);
+        addMELACandidate(cand);
       }
     }
   }
 
-  if (debugVars::debugFlag) std::cout << "Number of V/ZZ before sorting photons: " << tmpVhandle.size() << " " << getNZZCandidates() << std::endl;
+  if (debugVars::debugFlag) std::cout << "Number of V/ZZ before sorting photons: " << tmpVhandle.size() << " " << getNMELACandidates() << std::endl;
 
   if (isZZ==3 || isZZ==4){
-    for (int i=0; i<photons.size(); i++){ // Copy the photons
+    for (unsigned int i=0; i<photons.size(); i++){ // Copy the photons
       TLorentzVector pV = photons.at(i)->p4;
-      Particle* V = new Particle(photons.at(i)->id, pV);
+      MELAParticle* V = new MELAParticle(photons.at(i)->id, pV);
       V->addDaughter(photons.at(i)); // Photon is its own daughter!
       tmpVhandle.push_back(V);
     }
   }
 
-  if (debugVars::debugFlag) std::cout << "Number of V/ZZ after sorting photons: " << tmpVhandle.size() << " " << getNZZCandidates() << std::endl;
+  if (debugVars::debugFlag) std::cout << "Number of V/ZZ after sorting photons: " << tmpVhandle.size() << " " << getNMELACandidates() << std::endl;
 
   if (
     ((fstype<0 || fstype==1 || fstype==2 || fstype==4) && (isZZ==0 || isZZ==1)) // W/Z->2j reco.-level
@@ -421,17 +421,17 @@ void Event::constructVVCandidates(int isZZ, int fstype){
         if (quarkAntiquark[0][0].at(j)->id!=0) continue;
         if (isZZ==0 || isZZ==1 || isZZ==3){
           TLorentzVector pV = quarkAntiquark[0][0].at(i)->p4+quarkAntiquark[0][0].at(j)->p4;
-          Particle* V = new Particle(0, pV);
+          MELAParticle* V = new MELAParticle(0, pV);
           V->addDaughter(quarkAntiquark[0][0].at(i));
           V->addDaughter(quarkAntiquark[0][0].at(j));
           tmpVhandle.push_back(V);
         }
         else if (isZZ==2){
-          Particle* F1 = quarkAntiquark[0][0].at(i);
-          Particle* F2 = quarkAntiquark[0][0].at(j);
+          MELAParticle* F1 = quarkAntiquark[0][0].at(i);
+          MELAParticle* F2 = quarkAntiquark[0][0].at(j);
 
           TLorentzVector pH = F1->p4+F2->p4;
-          ZZCandidate* cand = new ZZCandidate(25, pH, true);
+          MELACandidate* cand = new MELACandidate(25, pH, true);
           cand->addDaughter(F1);
           cand->addDaughter(F2);
 
@@ -439,14 +439,14 @@ void Event::constructVVCandidates(int isZZ, int fstype){
           setCandidateDecayMode(TVar::CandidateDecay_ff);
           cand->sortDaughters();
           setCandidateDecayMode(defaultHDecayMode);
-          addZZCandidate(cand);
+          addMELACandidate(cand);
         }
         else if (isZZ==5){
-          Particle* F1 = quarkAntiquark[0][0].at(i);
-          Particle* F2 = quarkAntiquark[0][0].at(j);
+          MELAParticle* F1 = quarkAntiquark[0][0].at(i);
+          MELAParticle* F2 = quarkAntiquark[0][0].at(j);
 
           TLorentzVector pCand = F1->p4+F2->p4;
-          ZZCandidate* cand = new ZZCandidate(23, pCand, true);
+          MELACandidate* cand = new MELACandidate(23, pCand, true);
           cand->addDaughter(F1);
           cand->addDaughter(F2);
 
@@ -454,11 +454,11 @@ void Event::constructVVCandidates(int isZZ, int fstype){
           setCandidateDecayMode(TVar::CandidateDecay_ff);
           cand->sortDaughters();
           setCandidateDecayMode(defaultHDecayMode);
-          addZZCandidate(cand);
+          addMELACandidate(cand);
         }
       }
     }
-    if (debugVars::debugFlag) std::cout << "Number of V/ZZ after sorting reco. jets: " << tmpVhandle.size() << " " << getNZZCandidates() << std::endl;
+    if (debugVars::debugFlag) std::cout << "Number of V/ZZ after sorting reco. jets: " << tmpVhandle.size() << " " << getNMELACandidates() << std::endl;
   }
 
 
@@ -468,10 +468,10 @@ void Event::constructVVCandidates(int isZZ, int fstype){
       if (tmpVhandle.at(i)==tmpVhandle.at(j)) continue;
       if ((tmpVhandle.at(i)->charge()+tmpVhandle.at(j)->charge())!=0) continue;
 
-      Particle* Vi1 = tmpVhandle.at(i)->getDaughter(0);
-      Particle* Vi2 = tmpVhandle.at(i)->getDaughter(1);
-      Particle* Vj1 = tmpVhandle.at(j)->getDaughter(0);
-      Particle* Vj2 = tmpVhandle.at(j)->getDaughter(1);
+      MELAParticle* Vi1 = tmpVhandle.at(i)->getDaughter(0);
+      MELAParticle* Vi2 = tmpVhandle.at(i)->getDaughter(1);
+      MELAParticle* Vj1 = tmpVhandle.at(j)->getDaughter(0);
+      MELAParticle* Vj2 = tmpVhandle.at(j)->getDaughter(1);
       /*
       std::cout << "11: " << Vi1->id << '\t' << Vi1->x() << '\t' << Vi1->y() << '\t' << Vi1->z() << '\t' << Vi1->t() << '\t' << std::endl;
       std::cout << "12: " << Vi2->id << '\t' << Vi2->x() << '\t' << Vi2->y() << '\t' << Vi2->z() << '\t' << Vi2->t() << '\t' << std::endl;
@@ -516,7 +516,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
       if (Vi2!=0) pH = pH + Vi2->p4;
       if (Vj1!=0) pH = pH + Vj1->p4;
       if (Vj2!=0) pH = pH + Vj2->p4;
-      ZZCandidate* cand = new ZZCandidate(25, pH, true);
+      MELACandidate* cand = new MELACandidate(25, pH, true);
 
       if (Vi1!=0) cand->addDaughter(Vi1);
       if (Vi2!=0) cand->addDaughter(Vi2);
@@ -533,7 +533,7 @@ void Event::constructVVCandidates(int isZZ, int fstype){
       cand->sortDaughters();
       if (debugVars::debugFlag) std::cout << "Sorted daughters successfully!" << std::endl;
       setCandidateDecayMode(defaultHDecayMode);
-      addZZCandidate(cand);
+      addMELACandidate(cand);
 
       if (debugVars::debugFlag) std::cout << "Added candidate for V" << i << " V" << j << std::endl;
     }
@@ -544,30 +544,30 @@ void Event::constructVVCandidates(int isZZ, int fstype){
   tmpVhandle.clear();
 }
 
-ZZCandidate* Event::getZZCandidate(int index)const{
+MELACandidate* Event::getMELACandidate(int index)const{
   if ((int)ZZcandidates.size()>index) return ZZcandidates.at(index);
   else return 0;
 }
-Particle* Event::getLepton(int index)const{
+MELAParticle* Event::getLepton(int index)const{
   if ((int)leptons.size()>index) return leptons.at(index);
   else return 0;
 }
-Particle* Event::getNeutrino(int index)const{
+MELAParticle* Event::getNeutrino(int index)const{
   if ((int)neutrinos.size()>index) return neutrinos.at(index);
   else return 0;
 }
-Particle* Event::getPhoton(int index)const{
+MELAParticle* Event::getPhoton(int index)const{
   if ((int)photons.size()>index) return photons.at(index);
   else return 0;
-}Particle* Event::getJet(int index)const{
+}MELAParticle* Event::getJet(int index)const{
   if ((int)jets.size()>index) return jets.at(index);
   else return 0;
 }
-Particle* Event::getIntermediate(int index)const{
+MELAParticle* Event::getIntermediate(int index)const{
   if ((int)intermediates.size()>index) return intermediates.at(index);
   else return 0;
 }
-Particle* Event::getParticle(int index)const{
+MELAParticle* Event::getParticle(int index)const{
   if ((int)particles.size()>index) return particles.at(index);
   else return 0;
 }
@@ -575,7 +575,7 @@ Particle* Event::getParticle(int index)const{
 TLorentzVector Event::missingP() const{
   TLorentzVector totalP(0, 0, 0, 0);
   for (unsigned int pp=0; pp<particles.size(); pp++){
-    Particle* part = getParticle(pp);
+    MELAParticle* part = getParticle(pp);
     if (part->passSelection) totalP = totalP + part->p4;
   }
   totalP.SetT(totalP.P());
@@ -583,15 +583,15 @@ TLorentzVector Event::missingP() const{
   return totalP;
 }
 
-void Event::addVVCandidateMother(Particle* mother){
-  for (std::vector<ZZCandidate*>::iterator it = ZZcandidates.begin(); it<ZZcandidates.end(); it++) (*it)->addMother(mother);
+void Event::addVVCandidateMother(MELAParticle* mother){
+  for (std::vector<MELACandidate*>::iterator it = ZZcandidates.begin(); it<ZZcandidates.end(); it++) (*it)->addMother(mother);
 }
 void Event::addVVCandidateAppendages(){
-  for (std::vector<ZZCandidate*>::iterator it = ZZcandidates.begin(); it<ZZcandidates.end(); it++){
-    for (std::vector<Particle*>::iterator iL = leptons.begin(); iL<leptons.end(); iL++){ if ((*iL)->passSelection) (*it)->addAssociatedLeptons(*iL); }
-    for (std::vector<Particle*>::iterator iL = neutrinos.begin(); iL<neutrinos.end(); iL++){ if ((*iL)->passSelection) (*it)->addAssociatedNeutrinos(*iL); }
-    for (std::vector<Particle*>::iterator iP = photons.begin(); iP<photons.end(); iP++){ if ((*iP)->passSelection) (*it)->addAssociatedPhotons(*iP); }
-    for (std::vector<Particle*>::iterator iJ = jets.begin(); iJ<jets.end(); iJ++){ if ((*iJ)->passSelection) (*it)->addAssociatedJets(*iJ); }
+  for (std::vector<MELACandidate*>::iterator it = ZZcandidates.begin(); it<ZZcandidates.end(); it++){
+    for (std::vector<MELAParticle*>::iterator iL = leptons.begin(); iL<leptons.end(); iL++){ if ((*iL)->passSelection) (*it)->addAssociatedLeptons(*iL); }
+    for (std::vector<MELAParticle*>::iterator iL = neutrinos.begin(); iL<neutrinos.end(); iL++){ if ((*iL)->passSelection) (*it)->addAssociatedNeutrinos(*iL); }
+    for (std::vector<MELAParticle*>::iterator iP = photons.begin(); iP<photons.end(); iP++){ if ((*iP)->passSelection) (*it)->addAssociatedPhotons(*iP); }
+    for (std::vector<MELAParticle*>::iterator iJ = jets.begin(); iJ<jets.end(); iJ++){ if ((*iJ)->passSelection) (*it)->addAssociatedJets(*iJ); }
     (*it)->addAssociatedVs();
   }
 }

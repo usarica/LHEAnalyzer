@@ -1,3 +1,6 @@
+HERE = $(PWD)
+BASEINCLUDE=$(CMSSW_BASE)/src
+MELADIR=$(BASEINCLUDE)/ZZMatrixElement/MELA
 
 ROOTCFLAGS    = $(shell root-config --cflags) -Lrootlib -lEG
 ROOTGLIBS     = $(shell root-config --glibs) -Lrootlib -lEG
@@ -17,7 +20,7 @@ DllSuf        = dylib
 UNDEFOPT      = suppress
 endif
 
-CXXFLAGS      += $(ROOTCFLAGS) -I$(ROOFITSYS)/include/ -I$(CMSSW_BASE)/src
+CXXFLAGS      += $(ROOTCFLAGS) -I$(ROOFITSYS)/include/ -I$(BASEINCLUDE) -I$(HERE)/interface/ -I$(MELADIR)/interface/
 
 NGLIBS         = $(ROOTGLIBS)
 # Hack here, because RooFit is removed from ROOT:

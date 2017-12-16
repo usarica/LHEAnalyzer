@@ -1,10 +1,10 @@
-#include "../interface/LHEParticleSmear.h"
+#include "LHEParticleSmear.h"
 
 namespace LHEParticleSmear{
   TRandom randomForSmearing;
 }
 
-Particle* LHEParticleSmear::smearParticle(Particle* myParticle){
+MELAParticle* LHEParticleSmear::smearParticle(MELAParticle* myParticle){
   TLorentzVector pOriginal, pSmeared;
   pOriginal.SetXYZT(myParticle->x(), myParticle->y(), myParticle->z(), myParticle->t());
 
@@ -16,7 +16,7 @@ Particle* LHEParticleSmear::smearParticle(Particle* myParticle){
   }
   else pSmeared = pOriginal;
 
-  Particle* smearedParticle = new Particle(myParticle->id, pSmeared);
+  MELAParticle* smearedParticle = new MELAParticle(myParticle->id, pSmeared);
   return smearedParticle;
 }
 

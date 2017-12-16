@@ -5,7 +5,6 @@
 #include <cmath>
 #include <string>
 #include <vector>
-#include "Particle.h"
 
 namespace ParticleComparators{
   extern double jetDeltaR;

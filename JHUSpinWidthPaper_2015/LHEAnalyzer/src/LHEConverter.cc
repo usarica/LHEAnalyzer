@@ -11,7 +11,7 @@
 #include "TList.h"
 #include "TRandom.h"
 #include "TLorentzVector.h"
-#include "../interface/LHEConverter.h"
+#include "LHEConverter.h"
 
 using namespace PDGHelpers;
 using namespace LHEParticleSmear;
@@ -44,10 +44,10 @@ void LHEConverter::run(){
       int ev = 0;
       int fileLine = 0; // Debugging
       while (!fin.eof()){
-        vector<Particle*> particleList = readEvent(fin, fileLine, weight);
-        vector<Particle*> smearedParticleList; // Bookkeeping
-        vector<ZZCandidate*> candList; // Bookkeeping
-        vector<ZZCandidate*> smearedCandList; // Bookkeeping
+        vector<MELAParticle*> particleList = readEvent(fin, fileLine, weight);
+        vector<MELAParticle*> smearedParticleList; // Bookkeeping
+        vector<MELACandidate*> candList; // Bookkeeping
+        vector<MELACandidate*> smearedCandList; // Bookkeeping
 
         if (globalNEvents>=maxProcEvents && maxProcEvents>=0) break;
         if (particleList.empty()) continue;
@@ -71,7 +71,7 @@ void LHEConverter::run(){
           Event smearedEvent;
           smearedEvent.setWeight(weight);
           for (unsigned int p=0; p<particleList.size(); p++){
-            Particle* genPart = particleList.at(p); // Has mother info from LHE reading
+            MELAParticle* genPart = particleList.at(p); // Has mother info from LHE reading
             if (isAHiggs(genPart->id)){
               hasGenHiggs.push_back(p);
               if (options->doGenHZZdecay()==-1 && (genPart->genStatus==1 || genPart->genStatus==2)) genEvent.addIntermediate(genPart);
@@ -82,13 +82,13 @@ void LHEConverter::run(){
               else if (isAPhoton(genPart->id)) genEvent.addPhoton(genPart);
               else if (isAGluon(genPart->id) || isAQuark(genPart->id)) genEvent.addJet(genPart);
 
-              Particle* smearedPart; // Has no mother info
+              MELAParticle* smearedPart; // Has no mother info
               if (options->recoSmearingMode()==0) smearedPart = smearParticle(genPart);
               else{
                 int recoid = genPart->id;
                 TLorentzVector recofv;
                 recofv.SetXYZT(genPart->x(), genPart->y(), genPart->z(), genPart->t());
-                smearedPart = new Particle(recoid, recofv);
+                smearedPart = new MELAParticle(recoid, recofv);
               }
               smearedParticleList.push_back(smearedPart);
               if (isALepton(smearedPart->id)) smearedEvent.addLepton(smearedPart);
@@ -107,16 +107,16 @@ void LHEConverter::run(){
           genEvent.constructVVCandidates(options->doGenHZZdecay(), options->genDecayProducts());
           if (debugVars::debugFlag) cout << "Successfully constructed gen. VV candidates." << endl;
           for (unsigned int p=0; p<particleList.size(); p++){
-            Particle* genPart = particleList.at(p);
+            MELAParticle* genPart = particleList.at(p);
             if (genPart->genStatus==-1) genEvent.addVVCandidateMother(genPart);
           }
           if (debugVars::debugFlag) cout << "Starting to add gen. VV candidate appendages." << endl;
           genEvent.addVVCandidateAppendages();
-          ZZCandidate* genCand=0;
+          MELACandidate* genCand=0;
           if (debugVars::debugFlag) cout << "Number of gen. Higgs candidates directly from the LHE: " << hasGenHiggs.size() << endl;
           if (hasGenHiggs.size()>0){
             for (unsigned int gk=0; gk<hasGenHiggs.size(); gk++){
-              ZZCandidate* tmpCand = HiggsComparators::matchAHiggsToParticle(genEvent, particleList.at(hasGenHiggs.at(gk)));
+              MELACandidate* tmpCand = HiggsComparators::matchAHiggsToParticle(genEvent, particleList.at(hasGenHiggs.at(gk)));
               if (tmpCand!=0){
                 if (genCand==0) genCand=tmpCand;
                 else genCand = HiggsComparators::candComparator(genCand, tmpCand, options->getHiggsCandidateSelectionScheme(true), options->doGenHZZdecay());
@@ -130,7 +130,7 @@ void LHEConverter::run(){
           smearedEvent.constructVVCandidates(options->doRecoHZZdecay(), options->recoDecayProducts());
           if (options->recoSelectionMode()==0) smearedEvent.applyParticleSelection();
           smearedEvent.addVVCandidateAppendages();
-          ZZCandidate* rCand = HiggsComparators::candidateSelector(smearedEvent, options->getHiggsCandidateSelectionScheme(false), options->doRecoHZZdecay());
+          MELACandidate* rCand = HiggsComparators::candidateSelector(smearedEvent, options->getHiggsCandidateSelectionScheme(false), options->doRecoHZZdecay());
 
           if (rCand!=0){
             isSelected=1;
@@ -149,20 +149,20 @@ void LHEConverter::run(){
         ev++;
 
         for (unsigned int p=0; p<smearedCandList.size(); p++){ // Bookkeeping
-          ZZCandidate* tmpCand = (ZZCandidate*)smearedCandList.at(p);
+          MELACandidate* tmpCand = (MELACandidate*)smearedCandList.at(p);
           if (tmpCand!=0) delete tmpCand;
         }
         for (unsigned int p=0; p<smearedParticleList.size(); p++){ // Bookkeeping
-          Particle* tmpPart = (Particle*)smearedParticleList.at(p);
+          MELAParticle* tmpPart = (MELAParticle*)smearedParticleList.at(p);
           if (tmpPart!=0) delete tmpPart;
         }
 
         for (unsigned int p=0; p<candList.size(); p++){ // Bookkeeping
-          ZZCandidate* tmpCand = (ZZCandidate*)candList.at(p);
+          MELACandidate* tmpCand = (MELACandidate*)candList.at(p);
           if (tmpCand!=0) delete tmpCand;
         }
         for (unsigned int p=0; p<particleList.size(); p++){ // Bookkeeping
-          Particle* tmpPart = (Particle*)particleList.at(p);
+          MELAParticle* tmpPart = (MELAParticle*)particleList.at(p);
           if (tmpPart!=0) delete tmpPart;
         }
 
@@ -182,13 +182,13 @@ void LHEConverter::run(){
   finalizeRun();
 }
 
-vector<Particle*> LHEConverter::readEvent(ifstream& input_lhe, int& fline, double& weight){
+vector<MELAParticle*> LHEConverter::readEvent(ifstream& input_lhe, int& fline, double& weight){
   string event_beginning = "<event>";
   string event_end = "</event>";
   string file_closing = "</LesHouchesEvents>";
   string str_in="";
 
-  vector<Particle*> collection;
+  vector<MELAParticle*> collection;
   vectorInt motherIDs_first;
   vectorInt motherIDs_second;
 
@@ -225,7 +225,7 @@ vector<Particle*> LHEConverter::readEvent(ifstream& input_lhe, int& fline, doubl
     motherIDs_second.push_back(mothup[1]);
 
     partFourVec.SetXYZT(pup[0], pup[1], pup[2], pup[3]);
-    Particle* onePart = new Particle(idup, partFourVec);
+    MELAParticle* onePart = new MELAParticle(idup, partFourVec);
     onePart->setGenStatus(istup);
     onePart->setLifetime(spinup);
     collection.push_back(onePart);
@@ -239,7 +239,7 @@ vector<Particle*> LHEConverter::readEvent(ifstream& input_lhe, int& fline, doubl
     cerr << "End of event not reached! string is " << str_in << " on line " << fline << endl;
     weight=0;
     for (unsigned int a = 0; a < collection.size(); a++){
-      Particle* tmpPart = collection.at(a);
+      MELAParticle* tmpPart = collection.at(a);
       delete tmpPart;
     }
     collection.clear();

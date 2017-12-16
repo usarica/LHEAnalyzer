@@ -1,4 +1,4 @@
-#include "../interface/GlobalRecordTree.h"
+#include "GlobalRecordTree.h"
 
 
 bool GlobalRecordTree::reserveBranch(string branchname, BaseTree::BranchTypes branchtype, bool doSetAddress){
@@ -84,7 +84,7 @@ void GlobalRecordTree::bookAllBranches(bool doSetAddress){
     bookPtEtaPhiMassIdBranches("Lep4", BranchTypes::bFloat, doSetAddress, true, false, false);
   }
   bookAngularBranches(doSetAddress);
-  if (options->initializeMELA() || doSetAddress) bookMELABranches(doSetAddress);
+  if (options->initializeMELABranches() || doSetAddress) bookMELABranches(doSetAddress);
   actuateBranches(doSetAddress);
 }
 

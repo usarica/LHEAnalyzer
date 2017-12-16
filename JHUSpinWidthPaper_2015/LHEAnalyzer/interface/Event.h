@@ -3,8 +3,9 @@
 
 #include <vector>
 #include "TLorentzVector.h"
-#include "ZZCandidate.h"
 #include "ParticleComparators.h"
+#include "MELACandidate.h"
+
 
 class Event{
 public:
@@ -28,11 +29,11 @@ public:
 
   void constructVVCandidates(int isZZ=1, int fstype=0);
   void applyParticleSelection();
-  void addVVCandidateMother(Particle* mother);
+  void addVVCandidateMother(MELAParticle* mother);
   void addVVCandidateAppendages();
 
 
-  int getNZZCandidates() const{ return ZZcandidates.size(); }
+  int getNMELACandidates() const{ return ZZcandidates.size(); }
   int getNLeptons() const{ return leptons.size(); }
   int getNNeutrinos() const{ return neutrinos.size(); }
   int getNPhotons() const{ return photons.size(); }
@@ -40,32 +41,32 @@ public:
   int getNIntermediates() const{ return intermediates.size(); }
   int getNParticles() const{ return particles.size(); }
 
-  ZZCandidate* getZZCandidate(int index) const;
-  Particle* getLepton(int index) const;
-  Particle* getNeutrino(int index) const;
-  Particle* getPhoton(int index) const;
-  Particle* getJet(int index) const;
-  Particle* getIntermediate(int index) const;
-  Particle* getParticle(int index) const;
+  MELACandidate* getMELACandidate(int index) const;
+  MELAParticle* getLepton(int index) const;
+  MELAParticle* getNeutrino(int index) const;
+  MELAParticle* getPhoton(int index) const;
+  MELAParticle* getJet(int index) const;
+  MELAParticle* getIntermediate(int index) const;
+  MELAParticle* getParticle(int index) const;
 
-  void addParticle(Particle* myParticle){ particles.push_back(myParticle); }
-  void addIntermediate(Particle* myParticle){ intermediates.push_back(myParticle); }
-  void addLepton(Particle* myParticle, bool genuineParticle=true){ leptons.push_back(myParticle); if (genuineParticle) addParticle(myParticle); }
-  void addNeutrino(Particle* myParticle, bool genuineParticle=true){ neutrinos.push_back(myParticle); if (genuineParticle) addParticle(myParticle); }
-  void addPhoton(Particle* myParticle, bool genuineParticle=true){ photons.push_back(myParticle); if (genuineParticle) addParticle(myParticle); }
-  void addJet(Particle* myParticle, bool genuineParticle=true){ jets.push_back(myParticle); if (genuineParticle) addParticle(myParticle); }
+  void addParticle(MELAParticle* myParticle){ particles.push_back(myParticle); }
+  void addIntermediate(MELAParticle* myParticle){ intermediates.push_back(myParticle); }
+  void addLepton(MELAParticle* myParticle, bool genuineParticle=true){ leptons.push_back(myParticle); if (genuineParticle) addParticle(myParticle); }
+  void addNeutrino(MELAParticle* myParticle, bool genuineParticle=true){ neutrinos.push_back(myParticle); if (genuineParticle) addParticle(myParticle); }
+  void addPhoton(MELAParticle* myParticle, bool genuineParticle=true){ photons.push_back(myParticle); if (genuineParticle) addParticle(myParticle); }
+  void addJet(MELAParticle* myParticle, bool genuineParticle=true){ jets.push_back(myParticle); if (genuineParticle) addParticle(myParticle); }
   TLorentzVector missingP() const;
 
 protected:
-  std::vector<Particle*> particles;
-  std::vector<Particle*> intermediates;
-  std::vector<Particle*> leptons;
-  std::vector<Particle*> neutrinos;
-  std::vector<Particle*> photons;
-  std::vector<Particle*> jets;
-  std::vector<ZZCandidate*> ZZcandidates;
+  std::vector<MELAParticle*> particles;
+  std::vector<MELAParticle*> intermediates;
+  std::vector<MELAParticle*> leptons;
+  std::vector<MELAParticle*> neutrinos;
+  std::vector<MELAParticle*> photons;
+  std::vector<MELAParticle*> jets;
+  std::vector<MELACandidate*> ZZcandidates;
 
-  void addZZCandidate(ZZCandidate* myParticle); // Protected to avoid adding external ZZCandidates and DELETING THEM TWICE!
+  void addMELACandidate(MELACandidate* myParticle); // Protected to avoid adding external MELACandidates and DELETING THEM TWICE!
 
   template<typename ParticleType> void wipeArray(std::vector<ParticleType*>& particleArray, bool doDelete=true){ if (doDelete){ for (unsigned int i=0; i<particleArray.size(); i++){ ParticleType* delpar = particleArray.at(i); delete delpar; } } particleArray.clear(); };
   void wipeAll(){ leptons.clear(); neutrinos.clear(); photons.clear(); jets.clear(); wipeArray(ZZcandidates, true); wipeArray(intermediates, false); wipeArray(particles, false); };

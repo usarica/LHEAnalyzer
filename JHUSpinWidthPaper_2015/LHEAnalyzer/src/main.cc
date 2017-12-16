@@ -1,6 +1,6 @@
-#include "../interface/Reader.h"
-#include "../interface/LHEConverter.h"
-#include "../interface/PythiaConverter.h"
+#include "Reader.h"
+#include "LHEConverter.h"
+#include "PythiaConverter.h"
 
 int main(int argc, char** argv){
   OptionParser options(argc, argv);

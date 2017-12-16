@@ -20,7 +20,10 @@ namespace melaHelpers{
   void setSamplePoleWidth(Float_t width_);
   void setStandardPoleWidth(Float_t width_);
 
-  Float_t melaBranchMEInterpreter(const ZZCandidate* cand, string& branchname);
+  TVar::Production getFirstAssociatedLeptonicVProduction(MELACandidate const* cand);
+  TVar::Production getFirstAssociatedHadronicVProduction(MELACandidate const* cand);
+
+  Float_t melaBranchMEInterpreter(string& branchname);
 }
 
 #endif

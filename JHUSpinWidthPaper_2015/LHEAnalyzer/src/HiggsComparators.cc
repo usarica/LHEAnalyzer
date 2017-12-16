@@ -1,9 +1,9 @@
-#include "../interface/HiggsComparators.h"
+#include "HiggsComparators.h"
 
-ZZCandidate* HiggsComparators::matchAHiggsToParticle(Event& ev, Particle* genH){
-  ZZCandidate* cand=0;
-  for (int t=0; t<ev.getNZZCandidates(); t++){
-    ZZCandidate* tmpCand = ev.getZZCandidate(t);
+MELACandidate* HiggsComparators::matchAHiggsToParticle(Event& ev, MELAParticle* genH){
+  MELACandidate* cand=0;
+  for (int t=0; t<ev.getNMELACandidates(); t++){
+    MELACandidate* tmpCand = ev.getMELACandidate(t);
     double genhmassquant = genH->m()+genH->pt()+fabs(genH->z());
     double massdiff = fabs(genhmassquant-tmpCand->m()-tmpCand->pt()-fabs(tmpCand->z()));
     double massratio = 0;
@@ -24,10 +24,10 @@ ZZCandidate* HiggsComparators::matchAHiggsToParticle(Event& ev, Particle* genH){
   return cand;
 }
 
-ZZCandidate* HiggsComparators::candidateSelector(Event& ev, HiggsComparators::CandidateSelection scheme, int isZZ){
-  ZZCandidate* cand=0;
-  for (int t=0; t<ev.getNZZCandidates(); t++){
-    ZZCandidate* tmpCand = ev.getZZCandidate(t);
+MELACandidate* HiggsComparators::candidateSelector(Event& ev, HiggsComparators::CandidateSelection scheme, int isZZ){
+  MELACandidate* cand=0;
+  for (int t=0; t<ev.getNMELACandidates(); t++){
+    MELACandidate* tmpCand = ev.getMELACandidate(t);
     if (!tmpCand->passSelection) continue;
     if (cand==0) cand=tmpCand;
     else cand = HiggsComparators::candComparator(cand, tmpCand, scheme, isZZ);
@@ -35,8 +35,8 @@ ZZCandidate* HiggsComparators::candidateSelector(Event& ev, HiggsComparators::Ca
   return cand;
 }
 
-ZZCandidate* HiggsComparators::candComparator(ZZCandidate* cand1, ZZCandidate* cand2, HiggsComparators::CandidateSelection scheme, int isZZ){
-  ZZCandidate* theChosenOne=0;
+MELACandidate* HiggsComparators::candComparator(MELACandidate* cand1, MELACandidate* cand2, HiggsComparators::CandidateSelection scheme, int isZZ){
+  MELACandidate* theChosenOne=0;
 
   TVar::CandidateDecayMode defaultHDecayMode = PDGHelpers::HDecayMode;
   if (isZZ==0) PDGHelpers::setCandidateDecayMode(TVar::CandidateDecay_WW);
@@ -67,10 +67,10 @@ ZZCandidate* HiggsComparators::candComparator(ZZCandidate* cand1, ZZCandidate* c
     double diffmass1 = fabs(cand1->getSortedV(0)->m()-HVVmass);
     double diffmass2 = fabs(cand2->getSortedV(0)->m()-HVVmass);
     double Z2scsumpt_cand1=0, Z2scsumpt_cand2=0;
-    Particle* c11 = cand1->getSortedV(1)->getDaughter(0);
-    Particle* c12 = cand1->getSortedV(1)->getDaughter(1);
-    Particle* c21 = cand2->getSortedV(1)->getDaughter(0);
-    Particle* c22 = cand2->getSortedV(1)->getDaughter(1);
+    MELAParticle* c11 = cand1->getSortedV(1)->getDaughter(0);
+    MELAParticle* c12 = cand1->getSortedV(1)->getDaughter(1);
+    MELAParticle* c21 = cand2->getSortedV(1)->getDaughter(0);
+    MELAParticle* c22 = cand2->getSortedV(1)->getDaughter(1);
     if (c11!=0) Z2scsumpt_cand1 += c11->pt();
     if (c12!=0) Z2scsumpt_cand1 += c12->pt();
     if (c21!=0) Z2scsumpt_cand2 += c21->pt();

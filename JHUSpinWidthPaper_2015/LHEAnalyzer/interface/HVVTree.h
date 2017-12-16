@@ -18,18 +18,17 @@ public:
   void bookAllBranches(const bool& doSetAddress);
 
   void fillEventVariables(const Float_t& weight, const Int_t& passSelection);
-  void fillMotherInfo(const Particle* mother);
+  void fillMotherInfo(const MELAParticle* mother);
 
-  void fillCandidate(ZZCandidate* pH, bool isGen=false);
-  void fillCandidateDaughters(ZZCandidate* pH, bool isGen=false);
-  void fillDaughterProducts(ZZCandidate* pH, bool isGen=false);
-  void fillAssociatedInfo(ZZCandidate* pH, bool isGen=false);
+  void fillCandidate(MELACandidate* pH, bool isGen=false);
+  void fillCandidateDaughters(MELACandidate* pH, bool isGen=false);
+  void fillDaughterProducts(MELACandidate* pH, bool isGen=false);
+  void fillAssociatedInfo(MELACandidate* pH, bool isGen=false);
 
-  void fillDecayAngles(ZZCandidate* pH, bool isGen=false);
-  void fillVBFProductionAngles(ZZCandidate* pH, bool isGen=false);
-  void fillVHProductionAngles(ZZCandidate* pH, bool isGen=false);
-
-  void fillMELAProbabilities(ZZCandidate* pH, bool isGen);
+  void fillDecayAngles(bool isGen=false);
+  void fillVBFProductionAngles(bool isGen=false);
+  void fillVHProductionAngles(bool isGen=false);
+  void fillMELAProbabilities(bool isGen);
 
 protected:
   void bookPtEtaPhiMassIdBranches(const string& owner, const BaseTree::BranchTypes& btype, const bool& doSetAddress, const bool& addId, const bool& usePz, bool isGen);

@@ -1,4 +1,4 @@
-#include "../interface/OptionParser.h"
+#include "OptionParser.h"
 
 
 OptionParser::OptionParser(int argc, char** argv) :
@@ -223,16 +223,14 @@ void OptionParser::extractGlobalRecordSet(const string& rawoption){
 }
 
 void OptionParser::configureMela(){
-  Int_t needMela = includeGenDecayProb.size()+includeRecoDecayProb.size()+includeGenProdProb.size()+includeRecoProdProb.size();
-  if (needMela>0){
-    melaHelpers::melaHandle = new Mela((int)erg_tev, (float)mPOLE);
-  }
+  Bool_t needMela = initializeMELABranches() || doComputeDecayAngles() || doComputeVBFAngles() || doComputeVHAngles();
+  if (needMela) melaHelpers::melaHandle = new Mela((int)erg_tev, (float)mPOLE);
   melaHelpers::setSamplePoleWidth(wPOLE);
   melaHelpers::setStandardPoleWidth(wPOLEStandard);
-  TUtil::applyLeptonMassCorrection(doRemoveLepMasses()); // Remains fixed, so nota problem to set it here
+  TUtil::applyLeptonMassCorrection(doRemoveLepMasses()); // Remains fixed, so not a problem to set it here
 }
 void OptionParser::deconfigureMela(){
-  if (melaHelpers::melaHandle!=0) delete melaHelpers::melaHandle;
+  if (melaHelpers::melaHandle) delete melaHelpers::melaHandle;
 }
 void OptionParser::extractMelaGenProdId(string rawoption){
   vector<string> prod_me_pair;

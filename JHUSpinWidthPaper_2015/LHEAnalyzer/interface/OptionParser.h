@@ -9,7 +9,6 @@
 #include <utility>
 #include <cassert>
 #include "TString.h"
-#include "PDGHelpers.h"
 #include "melaHelpers.h"
 #include "ParticleComparators.h"
 #include "HiggsComparators.h"
@@ -113,7 +112,7 @@ public:
   Double_t mH(){ return mPOLE; }
   Double_t GammaH(){ return wPOLE; }
   Int_t sqrts(){ return erg_tev; }
-  Bool_t initializeMELA(){ return (includeGenDecayProb.size()>0 || includeRecoDecayProb.size()>0 || includeGenProdProb.size()>0 || includeRecoProdProb.size()>0); }
+  Bool_t initializeMELABranches(){ return (!includeGenDecayProb.empty() && !includeRecoDecayProb.empty() && !includeGenProdProb.empty() && !includeRecoProdProb.empty()); }
   Bool_t doRemoveLepMasses(){ bool doProcess=true; if (removeDaughterMasses==0) doProcess=false; return doProcess; }
   Bool_t doComputeDecayAngles(){ bool doProcess=true; if (computeDecayAngles==0) doProcess=false; return doProcess; }
   Bool_t doComputeVBFAngles(){ bool doProcess=true; if (computeVBFAngles==0) doProcess=false; return doProcess; }

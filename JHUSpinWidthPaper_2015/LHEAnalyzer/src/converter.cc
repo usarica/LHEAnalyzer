@@ -11,7 +11,7 @@
 #include "TList.h"
 #include "TRandom.h"
 #include "TLorentzVector.h"
-#include "../interface/converter.h"
+#include "converter.h"
 
 converter::converter(OptionParser* options_){
   options = options_;
