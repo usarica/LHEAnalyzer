@@ -1,6 +1,8 @@
 HERE = $(PWD)
 BASEINCLUDE=$(CMSSW_BASE)/src
 MELADIR=$(BASEINCLUDE)/ZZMatrixElement/MELA
+CANDLORECASTERDIR=$(BASEINCLUDE)/MelaAnalytics/CandidateLOCaster
+EVENTCONTAINERDIR=$(BASEINCLUDE)/MelaAnalytics/EventContainer
 
 ROOTCFLAGS    = $(shell root-config --cflags) -Lrootlib -lEG
 ROOTGLIBS     = $(shell root-config --glibs) -Lrootlib -lEG
@@ -20,12 +22,12 @@ DllSuf        = dylib
 UNDEFOPT      = suppress
 endif
 
-CXXFLAGS      += $(ROOTCFLAGS) -I$(ROOFITSYS)/include/ -I$(BASEINCLUDE) -I$(HERE)/interface/ -I$(MELADIR)/interface/
+CXXFLAGS      += $(ROOTCFLAGS) -I$(ROOFITSYS)/include/ -I$(BASEINCLUDE) -I$(HERE)/interface/ -I$(MELADIR)/interface/ -I$(CANDLORECASTERDIR)/interface/ -I$(EVENTCONTAINERDIR)/interface/
 
 NGLIBS         = $(ROOTGLIBS)
 # Hack here, because RooFit is removed from ROOT:
 NGLIBS        += -L $(ROOFITSYS)/lib/ -lMinuit -lRooFitCore -lRooFit #-lboost_regex
-NGLIBS  += -L $(CMSSW_BASE)/lib/$(SCRAM_ARCH)/ -lZZMatrixElementMELA -lMelaAnalyticsCandidateLOCaster
+NGLIBS  += -L $(CMSSW_BASE)/lib/$(SCRAM_ARCH)/ -lZZMatrixElementMELA -lMelaAnalyticsCandidateLOCaster -lMelaAnalyticsEventContainer
 GLIBS          = $(filter-out -lNew, $(NGLIBS))
 
 
@@ -39,24 +41,11 @@ $(OUTLIB)LHEParticleSmear.o: $(INCLUDEDIR)LHEParticleSmear.cc
 	@mkdir -p $(OUTLIB)
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)LHEParticleSmear.o $(GLIBS) $<
 
-$(OUTLIB)ParticleComparators.o: $(INCLUDEDIR)ParticleComparators.cc
-	@mkdir -p $(OUTLIB)
-	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)ParticleComparators.o $(GLIBS) $<
-
-$(OUTLIB)Event.o: $(INCLUDEDIR)Event.cc $(OUTLIB)ParticleComparators.o
-	@mkdir -p $(OUTLIB)
-	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)Event.o $(GLIBS) $<
-
-$(OUTLIB)melaHelpers.o: $(INCLUDEDIR)melaHelpers.cc $(OUTLIB)Event.o
+$(OUTLIB)melaHelpers.o: $(INCLUDEDIR)melaHelpers.cc
 	@mkdir -p $(OUTLIB)
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)melaHelpers.o $(GLIBS) $<
 
-
-$(OUTLIB)HiggsComparators.o: $(INCLUDEDIR)HiggsComparators.cc $(OUTLIB)Event.o
-	@mkdir -p $(OUTLIB)
-	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)HiggsComparators.o $(GLIBS) $<
-
-$(OUTLIB)OptionParser.o: $(INCLUDEDIR)OptionParser.cc $(OUTLIB)ParticleComparators.o $(OUTLIB)HiggsComparators.o $(OUTLIB)melaHelpers.o
+$(OUTLIB)OptionParser.o: $(INCLUDEDIR)OptionParser.cc $(OUTLIB)melaHelpers.o
 	@mkdir -p $(OUTLIB)
 	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)OptionParser.o $(GLIBS) $<
 

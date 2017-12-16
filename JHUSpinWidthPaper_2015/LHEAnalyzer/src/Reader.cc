@@ -17,7 +17,7 @@ void Reader::configure(){
 }
 void Reader::finalizeRun(){}
 
-template<typename returnType> bool Reader::setVariable(const Event* ev, string& branchname, returnType(*evalVar)(const Event*, string&)){
+template<typename returnType> bool Reader::setVariable(const MELAEvent* ev, string& branchname, returnType(*evalVar)(const MELAEvent*, string&)){
   returnType result = evalVar(ev, branchname);
   returnType* resultPtr = &result;
   if (dynamic_cast<vectorInt*>(resultPtr)!=0 || dynamic_cast<vectorDouble*>(resultPtr)!=0){
@@ -176,17 +176,17 @@ void Reader::run(){
           tin->getTree()->GetEntry(ev);
           synchMappedBranches();
 
-          Event genEvent, recoEvent;
+          MELAEvent genEvent, recoEvent;
           MELACandidate* genCand=0;
           MELACandidate* recoCand=0;
           if (options->processGenInfo()){
             readEvent(genEvent, genParticleList, true);
-            if (genEvent.getNMELACandidates()<=1) genCand = genEvent.getMELACandidate(0);
+            if (genEvent.getNCandidates()<=1) genCand = genEvent.getMELACandidate(0);
             else genCand = HiggsComparators::candidateSelector(genEvent, options->getHiggsCandidateSelectionScheme(true), options->doGenHZZdecay());
           }
           if (options->processRecoInfo()){
             readEvent(recoEvent, recoParticleList, false);
-            if (recoEvent.getNMELACandidates()<=1) recoCand = recoEvent.getMELACandidate(0);
+            if (recoEvent.getNCandidates()<=1) recoCand = recoEvent.getMELACandidate(0);
             else recoCand = HiggsComparators::candidateSelector(recoEvent, options->getHiggsCandidateSelectionScheme(false), options->doRecoHZZdecay());
           }
 
@@ -259,7 +259,7 @@ void Reader::run(){
   finalizeRun();
 }
 
-void Reader::readEvent(Event& outEvent, vector<MELAParticle*>& particles, bool isGen){
+void Reader::readEvent(MELAEvent& outEvent, vector<MELAParticle*>& particles, bool isGen){
   string varname;
 
   string isSelected = "isSelected";
@@ -438,9 +438,9 @@ void Reader::readEvent(Event& outEvent, vector<MELAParticle*>& particles, bool i
   outEvent.addVVCandidateAppendages();
 
 /*
-  if (isGen) cout << "NGenCandidates: " << outEvent.getNMELACandidates() << endl;
-  else cout << "NRecoCandidates: " << outEvent.getNMELACandidates() << endl;
-  for (int cc=0; cc<outEvent.getNMELACandidates(); cc++){
+  if (isGen) cout << "NGenCandidates: " << outEvent.getNCandidates() << endl;
+  else cout << "NRecoCandidates: " << outEvent.getNCandidates() << endl;
+  for (int cc=0; cc<outEvent.getNCandidates(); cc++){
   cout << outEvent.getMELACandidate(cc)->m()
   << " ("
   << outEvent.getMELACandidate(cc)->getSortedV(0)->m()

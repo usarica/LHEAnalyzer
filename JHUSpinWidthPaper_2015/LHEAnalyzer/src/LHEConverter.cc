@@ -65,10 +65,10 @@ void LHEConverter::run(){
         if (weight!=0){
           tree->initializeBranches();
 
-          Event genEvent;
+          MELAEvent genEvent;
           genEvent.setWeight(weight);
           vectorInt hasGenHiggs;
-          Event smearedEvent;
+          MELAEvent smearedEvent;
           smearedEvent.setWeight(weight);
           for (unsigned int p=0; p<particleList.size(); p++){
             MELAParticle* genPart = particleList.at(p); // Has mother info from LHE reading

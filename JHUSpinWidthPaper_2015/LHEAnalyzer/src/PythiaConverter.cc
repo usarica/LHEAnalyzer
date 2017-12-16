@@ -82,7 +82,7 @@ void PythiaConverter::run(){
         if (weight!=0){
           MC_weight = (float)weight;
 
-          Event genEvent;
+          MELAEvent genEvent;
           if (genSuccess){
             genEvent.setWeight(weight);
             vectorInt hasGenHiggs;
@@ -125,7 +125,7 @@ void PythiaConverter::run(){
             }
           }
 
-          Event smearedEvent;
+          MELAEvent smearedEvent;
           if (smearedSuccess){
             smearedEvent.setWeight(weight);
             for (unsigned int p=0; p<smearedParticleList.size(); p++){

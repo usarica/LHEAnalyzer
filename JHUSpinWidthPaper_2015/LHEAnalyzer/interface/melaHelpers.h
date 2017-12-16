@@ -7,9 +7,9 @@
 #include <cmath>
 #include <utility>
 #include <algorithm>
-#include <ZZMatrixElement/MELA/interface/Mela.h>
-#include <MelaAnalytics/CandidateLOCaster/interface/MELACandidateRecaster.h>
-#include "Event.h"
+#include "Mela.h"
+#include "MELACandidateRecaster.h"
+#include "MELAEvent.h"
 #include "TLorentzRotation.h"
 
 namespace melaHelpers{
