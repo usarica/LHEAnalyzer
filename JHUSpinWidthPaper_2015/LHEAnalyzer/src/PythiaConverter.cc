@@ -98,14 +98,13 @@ void PythiaConverter::run(){
                 else if (isAPhoton(genPart->id)) genEvent.addPhoton(genPart);
                 else if (isAGluon(genPart->id) || isAQuark(genPart->id)) genEvent.addJet(genPart);
               }
-              else if (genPart->genStatus==-1) tree->fillMotherInfo(genPart);
+              else if (genPart->genStatus==-1){
+                genEvent.addMother(genPart);
+                tree->fillMotherInfo(genPart);
+              }
             }
 
             genEvent.constructVVCandidates(options->doGenHZZdecay(), options->genDecayProducts());
-            for (unsigned int p=0; p<genParticleList.size(); p++){
-              MELAParticle* genPart = genParticleList.at(p);
-              if (genPart->genStatus==-1) genEvent.addVVCandidateMother(genPart);
-            }
             genEvent.addVVCandidateAppendages();
             MELACandidate* genCand=0;
             if (hasGenHiggs.size()>0){

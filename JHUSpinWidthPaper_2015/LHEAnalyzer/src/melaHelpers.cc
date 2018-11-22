@@ -38,7 +38,7 @@ TVar::Production melaHelpers::getFirstAssociatedHadronicVProduction(MELACandidat
   return res;
 }
 
-Float_t melaHelpers::melaBranchMEInterpreter(string& branchname){
+Float_t melaHelpers::melaBranchMEInterpreter(std::string& branchname){
   // Do absolutely nothing right now!
   //MELACandidate* cand=melaHandle->getCurrentCandidate(),
   return 0.;

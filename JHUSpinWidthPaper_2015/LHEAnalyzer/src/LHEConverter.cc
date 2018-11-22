@@ -100,16 +100,15 @@ void LHEConverter::run(){
               }
               else smearedEvent.addParticle(smearedPart);
             }
-            else if (genPart->genStatus==-1) tree->fillMotherInfo(genPart);
+            else if (genPart->genStatus==-1){
+              genEvent.addMother(genPart);
+              tree->fillMotherInfo(genPart);
+            }
           }
 
           if (debugVars::debugFlag) cout << "Starting to construct gen. VV candidates." << endl;
           genEvent.constructVVCandidates(options->doGenHZZdecay(), options->genDecayProducts());
           if (debugVars::debugFlag) cout << "Successfully constructed gen. VV candidates." << endl;
-          for (unsigned int p=0; p<particleList.size(); p++){
-            MELAParticle* genPart = particleList.at(p);
-            if (genPart->genStatus==-1) genEvent.addVVCandidateMother(genPart);
-          }
           if (debugVars::debugFlag) cout << "Starting to add gen. VV candidate appendages." << endl;
           genEvent.addVVCandidateAppendages();
           MELACandidate* genCand=0;

@@ -386,7 +386,7 @@ void Reader::readEvent(MELAEvent& outEvent, vector<MELAParticle*>& particles, bo
     outEvent.constructVVCandidates(options->doGenHZZdecay(), options->genDecayProducts());
     for (unsigned int p=0; p<motherParticles.size(); p++){
       MELAParticle* part = motherParticles.at(p);
-      outEvent.addVVCandidateMother(part);
+      outEvent.addMother(part);
     }
     for (unsigned int d=0; d<associatedParticles.size(); d++){
       MELAParticle* part = associatedParticles.at(d);
