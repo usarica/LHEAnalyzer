@@ -113,6 +113,7 @@ void angularDistributions_spin0_HVV(string cinput, string strcouplings, string d
   for (auto& opt:strcouplingsList) extractCoupling(opt, *someHiggs);
   someHiggs->makeParamsConst(true);
   someHiggs->makeCouplingsConst(true);
+  someHiggs->getPDF()->printParameters();
 
   if (coutput==""){
     size_t lastSlash = cinput.find_last_of("/\\");
@@ -260,6 +261,8 @@ void extractCoupling(string opt, ScalarPdfFactory_HVV& factory){
     valIm = atof(strValIm.c_str());
   }
   else valRe = atof(strVal.c_str());
+
+  cout << "Setting coupling " << wish << ": " << valRe << ", " << valIm << endl;
 
   // Here we go again, sillions of couplings
   if (wish=="cv_q1sq"){ ((RooRealVar*)couplings.cLambda_qsq[cLambdaHIGGS_VV_QSQ1])->setVal((int) valRe); }
