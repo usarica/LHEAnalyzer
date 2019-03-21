@@ -3,6 +3,7 @@ BASEINCLUDE=$(CMSSW_BASE)/src
 MELADIR=$(BASEINCLUDE)/ZZMatrixElement/MELA
 CANDLORECASTERDIR=$(BASEINCLUDE)/MelaAnalytics/CandidateLOCaster
 EVENTCONTAINERDIR=$(BASEINCLUDE)/MelaAnalytics/EventContainer
+GENERICMECOMPUTERDIR=$(BASEINCLUDE)/MelaAnalytics/GenericMEComputer
 
 ROOTCFLAGS    = $(shell root-config --cflags) -Lrootlib -lEG
 ROOTGLIBS     = $(shell root-config --glibs) -Lrootlib -lEG
@@ -22,12 +23,12 @@ DllSuf        = dylib
 UNDEFOPT      = suppress
 endif
 
-CXXFLAGS      += $(ROOTCFLAGS) -I$(ROOFITSYS)/include/ -I$(BASEINCLUDE) -I$(HERE)/interface/ -I$(MELADIR)/interface/ -I$(CANDLORECASTERDIR)/interface/ -I$(EVENTCONTAINERDIR)/interface/
+CXXFLAGS      += $(ROOTCFLAGS) -I$(ROOFITSYS)/include/ -I$(BASEINCLUDE) -I$(HERE)/interface/ -I$(MELADIR)/interface/ -I$(CANDLORECASTERDIR)/interface/ -I$(EVENTCONTAINERDIR)/interface/ -I$(GENERICMECOMPUTERDIR)/interface/
 
 NGLIBS         = $(ROOTGLIBS)
 # Hack here, because RooFit is removed from ROOT:
 NGLIBS        += -L $(ROOFITSYS)/lib/ -lMinuit -lRooFitCore -lRooFit #-lboost_regex
-NGLIBS  += -L $(CMSSW_BASE)/lib/$(SCRAM_ARCH)/ -lZZMatrixElementMELA -lMelaAnalyticsCandidateLOCaster -lMelaAnalyticsEventContainer
+NGLIBS  += -L $(CMSSW_BASE)/lib/$(SCRAM_ARCH)/ -lZZMatrixElementMELA -lMelaAnalyticsCandidateLOCaster -lMelaAnalyticsEventContainer -lMelaAnalyticsGenericMEComputer
 GLIBS          = $(filter-out -lNew, $(NGLIBS))
 
 
@@ -37,46 +38,24 @@ OUTLIB           = $(COMPILEPATH)lib/
 RUNDIR           = $(COMPILEPATH)
 
 
-$(OUTLIB)LHEParticleSmear.o: $(INCLUDEDIR)LHEParticleSmear.cc
-	@mkdir -p $(OUTLIB)
-	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)LHEParticleSmear.o $(GLIBS) $<
+SOURCES = $(wildcard $(INCLUDEDIR)*.cc)
+OBJECTS = $(SOURCES:.cc=.o)
 
-$(OUTLIB)melaHelpers.o: $(INCLUDEDIR)melaHelpers.cc
-	@mkdir -p $(OUTLIB)
-	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)melaHelpers.o $(GLIBS) $<
+.PHONY: all help compile clean
 
-$(OUTLIB)OptionParser.o: $(INCLUDEDIR)OptionParser.cc $(OUTLIB)melaHelpers.o
-	@mkdir -p $(OUTLIB)
-	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)OptionParser.o $(GLIBS) $<
+all: analyzer dolinks
 
 
-$(OUTLIB)BaseTree.o: $(INCLUDEDIR)BaseTree.cc
-	@mkdir -p $(OUTLIB)
-	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)BaseTree.o $(GLIBS) $<
+# General rule for making object files
+%.d:	$(INCLUDEDIR)%.cc $(INCLUDEDIR)%.cxx
+	$(QUIET) echo "Checking dependencies for $<"; \
+	$(CXX) -MM -MT $@ -MT ${@:.d=.o} $(CXXFLAGS) $< > $@; \
+                     [ -s $@ ] || rm -f $@
 
-$(OUTLIB)HVVTree.o: $(INCLUDEDIR)HVVTree.cc $(OUTLIB)BaseTree.o $(OUTLIB)OptionParser.o
-	@mkdir -p $(OUTLIB)
-	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)HVVTree.o $(GLIBS) $<
+%.o: 	$(INCLUDEDIR)%.cc
+	$(QUIET) echo "Compiling $<"; \
+	$(CXX) $(CXXFLAGS) $< -c -o $@ $(GLIBS)
 
-$(OUTLIB)converter.o: $(INCLUDEDIR)converter.cc $(OUTLIB)HVVTree.o $(OUTLIB)LHEParticleSmear.o
-	@mkdir -p $(OUTLIB)
-	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)converter.o $(GLIBS) $<
-
-$(OUTLIB)LHEConverter.o: $(INCLUDEDIR)LHEConverter.cc $(OUTLIB)converter.o
-	@mkdir -p $(OUTLIB)
-	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)LHEConverter.o $(GLIBS) $<
-
-$(OUTLIB)PythiaConverter.o: $(INCLUDEDIR)PythiaConverter.cc $(OUTLIB)converter.o
-	@mkdir -p $(OUTLIB)
-	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)PythiaConverter.o $(GLIBS) $<
-
-$(OUTLIB)Reader.o: $(INCLUDEDIR)Reader.cc $(OUTLIB)converter.o
-	@mkdir -p $(OUTLIB)
-	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)Reader.o $(GLIBS) $<
-
-$(OUTLIB)main.o: $(INCLUDEDIR)main.cc $(OUTLIB)Reader.o $(OUTLIB)PythiaConverter.o $(OUTLIB)LHEConverter.o
-	@mkdir -p $(OUTLIB)
-	$(CXX) $(CXXFLAGS) -c -o $(OUTLIB)main.o $(GLIBS) $<
 
 
 dolinks:
@@ -85,10 +64,9 @@ dolinks:
 	ln -sf $(COMPILEPATH)macros/loadLib.cc $(RUNDIR)loadLib.cc
 	ln -sf $(COMPILEPATH)macros/trimPythia.cc $(RUNDIR)trimPythia.cc
 
-analyzer: $(OUTLIB)main.o
-	$(CXX) $(CXXFLAGS) -o $(RUNDIR)analyzer $(OUTLIB)*.o $(GLIBS)
+analyzer: $(OBJECTS)
+	$(CXX) $(CXXFLAGS) -o $(RUNDIR)analyzer $(INCLUDEDIR)*.o $(GLIBS)
 
-all: analyzer dolinks
 
 clean:
 	rm -rf $(OUTLIB)
@@ -97,6 +75,9 @@ clean:
 	rm -f $(RUNDIR)process.DAT
 	rm -f $(RUNDIR)ffwarn.dat
 	rm -f $(RUNDIR)br.sm*
+	rm -f $(INCLUDEDIR)*.o
+	rm -f $(INCLUDEDIR)*.so
+	rm -f $(INCLUDEDIR)*.d
 	rm -f $(RUNDIR)*.cc
 	rm -f $(RUNDIR)analyze*
 	rm -f $(RUNDIR)*.o

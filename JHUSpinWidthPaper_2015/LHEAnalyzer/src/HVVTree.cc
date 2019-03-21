@@ -547,8 +547,8 @@ void HVVTree::fillVBFProductionAngles(bool isGen){
   }
 }
 void HVVTree::fillVHProductionAngles(bool isGen){
-  Float_t costheta1_hadronic=0, costheta2_hadronic=0, Phi_hadronic=0, costhetastar_hadronic=0, Phi1_hadronic=0;
-  Float_t costheta1_leptonic=0, costheta2_leptonic=0, Phi_leptonic=0, costhetastar_leptonic=0, Phi1_leptonic=0;
+  Float_t mVstar_hadronic=-1, mV_hadronic=-1, costheta1_hadronic=0, costheta2_hadronic=0, Phi_hadronic=0, costhetastar_hadronic=0, Phi1_hadronic=0;
+  Float_t mVstar_leptonic=-1, mV_leptonic=-1, costheta1_leptonic=0, costheta2_leptonic=0, Phi_leptonic=0, costhetastar_leptonic=0, Phi1_leptonic=0;
 
 
   if (options->computeVHAnglesOrder()!=2){ // Vjj
@@ -556,6 +556,8 @@ void HVVTree::fillVHProductionAngles(bool isGen){
     if (Vprod!=TVar::nProductions){
       melaHelpers::melaHandle->setProcess(TVar::HSMHiggs, TVar::JHUGen, Vprod);
       melaHelpers::melaHandle->computeVHAngles(
+        mVstar_hadronic,
+        mV_hadronic,
         costheta1_hadronic,
         costheta2_hadronic,
         Phi_hadronic,
@@ -569,6 +571,8 @@ void HVVTree::fillVHProductionAngles(bool isGen){
     if (Vprod!=TVar::nProductions){
       melaHelpers::melaHandle->setProcess(TVar::HSMHiggs, TVar::JHUGen, Vprod);
       melaHelpers::melaHandle->computeVHAngles(
+        mVstar_leptonic,
+        mV_leptonic,
         costheta1_leptonic,
         costheta2_leptonic,
         Phi_leptonic,
@@ -592,6 +596,8 @@ void HVVTree::fillVHProductionAngles(bool isGen){
       else if (varname.find("costhetaV2_VH")!=string::npos) setVal(varname, costheta2_hadronic);
       else if (varname.find("Phi_VH")!=string::npos) setVal(varname, Phi_hadronic);
       else if (varname.find("PhiV1_VH")!=string::npos) setVal(varname, Phi1_hadronic);
+      else if (varname.find("mVstar_VH")!=string::npos) setVal(varname, mVstar_hadronic);
+      else if (varname.find("mV_VH")!=string::npos) setVal(varname, mV_hadronic);
       else cerr << "HVVTree::fillVHProductionAngles -> ERROR: Branch " << varname << " is invalid!" << endl;
     }
     if (options->computeVHAnglesOrder()==2){
@@ -600,6 +606,8 @@ void HVVTree::fillVHProductionAngles(bool isGen){
       else if (varname.find("costhetaV2_VH")!=string::npos) setVal(varname, costheta2_leptonic);
       else if (varname.find("Phi_VH")!=string::npos) setVal(varname, Phi_leptonic);
       else if (varname.find("PhiV1_VH")!=string::npos) setVal(varname, Phi1_leptonic);
+      else if (varname.find("mVstar_VH")!=string::npos) setVal(varname, mVstar_leptonic);
+      else if (varname.find("mV_VH")!=string::npos) setVal(varname, mV_leptonic);
       else cerr << "HVVTree::fillVHProductionAngles -> ERROR: Branch " << varname << " is invalid!" << endl;
     }
     if (options->computeVHAnglesOrder()==3){
@@ -608,11 +616,15 @@ void HVVTree::fillVHProductionAngles(bool isGen){
       else if (varname.find("costhetaV2_VHhadronic")!=string::npos) setVal(varname, costheta2_hadronic);
       else if (varname.find("Phi_VHhadronic")!=string::npos) setVal(varname, Phi_hadronic);
       else if (varname.find("PhiV1_VHhadronic")!=string::npos) setVal(varname, Phi1_hadronic);
+      else if (varname.find("mVstar_VHhadronic")!=string::npos) setVal(varname, mVstar_hadronic);
+      else if (varname.find("mV_VHhadronic")!=string::npos) setVal(varname, mV_hadronic);
       else if (varname.find("costhetastar_VHleptonic")!=string::npos) setVal(varname, costhetastar_leptonic);
       else if (varname.find("costhetaV1_VHleptonic")!=string::npos) setVal(varname, costheta1_leptonic);
       else if (varname.find("costhetaV2_VHleptonic")!=string::npos) setVal(varname, costheta2_leptonic);
       else if (varname.find("Phi_VHleptonic")!=string::npos) setVal(varname, Phi_leptonic);
       else if (varname.find("PhiV1_VHleptonic")!=string::npos) setVal(varname, Phi1_leptonic);
+      else if (varname.find("mVstar_VHleptonic")!=string::npos) setVal(varname, mVstar_leptonic);
+      else if (varname.find("mV_VHleptonic")!=string::npos) setVal(varname, mV_leptonic);
       else cerr << "HVVTree::fillVHProductionAngles -> ERROR: Branch " << varname << " is invalid!" << endl;
     }
   }
