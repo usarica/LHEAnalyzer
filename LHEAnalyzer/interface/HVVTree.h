@@ -32,6 +32,7 @@ public:
 
 protected:
   void bookPtEtaPhiMassIdBranches(const string& owner, const BaseTree::BranchTypes& btype, const bool& doSetAddress, const bool& addId, const bool& usePz, bool isGen);
+  void bookMotherParticleBranches(const BaseTree::BranchTypes& btype, const bool& doSetAddress);
   void getPtEtaPhiMIdBranches(vector<string>& blist, const string& owner, const bool& addId, const bool& usePz, bool isGen);
 
   void bookAngularBranches(const bool& doSetAddress);

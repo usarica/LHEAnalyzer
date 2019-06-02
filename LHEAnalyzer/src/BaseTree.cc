@@ -40,6 +40,15 @@ bool BaseTree::bookBranch(string& branchname, const BaseTree::BranchTypes& bType
       }
       else success=false;
     }
+    else if (bType==BaseTree::bVectorFloat){
+      vectorFloat* container = 0;
+      if (!doSetAddress) container = new vectorFloat;
+      if (!doSetAddress || hvvtree->GetBranchStatus(branchname.c_str())){
+        pair<string, vectorFloat*> varPair(branchname, container);
+        vectorFloatBranches.push_back(varPair);
+      }
+      else success=false;
+    }
     else if (bType==BaseTree::bVectorDouble){
       vectorDouble* container = 0;
       if (!doSetAddress) container = new vectorDouble;
@@ -71,6 +80,10 @@ bool BaseTree::actuateBranches(const bool& doSetAddress){
         if (!hvvtree->GetBranchStatus(vectorIntBranches.at(el).first.c_str()))
           hvvtree->Branch(vectorIntBranches.at(el).first.c_str(), vectorIntBranches.at(el).second);
       }
+      for (unsigned int el=0; el<vectorFloatBranches.size(); el++){
+        if (!hvvtree->GetBranchStatus(vectorFloatBranches.at(el).first.c_str()))
+          hvvtree->Branch(vectorFloatBranches.at(el).first.c_str(), vectorFloatBranches.at(el).second);
+      }
       for (unsigned int el=0; el<vectorDoubleBranches.size(); el++){
         if (!hvvtree->GetBranchStatus(vectorDoubleBranches.at(el).first.c_str()))
           hvvtree->Branch(vectorDoubleBranches.at(el).first.c_str(), vectorDoubleBranches.at(el).second);
@@ -80,6 +93,7 @@ bool BaseTree::actuateBranches(const bool& doSetAddress){
       for (unsigned int el=0; el<intBranches.size(); el++) hvvtree->SetBranchAddress(intBranches.at(el).first.c_str(), intBranches.at(el).second); // Already a pointer
       for (unsigned int el=0; el<floatBranches.size(); el++) hvvtree->SetBranchAddress(floatBranches.at(el).first.c_str(), floatBranches.at(el).second); // Already a pointer
       for (unsigned int el=0; el<vectorIntBranches.size(); el++) hvvtree->SetBranchAddress(vectorIntBranches.at(el).first.c_str(), &(vectorIntBranches.at(el).second)); // Need to pass the address of the pointer to std::vector
+      for (unsigned int el=0; el<vectorFloatBranches.size(); el++) hvvtree->SetBranchAddress(vectorFloatBranches.at(el).first.c_str(), &(vectorFloatBranches.at(el).second)); // Need to pass the address of the pointer to std::vector
       for (unsigned int el=0; el<vectorDoubleBranches.size(); el++) hvvtree->SetBranchAddress(vectorDoubleBranches.at(el).first.c_str(), &(vectorDoubleBranches.at(el).second)); // Need to pass the address of the pointer to std::vector
     }
   }
@@ -92,6 +106,7 @@ vector<string> BaseTree::getBranchList(){
   for (unsigned int el=0; el<intBranches.size(); el++) branchlist.push_back(intBranches.at(el).first);
   for (unsigned int el=0; el<floatBranches.size(); el++) branchlist.push_back(floatBranches.at(el).first);
   for (unsigned int el=0; el<vectorIntBranches.size(); el++) branchlist.push_back(vectorIntBranches.at(el).first);
+  for (unsigned int el=0; el<vectorFloatBranches.size(); el++) branchlist.push_back(vectorFloatBranches.at(el).first);
   for (unsigned int el=0; el<vectorDoubleBranches.size(); el++) branchlist.push_back(vectorDoubleBranches.at(el).first);
   return branchlist;
 }
@@ -113,6 +128,12 @@ BaseTree::BranchTypes BaseTree::searchArray(const string& branchname, int& posit
     if (branchname==vectorIntBranches.at(el).first){
       position = el;
       return BranchTypes::bVectorInt;
+    }
+  }
+  for (unsigned int el=0; el<vectorFloatBranches.size(); el++){
+    if (branchname==vectorFloatBranches.at(el).first){
+      position = el;
+      return BranchTypes::bVectorFloat;
     }
   }
   for (unsigned int el=0; el<vectorDoubleBranches.size(); el++){
@@ -142,6 +163,14 @@ void BaseTree::cleanBranches(){
     vectorIntBranches.at(el).second=0;
   }
   vectorIntBranches.clear();
+  for (unsigned int el=0; el<vectorFloatBranches.size(); el++){
+    if (vectorFloatBranches.at(el).second!=0){
+      vectorFloatBranches.at(el).second->clear();
+      delete vectorFloatBranches.at(el).second;
+    }
+    vectorFloatBranches.at(el).second=0;
+  }
+  vectorFloatBranches.clear();
   for (unsigned int el=0; el<vectorDoubleBranches.size(); el++){
     if (vectorDoubleBranches.at(el).second!=0){
       vectorDoubleBranches.at(el).second->clear();
@@ -161,6 +190,9 @@ void BaseTree::initializeBranches(){
   for (unsigned int el=0; el<vectorIntBranches.size(); el++){
     if (vectorIntBranches.at(el).second!=0) vectorIntBranches.at(el).second->clear();
   }
+  for (unsigned int el=0; el<vectorFloatBranches.size(); el++){
+    if (vectorFloatBranches.at(el).second!=0) vectorFloatBranches.at(el).second->clear();
+  }
   for (unsigned int el=0; el<vectorDoubleBranches.size(); el++){
     if (vectorDoubleBranches.at(el).second!=0) vectorDoubleBranches.at(el).second->clear();
   }
@@ -178,6 +210,13 @@ void BaseTree::printEntry(int ev){
     if (vectorIntBranches.at(el).second!=0){
       cout << vectorIntBranches.at(el).first << ":\t";
       for (unsigned int v=0; v<vectorIntBranches.at(el).second->size(); v++) cout << vectorIntBranches.at(el).second->at(v) << '\t';
+      cout << endl;
+    }
+  }
+  for (unsigned int el=0; el<vectorFloatBranches.size(); el++){
+    if (vectorFloatBranches.at(el).second!=0){
+      cout << vectorFloatBranches.at(el).first << ":\t";
+      for (unsigned int v=0; v<vectorFloatBranches.at(el).second->size(); v++) cout << vectorFloatBranches.at(el).second->at(v) << '\t';
       cout << endl;
     }
   }

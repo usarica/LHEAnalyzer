@@ -13,6 +13,7 @@
 
 
 typedef std::vector<int> vectorInt;
+typedef std::vector<float> vectorFloat;
 typedef std::vector<double> vectorDouble;
 
 using namespace std;
@@ -34,7 +35,14 @@ public:
   void writeTree(TFile* foutput){ foutput->cd(); foutput->WriteTObject(hvvtree); }
 
   // This is where things get complicated pretty quickly
-  enum BranchTypes{ bInt, bFloat, bVectorInt, bVectorDouble, nBranchTypes };
+  enum BranchTypes{
+    bInt,
+    bFloat,
+    bVectorInt,
+    bVectorFloat,
+    bVectorDouble,
+    nBranchTypes
+  };
   bool bookBranch(string& branchname, const BaseTree::BranchTypes& bType, const bool& doSetAddress);
   bool actuateBranches(const bool& doSetAddress);
   vector<string> getBranchList();
@@ -49,6 +57,7 @@ public:
       if (varbranchtype==BaseTree::bInt) *(intBranches.at(varposition).second)=value;
       else if (varbranchtype==BaseTree::bFloat) *(floatBranches.at(varposition).second)=value;
       else if (varbranchtype==BaseTree::bVectorInt) vectorIntBranches.at(varposition).second->push_back(value);
+      else if (varbranchtype==BaseTree::bVectorFloat) vectorFloatBranches.at(varposition).second->push_back(value);
       else if (varbranchtype==BaseTree::bVectorDouble) vectorDoubleBranches.at(varposition).second->push_back(value);
     }
   }
@@ -63,6 +72,7 @@ public:
       if (varbranchtype==BaseTree::bInt) return intBranches.at(varposition).second;
       else if (varbranchtype==BaseTree::bFloat) return floatBranches.at(varposition).second;
       else if (varbranchtype==BaseTree::bVectorInt) return &(vectorIntBranches.at(varposition).second);
+      else if (varbranchtype==BaseTree::bVectorFloat) return &(vectorFloatBranches.at(varposition).second);
       else if (varbranchtype==BaseTree::bVectorDouble) return &(vectorDoubleBranches.at(varposition).second);
       else return 0;
     }
@@ -78,6 +88,7 @@ protected:
   vector < pair<string, Int_t*> > intBranches;
   vector < pair<string, Float_t*> > floatBranches;
   vector < pair<string, vectorInt*> > vectorIntBranches;
+  vector < pair<string, vectorFloat*> > vectorFloatBranches;
   vector < pair<string, vectorDouble*> > vectorDoubleBranches;
 };
 

@@ -2,7 +2,7 @@
 
 
 namespace melaHelpers{
-  Mela* melaHandle=0;
+  Mela* melaHandle=nullptr;
   Float_t genPOLEWidth=4.07e-3;
   Float_t standardPOLEWidth=4.07e-3;
 }
