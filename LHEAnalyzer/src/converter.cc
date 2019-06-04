@@ -20,7 +20,7 @@ converter::converter(OptionParser* options_){
 void converter::configure(){
   filename = options->inputfiles();
   string cindir = options->inputDir();
-  for (unsigned int f=0; f<filename.size(); f++) filename.at(f).insert(0, cindir);
+  for (string& fname:filename) fname.insert(0, cindir);
 
   string coutput = options->outputDir();
   coutput.append(options->outputFilename());
@@ -37,7 +37,7 @@ void converter::finalizeRun(){
   tree->writeTree(foutput);
   delete tree;
   foutput->Close();
-  options=0;
+  options=nullptr;
   filename.clear();
 }
 

@@ -20,11 +20,11 @@ void Reader::finalizeRun(){}
 template<typename returnType> bool Reader::setVariable(const MELAEvent* ev, string& branchname, returnType(*evalVar)(const MELAEvent*, string&)){
   returnType result = evalVar(ev, branchname);
   returnType* resultPtr = &result;
-  if (dynamic_cast<vectorInt*>(resultPtr)!=0 || dynamic_cast<vectorDouble*>(resultPtr)!=0){
+  if (dynamic_cast<vectorInt*>(resultPtr) || dynamic_cast<vectorDouble*>(resultPtr) || dynamic_cast<vectorFloat*>(resultPtr)){
     for (unsigned int el=0; el<result.size(); el++) tree->setVal(branchname, result.at(el));
     return true;
   }
-  else if (dynamic_cast<Int_t*>(resultPtr)!=0 || dynamic_cast<Float_t*>(resultPtr)!=0){
+  else if (dynamic_cast<Int_t*>(resultPtr) || dynamic_cast<Float_t*>(resultPtr)){
     tree->setVal(branchname, result);
     return true;
   }
@@ -80,6 +80,12 @@ void Reader::bindInputBranches(HVVTree* tin){
         pair<vectorInt**, vectorInt**> refpair(iBRef, oBRef);
         vectorIntBranchMap.push_back(refpair);
       }
+      else if (iBT == BaseTree::bVectorFloat){
+        vectorFloat** iBRef = (vectorFloat**) iBVRef;
+        vectorFloat** oBRef = (vectorFloat**) oBVRef;
+        pair<vectorFloat**, vectorFloat**> refpair(iBRef, oBRef);
+        vectorFloatBranchMap.push_back(refpair);
+      }
       else if (iBT == BaseTree::bVectorDouble){
         vectorDouble** iBRef = (vectorDouble**)iBVRef;
         vectorDouble** oBRef = (vectorDouble**)oBVRef;
@@ -93,6 +99,7 @@ void Reader::resetBranchBinding(){
   intBranchMap.clear();
   floatBranchMap.clear();
   vectorIntBranchMap.clear();
+  vectorFloatBranchMap.clear();
   vectorDoubleBranchMap.clear();
 }
 void Reader::synchMappedBranches(){
@@ -101,6 +108,13 @@ void Reader::synchMappedBranches(){
   for (unsigned int b=0; b<vectorIntBranchMap.size(); b++){
     vectorInt* inhandle = *(vectorIntBranchMap.at(b).first);
     vectorInt* outhandle = *(vectorIntBranchMap.at(b).second);
+    for (unsigned int el=0; el<inhandle->size(); el++){
+      outhandle->push_back(inhandle->at(el));
+    }
+  }
+  for (unsigned int b=0; b<vectorFloatBranchMap.size(); b++){
+    vectorFloat* inhandle = *(vectorFloatBranchMap.at(b).first);
+    vectorFloat* outhandle = *(vectorFloatBranchMap.at(b).second);
     for (unsigned int el=0; el<inhandle->size(); el++){
       outhandle->push_back(inhandle->at(el));
     }
@@ -123,8 +137,7 @@ void Reader::run(){
   vector < pair<Int_t, Int_t> > eventSkipList = options->getSkippedEvents();
 
   bool firstFile = true;
-  for (unsigned int f=0; f<filename.size(); f++){
-    string cinput = filename.at(f);
+  for (string const& cinput:filename){
     cout << "Processing " << cinput << "..." << endl;
     TFile* fin = new TFile(cinput.c_str(), "read");
     if (fin!=0 && fin->IsZombie()){
@@ -260,6 +273,8 @@ void Reader::run(){
 }
 
 void Reader::readEvent(MELAEvent& outEvent, vector<MELAParticle*>& particles, bool isGen){
+  typedef vectorFloat VectorPrecision_t;
+
   string varname;
 
   string isSelected = "isSelected";
@@ -267,37 +282,39 @@ void Reader::readEvent(MELAEvent& outEvent, vector<MELAParticle*>& particles, bo
   string strId = "Id";
   vector<string> strMassPtEtaPhi; strMassPtEtaPhi.push_back("Pt"); strMassPtEtaPhi.push_back("Eta"); strMassPtEtaPhi.push_back("Phi"); strMassPtEtaPhi.push_back("Mass");
   vector<string> strMassPtPzPhi; strMassPtPzPhi.push_back("Pt"); strMassPtPzPhi.push_back("Pz"); strMassPtPzPhi.push_back("Phi"); strMassPtPzPhi.push_back("Mass");
+  vector<string> strPzE; strPzE.push_back("Pz"); strPzE.push_back("E");
 
-  string strLepCore = "Lep";
+  string strLepCore = "CandDau";
   if (isGen) strLepCore.insert(0, "Gen");
 
   // Search the tree for the Higgs daughters
   vector<MELAParticle*> candFinalDaughters;
-  for (int v=0; v<2; v++){
-    for (int d=0; d<2; d++){
-      int iPart = 2*v+d+1;
-      char cIPart[2];
-      sprintf(cIPart, "%i", iPart);
-      string strIPart = string(cIPart);
+  VectorPrecision_t** ref_dauFV[4];
+  bool dau_success=true;
+  for (int fv=0; fv<4; fv++){
+    varname = strLepCore + strMassPtEtaPhi.at(fv);
+    ref_dauFV[fv] = (VectorPrecision_t**) tree->getBranchHandleRef(varname);
+    if (!ref_dauFV[fv]) { dau_success=false; break; }
+    else if (!(*ref_dauFV[fv])) { dau_success=false; break; }
+  }
+  varname = strLepCore + strId;
+  vectorInt** ref_dauId = (vectorInt**) tree->getBranchHandleRef(varname);
+  if (!ref_dauId) dau_success=false;
+  if (!(*ref_dauId)) dau_success=false;
+  if (dau_success){
+    vectorInt* idhandle = *ref_dauId;
+    VectorPrecision_t* fvhandle[4];
 
-      bool success=true;
-      Float_t* ref_partFV[4]={ 0 };
-      // Get Lep1-4 PtEtaPhiM
-      for (int fv=0; fv<4; fv++){
-        varname = strLepCore + strIPart + strMassPtEtaPhi.at(fv);
-        ref_partFV[fv] = (Float_t*)tree->getBranchHandleRef(varname);
-        if (ref_partFV[fv]==0){ success=false; break; }
-      }
-      varname = strLepCore + strIPart + strId;
-      Int_t* ref_partId = (Int_t*)tree->getBranchHandleRef(varname);
-      if (ref_partId==0) success=false;
-      if (!success) continue;
-
-      Int_t partId = *ref_partId;
-      TLorentzVector partFV; partFV.SetPtEtaPhiM(*(ref_partFV[0]), *(ref_partFV[1]), *(ref_partFV[2]), *(ref_partFV[3]));
-      if (partId==0 && partFV.P()==0 && partFV.T()==0) continue; // Not a real record
-      MELAParticle* part = new MELAParticle((int)partId, partFV);
-      if(isGen) part->setGenStatus(1);
+    for (int fv=0; fv<4; fv++){
+      fvhandle[fv]=*(ref_dauFV[fv]);
+      if (fvhandle[fv]->size()!=idhandle->size()){ dau_success=false; break; }
+    }
+    for (unsigned int el=0; el<idhandle->size(); el++){
+      Int_t partId = idhandle->at(el);
+      TLorentzVector partFV; partFV.SetPtEtaPhiM(fvhandle[0]->at(el), fvhandle[1]->at(el), fvhandle[2]->at(el), fvhandle[3]->at(el));
+      if (partId==-9000 || (partFV.P()==0. && partFV.T()==0.)) continue; // Invalid particle
+      MELAParticle* part = new MELAParticle((int) partId, partFV);
+      if (isGen) part->setGenStatus(1);
       particles.push_back(part);
       candFinalDaughters.push_back(part);
     }
@@ -307,21 +324,21 @@ void Reader::readEvent(MELAEvent& outEvent, vector<MELAParticle*>& particles, bo
   vector<MELAParticle*> associatedParticles;
   string strAPCore = "AssociatedParticle";
   if (isGen) strAPCore.insert(0, "Gen");
-  vectorDouble** ref_apartFV[4];
+  VectorPrecision_t** ref_apartFV[4];
   bool apart_success=true;
   for (int fv=0; fv<4; fv++){
     varname = strAPCore + strMassPtEtaPhi.at(fv);
-    ref_apartFV[fv] = (vectorDouble**)tree->getBranchHandleRef(varname);
-    if (ref_apartFV[fv]==0) { apart_success=false; break; }
-    else if ((*ref_apartFV[fv])==0) { apart_success=false; break; }
+    ref_apartFV[fv] = (VectorPrecision_t**) tree->getBranchHandleRef(varname);
+    if (!ref_apartFV[fv]) { apart_success=false; break; }
+    else if (!(*ref_apartFV[fv])) { apart_success=false; break; }
   }
   varname = strAPCore + strId;
-  vectorInt** ref_apartId = (vectorInt**)tree->getBranchHandleRef(varname);
-  if (ref_apartId==0) apart_success=false;
-  if ((*ref_apartId)==0) apart_success=false;
+  vectorInt** ref_apartId = (vectorInt**) tree->getBranchHandleRef(varname);
+  if (!ref_apartId) apart_success=false;
+  if (!(*ref_apartId)) apart_success=false;
   if (apart_success){
     vectorInt* idhandle = *ref_apartId;
-    vectorDouble* fvhandle[4];
+    VectorPrecision_t* fvhandle[4];
 
     for (int fv=0; fv<4; fv++){
       fvhandle[fv]=*(ref_apartFV[fv]);
@@ -330,7 +347,8 @@ void Reader::readEvent(MELAEvent& outEvent, vector<MELAParticle*>& particles, bo
     for (unsigned int el=0; el<idhandle->size(); el++){
       Int_t partId = idhandle->at(el);
       TLorentzVector partFV; partFV.SetPtEtaPhiM(fvhandle[0]->at(el), fvhandle[1]->at(el), fvhandle[2]->at(el), fvhandle[3]->at(el));
-      MELAParticle* part = new MELAParticle((int)partId, partFV);
+      if (partId==-9000 || (partFV.P()==0. && partFV.T()==0.)) continue; // Invalid particle
+      MELAParticle* part = new MELAParticle((int) partId, partFV);
       if (isGen) part->setGenStatus(1);
       particles.push_back(part);
       associatedParticles.push_back(part);
@@ -344,30 +362,30 @@ void Reader::readEvent(MELAEvent& outEvent, vector<MELAParticle*>& particles, bo
     vector<MELAParticle*> motherParticles;
     string strMPCore = "Mother";
     strMPCore.insert(0, "Gen");
-    vectorDouble** ref_mpartFV[4];
+    VectorPrecision_t** ref_mpartFV[2];
     bool mpart_success=true;
-    for (int fv=0; fv<4; fv++){
-      varname = strMPCore + strMassPtPzPhi.at(fv);
-      ref_mpartFV[fv] = (vectorDouble**)tree->getBranchHandleRef(varname);
-      if (ref_mpartFV[fv]==0) { mpart_success=false; break; }
-      else if ((*ref_mpartFV[fv])==0) { mpart_success=false; break; }
+    for (int fv=0; fv<2; fv++){
+      varname = strMPCore + strPzE.at(fv);
+      ref_mpartFV[fv] = (VectorPrecision_t**) tree->getBranchHandleRef(varname);
+      if (!ref_mpartFV[fv]) { mpart_success=false; break; }
+      else if (!(*ref_mpartFV[fv])) { mpart_success=false; break; }
     }
     varname = strMPCore + strId;
-    vectorInt** ref_mpartId = (vectorInt**)tree->getBranchHandleRef(varname);
-    if (ref_mpartId==0) mpart_success=false;
-    if ((*ref_mpartId)==0) mpart_success=false;
+    vectorInt** ref_mpartId = (vectorInt**) tree->getBranchHandleRef(varname);
+    if (!ref_mpartId) mpart_success=false;
+    if (!(*ref_mpartId)) mpart_success=false;
     if (mpart_success){
       vectorInt* idhandle = *ref_mpartId;
-      vectorDouble* fvhandle[4];
+      VectorPrecision_t* fvhandle[2];
 
-      for (int fv=0; fv<4; fv++){
+      for (int fv=0; fv<2; fv++){
         fvhandle[fv]=*(ref_mpartFV[fv]);
         if (fvhandle[fv]->size()!=idhandle->size()) { mpart_success=false; break; }
       }
       for (unsigned int el=0; el<idhandle->size(); el++){
         Int_t partId = idhandle->at(el);
-        TLorentzVector partFV; partFV.SetXYZM(fvhandle[0]->at(el)*cos(fvhandle[2]->at(el)), fvhandle[0]->at(el)*sin(fvhandle[2]->at(el)), fvhandle[1]->at(el), fvhandle[3]->at(el));
-        MELAParticle* part = new MELAParticle((int)partId, partFV);
+        TLorentzVector partFV; partFV.SetXYZT(0, 0, fvhandle[0]->at(el), fvhandle[1]->at(el));
+        MELAParticle* part = new MELAParticle((int) partId, partFV);
         part->setGenStatus(-1);
         particles.push_back(part);
         motherParticles.push_back(part);
@@ -437,24 +455,24 @@ void Reader::readEvent(MELAEvent& outEvent, vector<MELAParticle*>& particles, bo
   }
   outEvent.addVVCandidateAppendages();
 
-/*
-  if (isGen) cout << "NGenCandidates: " << outEvent.getNCandidates() << endl;
-  else cout << "NRecoCandidates: " << outEvent.getNCandidates() << endl;
-  for (int cc=0; cc<outEvent.getNCandidates(); cc++){
-  cout << outEvent.getMELACandidate(cc)->m()
-  << " ("
-  << outEvent.getMELACandidate(cc)->getSortedV(0)->m()
-  << " -> "
-  << "pT = " << outEvent.getMELACandidate(cc)->getSortedV(0)->getDaughter(0)->pt() << " + " << outEvent.getMELACandidate(cc)->getSortedV(0)->getDaughter(1)->pt()
-  << ", "
-  << outEvent.getMELACandidate(cc)->getSortedV(1)->m()
-  << " -> "
-  << "pT = " << outEvent.getMELACandidate(cc)->getSortedV(1)->getDaughter(0)->pt() << " + " << outEvent.getMELACandidate(cc)->getSortedV(1)->getDaughter(1)->pt()
-  << ")\n";
-  }
-  if (isGen) cout << "Recorded (m1, m2): (" << *((Float_t*)tree->getBranchHandleRef("GenZ1Mass")) << ", " << *((Float_t*)tree->getBranchHandleRef("GenZ2Mass")) << ")\n";
-  else cout << "Recorded (m1, m2): (" << *((Float_t*)tree->getBranchHandleRef("Z1Mass")) << ", " << *((Float_t*)tree->getBranchHandleRef("Z2Mass")) << ")\n";
-  cout << endl;
-*/
+  /*
+    if (isGen) cout << "NGenCandidates: " << outEvent.getNCandidates() << endl;
+    else cout << "NRecoCandidates: " << outEvent.getNCandidates() << endl;
+    for (int cc=0; cc<outEvent.getNCandidates(); cc++){
+    cout << outEvent.getMELACandidate(cc)->m()
+    << " ("
+    << outEvent.getMELACandidate(cc)->getSortedV(0)->m()
+    << " -> "
+    << "pT = " << outEvent.getMELACandidate(cc)->getSortedV(0)->getDaughter(0)->pt() << " + " << outEvent.getMELACandidate(cc)->getSortedV(0)->getDaughter(1)->pt()
+    << ", "
+    << outEvent.getMELACandidate(cc)->getSortedV(1)->m()
+    << " -> "
+    << "pT = " << outEvent.getMELACandidate(cc)->getSortedV(1)->getDaughter(0)->pt() << " + " << outEvent.getMELACandidate(cc)->getSortedV(1)->getDaughter(1)->pt()
+    << ")\n";
+    }
+    if (isGen) cout << "Recorded (m1, m2): (" << *((Float_t*)tree->getBranchHandleRef("GenZ1Mass")) << ", " << *((Float_t*)tree->getBranchHandleRef("GenZ2Mass")) << ")\n";
+    else cout << "Recorded (m1, m2): (" << *((Float_t*)tree->getBranchHandleRef("Z1Mass")) << ", " << *((Float_t*)tree->getBranchHandleRef("Z2Mass")) << ")\n";
+    cout << endl;
+  */
 }
 

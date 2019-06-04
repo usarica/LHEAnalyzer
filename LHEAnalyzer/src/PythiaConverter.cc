@@ -35,8 +35,7 @@ void PythiaConverter::run(){
 
   tree->bookAllBranches(false);
 
-  for (unsigned int f=0; f<filename.size(); f++){
-    string cinput = filename.at(f);
+  for (string const& cinput:filename){
     cout << "Processing " << cinput << "..." << endl;
     TFile* fin = 0;
     fin = getIntermediateFile(cinput);

@@ -29,12 +29,13 @@ public:
       if (varbranchtype==BaseTree::bInt) { pair<string, Int_t(*)(const MELAEvent*, string&, int)> varPair(branchname, evalVar); intFunctions.push_back(varPair); }
       else if (varbranchtype==BaseTree::bFloat) { pair<string, Float_t(*)(const MELAEvent*, string&, int)> varPair(branchname, evalVar); floatFunctions.push_back(varPair); }
       else if (varbranchtype==BaseTree::bVectorInt) { pair<string, vectorInt(*)(const MELAEvent*, string&, int)> varPair(branchname, evalVar); vectorIntFunctions.push_back(varPair); }
+      else if (varbranchtype==BaseTree::bVectorFloat) { pair<string, vectorFloat(*)(const MELAEvent*, string&, int)> varPair(branchname, evalVar); vectorFloatFunctions.push_back(varPair); }
       else if (varbranchtype==BaseTree::bVectorDouble) { pair<string, vectorDouble(*)(const MELAEvent*, string&, int)> varPair(branchname, evalVar); vectorDoubleFunctions.push_back(varPair); }
     }
   }
 
   // Clear function arrays
-  void cleanFunctions(){ intFunctions.clear(); floatFunctions.clear(); vectorIntFunctions.clear(); vectorDoubleFunctions.clear(); }
+  void cleanFunctions(){ intFunctions.clear(); floatFunctions.clear(); vectorIntFunctions.clear(); vectorFloatFunctions.clear(); vectorDoubleFunctions.clear(); }
 
 protected:
   void configure();
@@ -49,12 +50,14 @@ protected:
   vector < pair<string, Int_t(*)(const MELAEvent*, string&, int)> > intFunctions;
   vector < pair<string, Float_t(*)(const MELAEvent*, string&, int)> > floatFunctions;
   vector < pair<string, vectorInt(*)(const MELAEvent*, string&, int)> > vectorIntFunctions;
+  vector < pair<string, vectorFloat(*)(const MELAEvent*, string&, int)> > vectorFloatFunctions;
   vector < pair<string, vectorDouble(*)(const MELAEvent*, string&, int)> > vectorDoubleFunctions;
 
   // Vectors of branch pairs between input HVVTree (first) and output HVVTree (second)
   vector < pair<Int_t*, Int_t*> > intBranchMap;
   vector < pair<Float_t*, Float_t*> > floatBranchMap;
   vector < pair<vectorInt**, vectorInt**> > vectorIntBranchMap; // Map double pointer to pointer due to the object SetBranchAddress in the first HVVTree receives
+  vector < pair<vectorFloat**, vectorFloat**> > vectorFloatBranchMap; // Map double pointer to pointer due to the object SetBranchAddress in the first HVVTree receives
   vector < pair<vectorDouble**, vectorDouble**> > vectorDoubleBranchMap; // Map double pointer to pointer due to the object SetBranchAddress in the first HVVTree receives
 };
 #endif
