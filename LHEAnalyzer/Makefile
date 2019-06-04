@@ -9,14 +9,14 @@ ROOTCFLAGS    = $(shell root-config --cflags) -Lrootlib -lEG
 ROOTGLIBS     = $(shell root-config --glibs) -Lrootlib -lEG
 
 CXX           = g++
-CXXFLAGS      = -fPIC -ansi -D_GNU_SOURCE -g -O2
+CXXFLAGS      = -fPIC -g -O2
 
 ARCH         := $(shell root-config --arch)
 
 ifeq ($(ARCH),macosx)
 # MacOS X with cc (GNU cc 2.95.2 and gcc 3.3)
 CXX           = c++ -lm
-CXXFLAGS      = -O2 -pipe -Wall -W -Woverloaded-virtual -fPIC -Wno-deprecated -O -ansi -D_GNU_SOURCE  -j 4
+CXXFLAGS      = -O2 -pipe -Wall -W -Woverloaded-virtual -fPIC -Wno-deprecated -O2 -j 4
 # The SOFLAGS will be used to create the .dylib,
 # the .so will be created separately
 DllSuf        = dylib

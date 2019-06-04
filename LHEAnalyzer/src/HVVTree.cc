@@ -23,8 +23,6 @@ void HVVTree::bookAllBranches(const bool& doSetAddress){
 
   reserveBranch("MC_weight", BaseTree::bFloat, doSetAddress);
   if (options->processGenInfo()){
-    reserveBranch("genFinalState", BaseTree::bInt, doSetAddress);
-
     bookMotherParticleBranches(BaseTree::bVectorFloat, doSetAddress);
     bookPtEtaPhiMassIdBranches("H", BaseTree::bFloat, doSetAddress, false, true, true);
     bookPtEtaPhiMassIdBranches("Z1", BaseTree::bFloat, doSetAddress, false, false, true);
@@ -45,10 +43,7 @@ void HVVTree::bookAllBranches(const bool& doSetAddress){
     reserveBranch("GenAssociatedV_Particle1Index", BaseTree::bVectorInt, doSetAddress);
     reserveBranch("GenAssociatedV_Particle2Index", BaseTree::bVectorInt, doSetAddress);
 
-    bookPtEtaPhiMassIdBranches("Lep1", BaseTree::bFloat, doSetAddress, true, false, true);
-    bookPtEtaPhiMassIdBranches("Lep2", BaseTree::bFloat, doSetAddress, true, false, true);
-    bookPtEtaPhiMassIdBranches("Lep3", BaseTree::bFloat, doSetAddress, true, false, true);
-    bookPtEtaPhiMassIdBranches("Lep4", BaseTree::bFloat, doSetAddress, true, false, true);
+    bookPtEtaPhiMassIdBranches("CandDau", BaseTree::bVectorFloat, doSetAddress, true, false, true);
   }
   if (options->processRecoInfo()){
     reserveBranch("isSelected", BaseTree::bInt, doSetAddress);
@@ -72,10 +67,7 @@ void HVVTree::bookAllBranches(const bool& doSetAddress){
     reserveBranch("AssociatedV_Particle1Index", BaseTree::bVectorInt, doSetAddress);
     reserveBranch("AssociatedV_Particle2Index", BaseTree::bVectorInt, doSetAddress);
 
-    bookPtEtaPhiMassIdBranches("Lep1", BaseTree::bFloat, doSetAddress, true, false, false);
-    bookPtEtaPhiMassIdBranches("Lep2", BaseTree::bFloat, doSetAddress, true, false, false);
-    bookPtEtaPhiMassIdBranches("Lep3", BaseTree::bFloat, doSetAddress, true, false, false);
-    bookPtEtaPhiMassIdBranches("Lep4", BaseTree::bFloat, doSetAddress, true, false, false);
+    bookPtEtaPhiMassIdBranches("CandDau", BaseTree::bVectorFloat, doSetAddress, true, false, false);
   }
   bookAngularBranches(doSetAddress);
   if (options->initializeMELABranches() || doSetAddress) bookMELABranches(doSetAddress);
@@ -205,7 +197,6 @@ void HVVTree::fillMotherInfo(const MELAParticle* mother){
   }
 }
 
-
 void HVVTree::fillCandidate(MELACandidate* pH, bool isGen){
   if (!options) return;
   if ((!options->processGenInfo() && isGen) || (!options->processRecoInfo() && !isGen)) return;
@@ -302,29 +293,26 @@ void HVVTree::fillCandidateDaughters(MELACandidate* pH, bool isGen){
 }
 void HVVTree::fillDaughterProducts(MELACandidate* pH, bool isGen){
   string varname;
-  string strcore = "Lep";
+  string strcore = "CandDau";
   if (isGen) strcore.insert(0, "Gen");
 
   int nDau = std::min((pH ? pH->getNSortedVs() : 0), 2);
   for (int v=0; v<nDau; v++){
     MELAParticle* intermediateV = pH->getSortedV(v);
-    if (intermediateV && intermediateV->getMother(0)!=pH){ intermediateV = 0; nDau--; }
+    if (intermediateV && intermediateV->getMother(0)!=pH){ intermediateV = nullptr; nDau--; }
     if (v==nDau) break;
     int nVDau = (intermediateV ? intermediateV->getNDaughters() : 0);
 
     for (int d=0; d<2; d++){
       int iLep = 2*v+d+1;
-      char cILep[2];
-      sprintf(cILep, "%i", iLep);
-      string strILep = string(cILep);
 
       bool isNew = false;
-      MELAParticle* lepton = (intermediateV ? intermediateV->getDaughter(d) : 0);
+      MELAParticle* lepton = (intermediateV ? intermediateV->getDaughter(d) : nullptr);
 
-      if (lepton==0){
+      if (!lepton){
         isNew=true;
         TLorentzVector pDaughter(0, 0, 0, 0);
-        int idDaughter = 0;
+        int idDaughter = -9000;
         if (intermediateV && nVDau==0 && d==0){
           pDaughter = intermediateV->p4;
           idDaughter = intermediateV->id;
@@ -333,37 +321,18 @@ void HVVTree::fillDaughterProducts(MELACandidate* pH, bool isGen){
           pDaughter = pH->p4;
           idDaughter = pH->id;
         }
-        lepton = new MELAParticle(idDaughter, pDaughter);
+        if (idDaughter!=-9000) lepton = new MELAParticle(idDaughter, pDaughter);
       }
 
-      varname = strcore + strILep + "Mass"; setVal(varname, (lepton ? lepton->m() : 0));
-      varname = strcore + strILep + "Pt"; setVal(varname, (lepton ? lepton->pt() : 0));
-      varname = strcore + strILep + "Eta"; setVal(varname, (lepton ? (lepton->t()>0 ? lepton->eta() : 0) : 0));
-      varname = strcore + strILep + "Phi"; setVal(varname, (lepton ? (lepton->pt()>0 ? lepton->phi() : 0) : 0));
-      varname = strcore + strILep + "Id"; setVal(varname, (lepton ? lepton->id : 0));
-
-      if (isNew){ delete lepton; lepton=0; }
-    }
-  }
-
-  if (isGen){
-    Int_t genFinalState=-1;
-    if (nDau>=2 && pH->getSortedV(0)->getNDaughters()>=2 && pH->getSortedV(1)->getNDaughters()>=2){
-      if (PDGHelpers::isAZBoson(pH->getSortedV(0)->id) && PDGHelpers::isAZBoson(pH->getSortedV(1)->id)){
-        // 4l
-        if (std::abs(pH->getSortedV(0)->getDaughter(0)->id)==13 && std::abs(pH->getSortedV(1)->getDaughter(0)->id)==13) genFinalState=0; // 4mu
-        else if (std::abs(pH->getSortedV(0)->getDaughter(0)->id)==11 && std::abs(pH->getSortedV(1)->getDaughter(0)->id)==11) genFinalState=1; // 4e
-        else if ((std::abs(pH->getSortedV(0)->getDaughter(0)->id)==11 && std::abs(pH->getSortedV(1)->getDaughter(0)->id)==13) || (std::abs(pH->getSortedV(0)->getDaughter(0)->id)==13 && std::abs(pH->getSortedV(1)->getDaughter(0)->id)==11)) genFinalState=2; // 2e2mu
-        else if (std::abs(pH->getSortedV(0)->getDaughter(0)->id)==15 && std::abs(pH->getSortedV(1)->getDaughter(0)->id)==15) genFinalState=3; // 4tau
-        else if ((std::abs(pH->getSortedV(0)->getDaughter(0)->id)==15 && std::abs(pH->getSortedV(1)->getDaughter(0)->id)==13) || (std::abs(pH->getSortedV(0)->getDaughter(0)->id)==13 && std::abs(pH->getSortedV(1)->getDaughter(0)->id)==15)) genFinalState=4; // 2mu2tau
-        else if ((std::abs(pH->getSortedV(0)->getDaughter(0)->id)==11 && std::abs(pH->getSortedV(1)->getDaughter(0)->id)==15) || (std::abs(pH->getSortedV(0)->getDaughter(0)->id)==15 && std::abs(pH->getSortedV(1)->getDaughter(0)->id)==11)) genFinalState=5; // 2e2tau
-        // 4nu, 4q
-        else if (std::abs(pH->getSortedV(0)->getDaughter(0)->id)==std::abs(pH->getSortedV(1)->getDaughter(0)->id)) genFinalState=0;
-        else genFinalState=2;
+      if (lepton){
+        varname = strcore + "Mass"; setVal(varname, lepton->m());
+        varname = strcore + "Pt"; setVal(varname, lepton->pt());
+        varname = strcore + "Eta"; setVal(varname, (lepton->pt()>0. ? lepton->eta() : 0));
+        varname = strcore + "Phi"; setVal(varname, (lepton->pt()>0. ? lepton->phi() : 0));
+        varname = strcore + "Id"; setVal(varname, lepton->id);
       }
-      else genFinalState=2; // WW has no interference
+      if (isNew){ delete lepton; lepton=nullptr; }
     }
-    setVal("genFinalState", genFinalState);
   }
 }
 void HVVTree::fillAssociatedInfo(MELACandidate* pH, bool isGen){
@@ -508,8 +477,8 @@ void HVVTree::fillDecayAngles(bool isGen){
     if (varname.find("costhetastar")!=string::npos) setVal(varname, costhetastar);
     else if (varname.find("costheta1")!=string::npos) setVal(varname, costheta1);
     else if (varname.find("costheta2")!=string::npos) setVal(varname, costheta2);
-    else if (varname.find("Phi")!=string::npos) setVal(varname, Phi);
     else if (varname.find("Phi1")!=string::npos) setVal(varname, Phi1);
+    else if (varname.find("Phi")!=string::npos) setVal(varname, Phi);
     else cerr << "HVVTree::fillDecayAngles -> ERROR: Branch " << varname << " is invalid!" << endl;
   }
 }
@@ -543,8 +512,8 @@ void HVVTree::fillVBFProductionAngles(bool isGen){
     if (varname.find("costhetastar_VBF")!=string::npos) setVal(varname, costhetastar);
     else if (varname.find("costheta1_VBF")!=string::npos) setVal(varname, costheta1);
     else if (varname.find("costheta2_VBF")!=string::npos) setVal(varname, costheta2);
-    else if (varname.find("Phi_VBF")!=string::npos) setVal(varname, Phi);
     else if (varname.find("Phi1_VBF")!=string::npos) setVal(varname, Phi1);
+    else if (varname.find("Phi_VBF")!=string::npos) setVal(varname, Phi);
     else if (varname.find("Q1_VBF")!=string::npos) setVal(varname, q1sq);
     else if (varname.find("Q2_VBF")!=string::npos) setVal(varname, q2sq);
     else cerr << "HVVTree::fillVBFProductionAngles -> ERROR: Branch " << varname << " is invalid!" << endl;
@@ -598,8 +567,8 @@ void HVVTree::fillVHProductionAngles(bool isGen){
       if (varname.find("costhetastar_VH")!=string::npos) setVal(varname, costhetastar_hadronic);
       else if (varname.find("costheta1_VH")!=string::npos) setVal(varname, costheta1_hadronic);
       else if (varname.find("costheta2_VH")!=string::npos) setVal(varname, costheta2_hadronic);
-      else if (varname.find("Phi_VH")!=string::npos) setVal(varname, Phi_hadronic);
       else if (varname.find("Phi1_VH")!=string::npos) setVal(varname, Phi1_hadronic);
+      else if (varname.find("Phi_VH")!=string::npos) setVal(varname, Phi_hadronic);
       else if (varname.find("mVstar_VH")!=string::npos) setVal(varname, mVstar_hadronic);
       else if (varname.find("mV_VH")!=string::npos) setVal(varname, mV_hadronic);
       else cerr << "HVVTree::fillVHProductionAngles -> ERROR: Branch " << varname << " is invalid!" << endl;
@@ -608,8 +577,8 @@ void HVVTree::fillVHProductionAngles(bool isGen){
       if (varname.find("costhetastar_VH")!=string::npos) setVal(varname, costhetastar_leptonic);
       else if (varname.find("costheta1_VH")!=string::npos) setVal(varname, costheta1_leptonic);
       else if (varname.find("costheta2_VH")!=string::npos) setVal(varname, costheta2_leptonic);
-      else if (varname.find("Phi_VH")!=string::npos) setVal(varname, Phi_leptonic);
       else if (varname.find("Phi1_VH")!=string::npos) setVal(varname, Phi1_leptonic);
+      else if (varname.find("Phi_VH")!=string::npos) setVal(varname, Phi_leptonic);
       else if (varname.find("mVstar_VH")!=string::npos) setVal(varname, mVstar_leptonic);
       else if (varname.find("mV_VH")!=string::npos) setVal(varname, mV_leptonic);
       else cerr << "HVVTree::fillVHProductionAngles -> ERROR: Branch " << varname << " is invalid!" << endl;
@@ -618,15 +587,15 @@ void HVVTree::fillVHProductionAngles(bool isGen){
       if (varname.find("costhetastar_VHhadronic")!=string::npos) setVal(varname, costhetastar_hadronic);
       else if (varname.find("costheta1_VHhadronic")!=string::npos) setVal(varname, costheta1_hadronic);
       else if (varname.find("costheta2_VHhadronic")!=string::npos) setVal(varname, costheta2_hadronic);
-      else if (varname.find("Phi_VHhadronic")!=string::npos) setVal(varname, Phi_hadronic);
       else if (varname.find("Phi1_VHhadronic")!=string::npos) setVal(varname, Phi1_hadronic);
+      else if (varname.find("Phi_VHhadronic")!=string::npos) setVal(varname, Phi_hadronic);
       else if (varname.find("mVstar_VHhadronic")!=string::npos) setVal(varname, mVstar_hadronic);
       else if (varname.find("mV_VHhadronic")!=string::npos) setVal(varname, mV_hadronic);
       else if (varname.find("costhetastar_VHleptonic")!=string::npos) setVal(varname, costhetastar_leptonic);
       else if (varname.find("costheta1_VHleptonic")!=string::npos) setVal(varname, costheta1_leptonic);
       else if (varname.find("costheta2_VHleptonic")!=string::npos) setVal(varname, costheta2_leptonic);
-      else if (varname.find("Phi_VHleptonic")!=string::npos) setVal(varname, Phi_leptonic);
       else if (varname.find("Phi1_VHleptonic")!=string::npos) setVal(varname, Phi1_leptonic);
+      else if (varname.find("Phi_VHleptonic")!=string::npos) setVal(varname, Phi_leptonic);
       else if (varname.find("mVstar_VHleptonic")!=string::npos) setVal(varname, mVstar_leptonic);
       else if (varname.find("mV_VHleptonic")!=string::npos) setVal(varname, mV_leptonic);
       else cerr << "HVVTree::fillVHProductionAngles -> ERROR: Branch " << varname << " is invalid!" << endl;
