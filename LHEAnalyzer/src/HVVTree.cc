@@ -43,6 +43,12 @@ void HVVTree::bookAllBranches(const bool& doSetAddress){
     reserveBranch("GenAssociatedV_Particle1Index", BaseTree::bVectorInt, doSetAddress);
     reserveBranch("GenAssociatedV_Particle2Index", BaseTree::bVectorInt, doSetAddress);
 
+    reserveBranch("NGenAssociatedTops", BaseTree::bInt, doSetAddress);
+    bookPtEtaPhiMassIdBranches("AssociatedTop", BaseTree::bVectorFloat, doSetAddress, true, false, true);
+    reserveBranch("GenAssociatedTop_PartnerParticleIndex", BaseTree::bVectorInt, doSetAddress);
+    reserveBranch("GenAssociatedTop_WFermionIndex", BaseTree::bVectorInt, doSetAddress);
+    reserveBranch("GenAssociatedTop_WAntifermionIndex", BaseTree::bVectorInt, doSetAddress);
+
     bookPtEtaPhiMassIdBranches("CandDau", BaseTree::bVectorFloat, doSetAddress, true, false, true);
   }
   if (options->processRecoInfo()){
@@ -66,6 +72,12 @@ void HVVTree::bookAllBranches(const bool& doSetAddress){
     bookPtEtaPhiMassIdBranches("AssociatedV", BaseTree::bVectorFloat, doSetAddress, true, false, false);
     reserveBranch("AssociatedV_Particle1Index", BaseTree::bVectorInt, doSetAddress);
     reserveBranch("AssociatedV_Particle2Index", BaseTree::bVectorInt, doSetAddress);
+
+    reserveBranch("NAssociatedTops", BaseTree::bInt, doSetAddress);
+    bookPtEtaPhiMassIdBranches("AssociatedTop", BaseTree::bVectorFloat, doSetAddress, true, false, false);
+    reserveBranch("AssociatedTop_PartnerParticleIndex", BaseTree::bVectorInt, doSetAddress);
+    reserveBranch("AssociatedTop_WFermionIndex", BaseTree::bVectorInt, doSetAddress);
+    reserveBranch("AssociatedTop_WAntifermionIndex", BaseTree::bVectorInt, doSetAddress);
 
     bookPtEtaPhiMassIdBranches("CandDau", BaseTree::bVectorFloat, doSetAddress, true, false, false);
   }
@@ -350,6 +362,12 @@ void HVVTree::fillAssociatedInfo(MELACandidate* pH, bool isGen){
   vectorInt AssociatedV_Particle1Index;
   vectorInt AssociatedV_Particle2Index;
 
+  Int_t NAssociatedTops=0;
+  vector<MELATopCandidate_t*> AssociatedTop;
+  vectorInt AssociatedTop_PartnerParticleIndex;
+  vectorInt AssociatedTop_WFermionIndex;
+  vectorInt AssociatedTop_WAntifermionIndex;
+
   if (pH){
     for (int aa=0; aa<pH->getNAssociatedJets(); aa++){
       MELAParticle* apart = pH->getAssociatedJet(aa);
@@ -395,6 +413,27 @@ void HVVTree::fillAssociatedInfo(MELACandidate* pH, bool isGen){
       if (avd1==AssociatedParticle.at(aa)) AssociatedV_Particle1Index.push_back(aa);
       else if (avd2==AssociatedParticle.at(aa)) AssociatedV_Particle2Index.push_back(aa);
     }
+  }
+
+  NAssociatedTops = (pH ? pH->getNAssociatedTops() : 0);
+  for (int it=0; it<NAssociatedTops; it++){
+    MELATopCandidate_t* pTop = pH->getAssociatedTop(it);
+    AssociatedTop.push_back(pTop);
+    MELAParticle* tpp = pTop->getPartnerParticle();
+    MELAParticle* tWf = pTop->getWFermion();
+    MELAParticle* tWfb = pTop->getWAntifermion();
+
+    int i_tpp=-1;
+    int i_tWf=-1;
+    int i_tWfb=-1;
+    for (unsigned int aa=0; aa<AssociatedParticle.size(); aa++){
+      if (tpp && tpp==AssociatedParticle.at(aa)) i_tpp=aa;
+      else if (tWf && tWf==AssociatedParticle.at(aa)) i_tWf=aa;
+      else if (tWfb && tWfb==AssociatedParticle.at(aa)) i_tWfb=aa;
+    }
+    AssociatedTop_PartnerParticleIndex.push_back(i_tpp);
+    AssociatedTop_WFermionIndex.push_back(i_tWf);
+    AssociatedTop_WAntifermionIndex.push_back(i_tWfb);
   }
 
   string varname;
@@ -453,6 +492,19 @@ void HVVTree::fillAssociatedInfo(MELACandidate* pH, bool isGen){
     varname = strcore + "Id"; setVal(varname, AssociatedV.at(aa)->id);
     varname = strcore + "_Particle1Index"; setVal(varname, AssociatedV_Particle1Index.at(aa));
     varname = strcore + "_Particle2Index"; setVal(varname, AssociatedV_Particle2Index.at(aa));
+  }
+
+  strcore = "AssociatedTop";
+  if (isGen) strcore.insert(0, "Gen");
+  for (int aa=0; aa<NAssociatedTops; aa++){
+    varname = strcore + "Mass"; setVal(varname, AssociatedTop.at(aa)->m());
+    varname = strcore + "Pt"; setVal(varname, AssociatedTop.at(aa)->pt());
+    varname = strcore + "Eta"; setVal(varname, AssociatedTop.at(aa)->eta());
+    varname = strcore + "Phi"; setVal(varname, AssociatedTop.at(aa)->phi());
+    varname = strcore + "Id"; setVal(varname, AssociatedTop.at(aa)->id);
+    varname = strcore + "_PartnerParticleIndex"; setVal(varname, AssociatedTop_PartnerParticleIndex.at(aa));
+    varname = strcore + "_WFermionIndex"; setVal(varname, AssociatedTop_WFermionIndex.at(aa));
+    varname = strcore + "_WAntifermionIndex"; setVal(varname, AssociatedTop_WAntifermionIndex.at(aa));
   }
 }
 

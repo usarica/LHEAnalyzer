@@ -11,6 +11,7 @@
 #include "TString.h"
 #include "melaHelpers.h"
 #include "ParticleComparators.h"
+#include "TopComparators.h"
 #include "HiggsComparators.h"
 
 using namespace std;

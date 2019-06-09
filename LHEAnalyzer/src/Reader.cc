@@ -194,12 +194,12 @@ void Reader::run(){
           MELACandidate* recoCand=0;
           if (options->processGenInfo()){
             readEvent(genEvent, genParticleList, true);
-            if (genEvent.getNCandidates()<=1) genCand = genEvent.getMELACandidate(0);
+            if (genEvent.getNCandidates()<=1) genCand = genEvent.getCandidate(0);
             else genCand = HiggsComparators::candidateSelector(genEvent, options->getHiggsCandidateSelectionScheme(true), options->doGenHZZdecay());
           }
           if (options->processRecoInfo()){
             readEvent(recoEvent, recoParticleList, false);
-            if (recoEvent.getNCandidates()<=1) recoCand = recoEvent.getMELACandidate(0);
+            if (recoEvent.getNCandidates()<=1) recoCand = recoEvent.getCandidate(0);
             else recoCand = HiggsComparators::candidateSelector(recoEvent, options->getHiggsCandidateSelectionScheme(false), options->doRecoHZZdecay());
           }
 

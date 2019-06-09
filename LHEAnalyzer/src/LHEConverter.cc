@@ -30,12 +30,11 @@ void LHEConverter::run(){
 
   int globalNEvents = 0;
   int maxProcEvents = options->maxEventsToProcess();
-  vector < pair<Int_t, Int_t> > eventSkipList = options->getSkippedEvents();
+  vector<pair<Int_t, Int_t>> eventSkipList = options->getSkippedEvents();
 
   tree->bookAllBranches(false);
 
-  for (unsigned int f=0; f<filename.size(); f++){
-    string cinput = filename.at(f);
+  for (string const& cinput:filename){
     cout << "Processing " << cinput << "..." << endl;
     ifstream fin;
     fin.open(cinput.c_str());
@@ -44,45 +43,50 @@ void LHEConverter::run(){
       int ev = 0;
       int fileLine = 0; // Debugging
       while (!fin.eof()){
+        // Bookkeeping vectors
         vector<MELAParticle*> particleList = readEvent(fin, fileLine, weight);
-        vector<MELAParticle*> smearedParticleList; // Bookkeeping
-        vector<MELACandidate*> candList; // Bookkeeping
-        vector<MELACandidate*> smearedCandList; // Bookkeeping
+        vector<MELAParticle*> smearedParticleList;
+        vector<MELACandidate*> candList;
+        vector<MELACandidate*> smearedCandList;
 
         if (globalNEvents>=maxProcEvents && maxProcEvents>=0) break;
         if (particleList.empty()) continue;
         bool doSkipEvent = false;
-        for (unsigned int es=0; es<eventSkipList.size(); es++){
-          if (
-            (eventSkipList.at(es).first<=globalNEvents && eventSkipList.at(es).second>=globalNEvents)
-            ||
-            (eventSkipList.at(es).first<=globalNEvents && eventSkipList.at(es).second<0)
-            )doSkipEvent=true;
-        }
+        for (auto const& es:eventSkipList) doSkipEvent |= (
+          (es.first<=globalNEvents && es.second>=globalNEvents)
+          ||
+          (es.first<=globalNEvents && es.second<0)
+          );
         if (doSkipEvent){ globalNEvents++; ev++; continue; }
 
-        if (particleList.size()==0 && weight!=0) weight=0;
-        if (weight!=0){
+        if (particleList.empty() && weight!=0.) weight=0;
+        if (weight!=0.){
           tree->initializeBranches();
 
           MELAEvent genEvent;
           genEvent.setWeight(weight);
-          vectorInt hasGenHiggs;
+          vector<MELAParticle*> writtenGenCands;
+          vector<MELAParticle*> writtenGenTopCands;
+
           MELAEvent smearedEvent;
           smearedEvent.setWeight(weight);
-          for (unsigned int p=0; p<particleList.size(); p++){
-            MELAParticle* genPart = particleList.at(p); // Has mother info from LHE reading
+
+          for (MELAParticle* genPart:particleList){
+            if (isATopQuark(genPart->id)){
+              writtenGenTopCands.push_back(genPart);
+              if (genPart->genStatus==1) genEvent.addIntermediate(genPart);
+            }
             if (isAHiggs(genPart->id)){
-              hasGenHiggs.push_back(p);
+              writtenGenCands.push_back(genPart);
               if (options->doGenHZZdecay()==-1 && (genPart->genStatus==1 || genPart->genStatus==2)) genEvent.addIntermediate(genPart);
             }
             if (genPart->genStatus==1){
               if (isALepton(genPart->id)) genEvent.addLepton(genPart);
               else if (isANeutrino(genPart->id)) genEvent.addNeutrino(genPart);
               else if (isAPhoton(genPart->id)) genEvent.addPhoton(genPart);
-              else if (isAGluon(genPart->id) || isAQuark(genPart->id)) genEvent.addJet(genPart);
+              else if (isAKnownJet(genPart->id) && !isATopQuark(genPart->id)) genEvent.addJet(genPart);
 
-              MELAParticle* smearedPart; // Has no mother info
+              MELAParticle* smearedPart=nullptr; // Has no mother info
               if (options->recoSmearingMode()==0) smearedPart = smearParticle(genPart);
               else{
                 int recoid = genPart->id;
@@ -94,9 +98,10 @@ void LHEConverter::run(){
               if (isALepton(smearedPart->id)) smearedEvent.addLepton(smearedPart);
               else if (isANeutrino(smearedPart->id)) smearedEvent.addNeutrino(smearedPart);
               else if (isAPhoton(smearedPart->id)) smearedEvent.addPhoton(smearedPart);
-              else if (isAGluon(smearedPart->id) || isAQuark(smearedPart->id)){
+              else if (isAKnownJet(smearedPart->id)){
                 smearedPart->id=0; // Wipe id from reco. quark/gluon
-                smearedEvent.addJet(smearedPart);
+                if (!isATopQuark(smearedPart->id)) smearedEvent.addJet(smearedPart);
+                else smearedEvent.addIntermediate(smearedPart);
               }
               else smearedEvent.addParticle(smearedPart);
             }
@@ -106,40 +111,54 @@ void LHEConverter::run(){
             }
           }
 
+          genEvent.constructTopCandidates();
+          // Disable tops unmatched to a gen. top
+          {
+            vector<MELATopCandidate_t*> matchedTops;
+            for (auto* writtenGenTopCand:writtenGenTopCands){
+              MELATopCandidate_t* tmpCand = TopComparators::matchATopToParticle(genEvent, writtenGenTopCand);
+              if (tmpCand) matchedTops.push_back(tmpCand);
+            }
+            for (MELATopCandidate_t* tmpCand:genEvent.getTopCandidates()){
+              if (std::find(matchedTops.begin(), matchedTops.end(), tmpCand)==matchedTops.end()) tmpCand->setSelected(false);
+            }
+          }
+
           if (debugVars::debugFlag) cout << "Starting to construct gen. VV candidates." << endl;
           genEvent.constructVVCandidates(options->doGenHZZdecay(), options->genDecayProducts());
           if (debugVars::debugFlag) cout << "Successfully constructed gen. VV candidates." << endl;
           if (debugVars::debugFlag) cout << "Starting to add gen. VV candidate appendages." << endl;
           genEvent.addVVCandidateAppendages();
           MELACandidate* genCand=0;
-          if (debugVars::debugFlag) cout << "Number of gen. Higgs candidates directly from the LHE: " << hasGenHiggs.size() << endl;
-          if (hasGenHiggs.size()>0){
-            for (unsigned int gk=0; gk<hasGenHiggs.size(); gk++){
-              MELACandidate* tmpCand = HiggsComparators::matchAHiggsToParticle(genEvent, particleList.at(hasGenHiggs.at(gk)));
-              if (tmpCand!=0){
-                if (genCand==0) genCand=tmpCand;
+          if (debugVars::debugFlag) cout << "Number of gen. Higgs candidates directly from the LHE: " << writtenGenCands.size() << endl;
+          if (!writtenGenCands.empty()){
+            for (auto* writtenGenCand:writtenGenCands){
+              MELACandidate* tmpCand = HiggsComparators::matchAHiggsToParticle(genEvent, writtenGenCand);
+              if (tmpCand){
+                if (!genCand) genCand = tmpCand;
                 else genCand = HiggsComparators::candComparator(genCand, tmpCand, options->getHiggsCandidateSelectionScheme(true), options->doGenHZZdecay());
               }
             }
           }
-          if (genCand==0) genCand = HiggsComparators::candidateSelector(genEvent, options->getHiggsCandidateSelectionScheme(true), options->doGenHZZdecay());
-          if (genCand!=0) tree->fillCandidate(genCand, true);
+          if (!genCand) genCand = HiggsComparators::candidateSelector(genEvent, options->getHiggsCandidateSelectionScheme(true), options->doGenHZZdecay());
+          if (genCand) tree->fillCandidate(genCand, true);
           else cout << cinput << " (" << ev << "): No gen. level Higgs candidate was found!" << endl;
 
+          smearedEvent.constructTopCandidates();
           smearedEvent.constructVVCandidates(options->doRecoHZZdecay(), options->recoDecayProducts());
           if (options->recoSelectionMode()==0) smearedEvent.applyParticleSelection();
           smearedEvent.addVVCandidateAppendages();
           MELACandidate* rCand = HiggsComparators::candidateSelector(smearedEvent, options->getHiggsCandidateSelectionScheme(false), options->doRecoHZZdecay());
 
-          if (rCand!=0){
+          if (rCand){
             isSelected=1;
             tree->fillCandidate(rCand, false);
           }
           else isSelected=0;
-          MC_weight = (float)weight;
+          MC_weight = (float) weight;
           tree->fillEventVariables(MC_weight, isSelected);
 
-          if ((rCand!=0 && options->processRecoInfo()) || (genCand!=0 && options->processGenInfo())){
+          if ((rCand && options->processRecoInfo()) || (genCand && options->processGenInfo())){
             tree->record();
             nProcessed++;
           }
@@ -147,29 +166,10 @@ void LHEConverter::run(){
         else cerr << "Weight=0 at event " << ev << endl;
         ev++;
 
-        for (unsigned int p=0; p<smearedCandList.size(); p++){ // Bookkeeping
-          MELACandidate* tmpCand = (MELACandidate*)smearedCandList.at(p);
-          if (tmpCand!=0) delete tmpCand;
-        }
-        for (unsigned int p=0; p<smearedParticleList.size(); p++){ // Bookkeeping
-          MELAParticle* tmpPart = (MELAParticle*)smearedParticleList.at(p);
-          if (tmpPart!=0) delete tmpPart;
-        }
-
-        for (unsigned int p=0; p<candList.size(); p++){ // Bookkeeping
-          MELACandidate* tmpCand = (MELACandidate*)candList.at(p);
-          if (tmpCand!=0) delete tmpCand;
-        }
-        for (unsigned int p=0; p<particleList.size(); p++){ // Bookkeeping
-          MELAParticle* tmpPart = (MELAParticle*)particleList.at(p);
-          if (tmpPart!=0) delete tmpPart;
-        }
-
-        // Bookkeeping
-        smearedCandList.clear();
-        smearedParticleList.clear();
-        candList.clear();
-        particleList.clear();
+        for (auto*& tmpPart:smearedCandList) delete tmpPart; smearedCandList.clear();
+        for (auto*& tmpPart:smearedParticleList) delete tmpPart; smearedParticleList.clear();
+        for (auto*& tmpPart:candList) delete tmpPart; candList.clear();
+        for (auto*& tmpPart:particleList) delete tmpPart; particleList.clear();
 
         globalNEvents++;
         if (globalNEvents % 100000 == 0) cout << "Event " << globalNEvents << "..." << endl;
@@ -191,7 +191,7 @@ vector<MELAParticle*> LHEConverter::readEvent(ifstream& input_lhe, int& fline, d
   vectorInt motherIDs_first;
   vectorInt motherIDs_second;
 
-// Test whether the string read is the beginning of the event for a valid file
+  // Test whether the string read is the beginning of the event for a valid file
   while (str_in.find(event_beginning)==string::npos){
     if (input_lhe.eof()){
       weight=0;
@@ -230,7 +230,7 @@ vector<MELAParticle*> LHEConverter::readEvent(ifstream& input_lhe, int& fline, d
     collection.push_back(onePart);
   }
 
-// Test whether the end of event is reached indeed
+  // Test whether the end of event is reached indeed
   str_in = "";
   while (str_in==""){ getline(input_lhe, str_in); } // Do not count empty lines or e.o.l. in the middle of events
   while (str_in.find("#")!=string::npos){ getline(input_lhe, str_in); fline++; }
@@ -248,7 +248,7 @@ vector<MELAParticle*> LHEConverter::readEvent(ifstream& input_lhe, int& fline, d
     return collection;
   }
 
-// Assign the mothers
+  // Assign the mothers
   for (int a = 0; a < nparticle; a++){
     if (motherIDs_first.at(a)>0) collection.at(a)->addMother(collection.at(motherIDs_first.at(a)-1));
     if (motherIDs_second.at(a)>0 && motherIDs_first.at(a) != motherIDs_second.at(a)) collection.at(a)->addMother(collection.at(motherIDs_second.at(a)-1));
