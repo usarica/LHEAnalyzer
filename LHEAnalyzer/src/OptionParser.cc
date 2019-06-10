@@ -12,6 +12,7 @@ removeDaughterMasses(1), // Force lepton masses to 0 in MELA
 computeDecayAngles(1), // Decay angles
 computeVBFAngles(0), // VBF production angles
 computeVHAngles(0), // VH production angles
+computeTTHAngles(0), // VH production angles
 sampleProductionId(TVar::ZZGG, TVar::JHUGen), // Sample gen. production mode
 fileLevel(0), // -1: ReadMode, 0: LHE, 1: Pythia,
 pythiaStep(1), //0: GEN, 1: GEN-SIM
@@ -98,7 +99,7 @@ void OptionParser::analyze(){
   // Warnings-only
   if (!redefinedOutputFile) cout << "WARNING: No output file specified. Defaulting to " << coutput << "." << endl;
   if (!hasDecayAngles && fileLevel<0 && recoSelBehaviour==0) { cout << "Disabling the re-calculation of decay angles in ReadMode by default since no relevant option is specified." << endl; computeDecayAngles=0; }
-  if (fileLevel<0 && recoSelBehaviour!=0) { cout << "Enabling the (re-)calculation of all angles in ReadMode since the re-selection option is specified." << endl; computeVBFAngles=1; computeVHAngles=1; computeDecayAngles=1; }
+  if (fileLevel<0 && recoSelBehaviour!=0) { cout << "Enabling the (re-)calculation of all angles in ReadMode since the re-selection option is specified." << endl; computeVBFAngles=1; computeVHAngles=1; computeTTHAngles=1; computeDecayAngles=1; }
 
   // Print help if needed and abort at this point, nowhere later
   if (hasInvalidOption) printOptionsHelp();
@@ -342,6 +343,7 @@ void OptionParser::interpretOption(const string& wish, string value){
   else if (wish=="computeDecayAngles") computeDecayAngles = (int)atoi(value.c_str());
   else if (wish=="computeVBFProdAngles") computeVBFAngles = (int)atoi(value.c_str());
   else if (wish=="computeVHProdAngles") computeVHAngles = (int)atoi(value.c_str());
+  else if (wish=="computeTTHProdAngles") computeTTHAngles = (int) atoi(value.c_str());
 
   else if (wish=="includeRecoDecayProb") splitOptionRecursive(value, includeRecoDecayProb, ',');
   else if (wish=="includeRecoProdProb") splitOptionRecursive(value, includeRecoProdProb, ',');
@@ -371,6 +373,7 @@ void OptionParser::printOptionsHelp(){
   cout << "- computeDecayAngles: Switch to control the decay angles computation. Default=1 in LHE or Pythia modes, 0 in ReadMode.\n\n";
   cout << "- computeVBFProdAngles: Switch to control the VBF production angles computation. Default=0\n\n";
   cout << "- computeVHProdAngles: Switch to control the VH production angles computation. Default=0.\n\tPossible values are 0 (==disable), 1 (==compute from jets only), 2 (==compute from leptons only), 3 (==compute from jets and leptons, with separate variable suffixes \"*_VHhadronic\" and \"*_VHleptonic\".).\n\n";
+  cout << "- computeTTHProdAngles: Switch to control the ttH production angles computation. Default=0.\n\tPossible values are 0 (==disable), 1 (==compute from jets and leptons, with same variable suffixes\".).\n\n";
   cout << "- includeGenDecayProb, includeGenProdProb, includeRecoDecayProb, includeRecoProdProb: Comma-separated list of spin-0 gen. or reco. decay or production MEs. Default=Empty (==None).\n\tThe explicit values tested are g1, g2, g4, g1_prime2; g1_pi2, g2_pi2, g4_pi2, g1_prime2_pi2, m4l, None, All.\n\t Gen. MEs are present for the purpose of reweighting. The appropriate target and origin combinations are left to the user at an analysis step.\n\n";
   cout << "- sampleProductionId: Production mechanism used in the computation of includeGenProdProb. Follows the format (TVar::Production, TVar::MatrixElement) with no parentheses. Default=(ZZGG, JHUGen)\n\tProduction==ZZGG is an invalid option since one can use decay MEs for this purpose, and the ghg_i couplings are not enabled in the MEs.\n\n";
 

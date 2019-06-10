@@ -28,6 +28,7 @@ public:
   void fillDecayAngles(bool isGen=false);
   void fillVBFProductionAngles(bool isGen=false);
   void fillVHProductionAngles(bool isGen=false);
+  void fillTTHProductionAngles(bool isGen=false);
   void fillMELAProbabilities(bool isGen);
 
 protected:

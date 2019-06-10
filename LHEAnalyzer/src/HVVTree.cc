@@ -138,6 +138,7 @@ void HVVTree::bookAngularBranches(const bool& doSetAddress){
         getAngularBranches(tmpBranchList, 4, true);
       }
     }
+    if (options->doComputeTTHAngles() || doSetAddress) getAngularBranches(tmpBranchList, 5, true);
   }
   if (options->processRecoInfo()){
     if (options->doComputeDecayAngles() || doSetAddress) getAngularBranches(tmpBranchList, 0, false);
@@ -149,22 +150,53 @@ void HVVTree::bookAngularBranches(const bool& doSetAddress){
         getAngularBranches(tmpBranchList, 4, false);
       }
     }
+    if (options->doComputeTTHAngles() || doSetAddress) getAngularBranches(tmpBranchList, 5, false);
   }
   for (unsigned int b=0; b<tmpBranchList.size(); b++){
     reserveBranch(tmpBranchList.at(b), BaseTree::bFloat, doSetAddress);
   }
 }
-void HVVTree::getAngularBranches(vector<string>& blist, const Int_t& prodFlag /* 0: Decay, 1: VBF, 2: VH */, bool isGen){
+void HVVTree::getAngularBranches(vector<string>& blist, const Int_t& prodFlag /* 0: Decay, 1: VBF, 2-4: VH, 5: TTH */, bool isGen){
   string strGen = "Gen";
   vector<string> strtmp;
-  strtmp.push_back("costhetastar");
-  strtmp.push_back("costheta1");
-  strtmp.push_back("costheta2");
-  strtmp.push_back("Phi");
-  strtmp.push_back("Phi1");
-  if (prodFlag==1){
-    strtmp.push_back("Q1");
-    strtmp.push_back("Q2");
+  if (prodFlag!=5){
+    strtmp.push_back("costhetastar");
+    strtmp.push_back("costheta1");
+    strtmp.push_back("costheta2");
+    strtmp.push_back("Phi");
+    strtmp.push_back("Phi1");
+    if (prodFlag==1){
+      strtmp.push_back("Q1");
+      strtmp.push_back("Q2");
+    }
+  }
+  else{
+    // Masses
+    strtmp.push_back("mTop1");
+    strtmp.push_back("mW1");
+    strtmp.push_back("mTop2");
+    strtmp.push_back("mW2");
+
+    // ttH system
+    strtmp.push_back("costhetastar");
+    strtmp.push_back("costheta1");
+    strtmp.push_back("costheta2");
+    strtmp.push_back("Phi");
+    strtmp.push_back("Phi1");
+
+    // tt system
+    strtmp.push_back("costhetabb");
+    strtmp.push_back("costhetaWW");
+    strtmp.push_back("Phibb");
+    strtmp.push_back("Phi1bb");
+
+    // Wplus system
+    strtmp.push_back("costhetaWplus");
+    strtmp.push_back("PhiWplus");
+
+    // Wminus system
+    strtmp.push_back("costhetaWminus");
+    strtmp.push_back("PhiWminus");
   }
   for (unsigned int b=0; b<strtmp.size(); b++){
     string varname = strtmp.at(b);
@@ -173,6 +205,7 @@ void HVVTree::getAngularBranches(vector<string>& blist, const Int_t& prodFlag /*
     else if (prodFlag==2) varname.append("_VH");
     else if (prodFlag==3) varname.append("_VHhadronic");
     else if (prodFlag==4) varname.append("_VHleptonic");
+    else if (prodFlag==5) varname.append("_ttH");
     blist.push_back(varname);
   }
 }
@@ -254,6 +287,7 @@ void HVVTree::fillCandidate(MELACandidate* pH, bool isGen){
     if (options->doComputeDecayAngles()) fillDecayAngles(isGen);
     if (options->doComputeVBFAngles()) fillVBFProductionAngles(isGen);
     if (options->doComputeVHAngles()) fillVHProductionAngles(isGen);
+    if (options->doComputeTTHAngles()) fillTTHProductionAngles(isGen);
     if (melaProbBranches.size()>0) fillMELAProbabilities(isGen); // Do it at the last step
 
     melaHelpers::melaHandle->resetInputEvent();
@@ -652,6 +686,83 @@ void HVVTree::fillVHProductionAngles(bool isGen){
       else if (varname.find("mV_VHleptonic")!=string::npos) setVal(varname, mV_leptonic);
       else cerr << "HVVTree::fillVHProductionAngles -> ERROR: Branch " << varname << " is invalid!" << endl;
     }
+  }
+}
+void HVVTree::fillTTHProductionAngles(bool isGen){
+  // Masses
+  float mT1=0;
+  float mW1=0;
+  float mT2=0;
+  float mW2=0;
+
+  // ttH system
+  float hs=0;
+  float h1=0;
+  float h2=0;
+  float Phi=0;
+  float Phi1=0;
+
+  // tt system
+  float hbb=0;
+  float hWW=0;
+  float Phibb=0;
+  float Phi1bb=0;
+
+  // Wplus system
+  float hWplusf=0;
+  float PhiWplusf=0;
+
+  // Wminus system
+  float hWminusf=0;
+  float PhiWminusf=0;
+
+
+  if (melaHelpers::melaHandle->getCurrentCandidate()){
+    melaHelpers::melaHandle->computeTTHAngles(
+      1,
+
+      mT1, mW1,
+      mT2, mW2,
+
+      // ttH system
+      hs, h1, h2, Phi, Phi1,
+
+      // tt system
+      hbb, hWW, Phibb, Phi1bb,
+
+      // Wplus system
+      hWplusf, PhiWplusf,
+
+      // Wminus system
+      hWminusf, PhiWminusf
+    );
+  }
+  vector<string> varlist;
+  getAngularBranches(varlist, 5, isGen);
+  for (unsigned int b=0; b<varlist.size(); b++){
+    string varname = varlist.at(b);
+    if (varname.find("costhetastar_ttH")!=string::npos) setVal(varname, hs);
+    else if (varname.find("costheta1_ttH")!=string::npos) setVal(varname, h1);
+    else if (varname.find("costheta2_ttH")!=string::npos) setVal(varname, h2);
+    else if (varname.find("Phi1_ttH")!=string::npos) setVal(varname, Phi1);
+    else if (varname.find("Phi_ttH")!=string::npos) setVal(varname, Phi);
+
+    else if (varname.find("costhetabb_ttH")!=string::npos) setVal(varname, hbb);
+    else if (varname.find("costhetaWW_ttH")!=string::npos) setVal(varname, hWW);
+    else if (varname.find("Phi1bb_ttH")!=string::npos) setVal(varname, Phi1bb);
+    else if (varname.find("Phibb_ttH")!=string::npos) setVal(varname, Phibb);
+
+    else if (varname.find("costhetaWplus_ttH")!=string::npos) setVal(varname, hWplusf);
+    else if (varname.find("PhiWplus_ttH")!=string::npos) setVal(varname, PhiWplusf);
+
+    else if (varname.find("costhetaWminus_ttH")!=string::npos) setVal(varname, hWminusf);
+    else if (varname.find("PhiWminus_ttH")!=string::npos) setVal(varname, PhiWminusf);
+
+    else if (varname.find("mTop1_ttH")!=string::npos) setVal(varname, mT1);
+    else if (varname.find("mW1_ttH")!=string::npos) setVal(varname, mW1);
+    else if (varname.find("mTop2_ttH")!=string::npos) setVal(varname, mT2);
+    else if (varname.find("mW2_ttH")!=string::npos) setVal(varname, mW2);
+    else cerr << "HVVTree::fillTTHProductionAngles -> ERROR: Branch " << varname << " is invalid!" << endl;
   }
 }
 void HVVTree::fillMELAProbabilities(bool isGen){
