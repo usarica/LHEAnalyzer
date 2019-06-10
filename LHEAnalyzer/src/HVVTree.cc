@@ -725,7 +725,7 @@ void HVVTree::fillTTHProductionAngles(bool isGen){
       mT2, mW2,
 
       // ttH system
-      hs, h1, h2, Phi, Phi1,
+      h1, h2, Phi, hs, Phi1,
 
       // tt system
       hbb, hWW, Phibb, Phi1bb,
