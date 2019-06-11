@@ -129,9 +129,6 @@ void Reader::synchMappedBranches(){
 }
 
 void Reader::run(){
-  Float_t MC_weight=0;
-  Int_t isSelected=0;
-
   int globalNEvents = 0;
   int maxProcEvents = options->maxEventsToProcess();
   vector < pair<Int_t, Int_t> > eventSkipList = options->getSkippedEvents();
@@ -276,8 +273,6 @@ void Reader::readEvent(MELAEvent& outEvent, vector<MELAParticle*>& particles, bo
   typedef vectorFloat VectorPrecision_t;
 
   string varname;
-
-  string isSelected = "isSelected";
 
   string strId = "Id";
   vector<string> strMassPtEtaPhi; strMassPtEtaPhi.push_back("Pt"); strMassPtEtaPhi.push_back("Eta"); strMassPtEtaPhi.push_back("Phi"); strMassPtEtaPhi.push_back("Mass");

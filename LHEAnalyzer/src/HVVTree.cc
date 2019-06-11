@@ -350,8 +350,6 @@ void HVVTree::fillDaughterProducts(MELACandidate* pH, bool isGen){
     int nVDau = (intermediateV ? intermediateV->getNDaughters() : 0);
 
     for (int d=0; d<2; d++){
-      int iLep = 2*v+d+1;
-
       bool isNew = false;
       MELAParticle* lepton = (intermediateV ? intermediateV->getDaughter(d) : nullptr);
 

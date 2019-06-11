@@ -1,9 +1,14 @@
-HERE = $(PWD)
-BASEINCLUDE=$(CMSSW_BASE)/src
-MELADIR=$(BASEINCLUDE)/ZZMatrixElement/MELA
-CANDLORECASTERDIR=$(BASEINCLUDE)/MelaAnalytics/CandidateLOCaster
-EVENTCONTAINERDIR=$(BASEINCLUDE)/MelaAnalytics/EventContainer
-GENERICMECOMPUTERDIR=$(BASEINCLUDE)/MelaAnalytics/GenericMEComputer
+BASEINCLUDE          = $(CMSSW_BASE)/src
+MELADIR              = $(BASEINCLUDE)/ZZMatrixElement/MELA
+CANDLORECASTERDIR    = $(BASEINCLUDE)/MelaAnalytics/CandidateLOCaster
+EVENTCONTAINERDIR    = $(BASEINCLUDE)/MelaAnalytics/EventContainer
+GENERICMECOMPUTERDIR = $(BASEINCLUDE)/MelaAnalytics/GenericMEComputer
+COMPILEPATH          = $(PWD)/
+INCLUDEDIR           = $(COMPILEPATH)interface/
+SRCDIR               = $(COMPILEPATH)src/
+BINDIR               = $(COMPILEPATH)bin/
+OUTLIB               = $(COMPILEPATH)lib/
+RUNDIR               = $(COMPILEPATH)
 
 ROOTCFLAGS    = $(shell root-config --cflags) -Lrootlib -lEG
 ROOTGLIBS     = $(shell root-config --glibs) -Lrootlib -lEG
@@ -23,7 +28,7 @@ DllSuf        = dylib
 UNDEFOPT      = suppress
 endif
 
-CXXFLAGS      += $(ROOTCFLAGS) -I$(ROOFITSYS)/include/ -I$(BASEINCLUDE) -I$(HERE)/interface/ -I$(MELADIR)/interface/ -I$(CANDLORECASTERDIR)/interface/ -I$(EVENTCONTAINERDIR)/interface/ -I$(GENERICMECOMPUTERDIR)/interface/
+CXXFLAGS      += $(ROOTCFLAGS) -I$(ROOFITSYS)/include/ -I$(BASEINCLUDE) -I$(INCLUDEDIR) -I$(MELADIR)/interface/ -I$(CANDLORECASTERDIR)/interface/ -I$(EVENTCONTAINERDIR)/interface/ -I$(GENERICMECOMPUTERDIR)/interface/
 
 NGLIBS         = $(ROOTGLIBS)
 # Hack here, because RooFit is removed from ROOT:
@@ -32,27 +37,21 @@ NGLIBS  += -L $(CMSSW_BASE)/lib/$(SCRAM_ARCH)/ -lZZMatrixElementMELA -lMelaAnaly
 GLIBS          = $(filter-out -lNew, $(NGLIBS))
 
 
-COMPILEPATH      = $(PWD)/
-INCLUDEDIR       = $(COMPILEPATH)src/
-OUTLIB           = $(COMPILEPATH)lib/
-RUNDIR           = $(COMPILEPATH)
-
-
-SOURCES = $(wildcard $(INCLUDEDIR)*.cc)
+SOURCES = $(wildcard $(SRCDIR)*.cc $(BINDIR)*.cc)
 OBJECTS = $(SOURCES:.cc=.o)
 
 .PHONY: all help compile clean
 
-all: analyzer dolinks
+all: LHEAnalyzer dolinks
 
 
 # General rule for making object files
-%.d:	$(INCLUDEDIR)%.cc $(INCLUDEDIR)%.cxx
+%.d:	$(SRCDIR)%.cc $(BINDIR)%.cc $(SRCDIR)%.cxx $(BINDIR)%.cxx
 	$(QUIET) echo "Checking dependencies for $<"; \
 	$(CXX) -MM -MT $@ -MT ${@:.d=.o} $(CXXFLAGS) $< > $@; \
                      [ -s $@ ] || rm -f $@
 
-%.o: 	$(INCLUDEDIR)%.cc
+%.o: 	$(SRCDIR)%.cc $(SRCDIR)%.cxx $(BINDIR)%.cc $(BINDIR)%.cxx
 	$(QUIET) echo "Compiling $<"; \
 	$(CXX) $(CXXFLAGS) $< -c -o $@ $(GLIBS)
 
@@ -64,8 +63,8 @@ dolinks:
 	ln -sf $(COMPILEPATH)macros/loadLib.cc $(RUNDIR)loadLib.cc
 	ln -sf $(COMPILEPATH)macros/trimPythia.cc $(RUNDIR)trimPythia.cc
 
-analyzer: $(OBJECTS)
-	$(CXX) $(CXXFLAGS) -o $(RUNDIR)analyzer $(INCLUDEDIR)*.o $(GLIBS)
+LHEAnalyzer: $(OBJECTS)
+	$(CXX) $(CXXFLAGS) -o $(RUNDIR)LHEAnalyzer $(OBJECTS) $(GLIBS)
 
 
 clean:
@@ -75,11 +74,15 @@ clean:
 	rm -f $(RUNDIR)process.DAT
 	rm -f $(RUNDIR)ffwarn.dat
 	rm -f $(RUNDIR)br.sm*
-	rm -f $(INCLUDEDIR)*.o
-	rm -f $(INCLUDEDIR)*.so
-	rm -f $(INCLUDEDIR)*.d
+	rm -f $(SRCDIR)*.o
+	rm -f $(SRCDIR)*.so
+	rm -f $(SRCDIR)*.d
+	rm -f $(BINDIR)*.o
+	rm -f $(BINDIR)*.so
+	rm -f $(BINDIR)*.d
 	rm -f $(RUNDIR)*.cc
 	rm -f $(RUNDIR)analyze*
+	rm -f $(RUNDIR)LHEAnalyze*
 	rm -f $(RUNDIR)*.o
 	rm -f $(RUNDIR)*.so
 	rm -f $(RUNDIR)*.d

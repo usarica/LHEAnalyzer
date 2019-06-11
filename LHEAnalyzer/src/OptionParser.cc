@@ -1,41 +1,46 @@
+#include "TUtilHelpers.hh"
 #include "OptionParser.h"
 
 
+using namespace std;
+
+
 OptionParser::OptionParser(int argc, char** argv) :
-mPOLE(125.), // mH
-wPOLE(4.07e-3), // GammaH
-wPOLEStandard(4.07e-3), // GHSM
-erg_tev(13), // C.o.M. energy in TeV
-includeGenInfo(1), // Record gen. level quantities
-includeRecoInfo(1), // Record reco. level quantities
-removeDaughterMasses(1), // Force lepton masses to 0 in MELA
-computeDecayAngles(1), // Decay angles
-computeVBFAngles(0), // VBF production angles
-computeVHAngles(0), // VH production angles
-computeTTHAngles(0), // VH production angles
-sampleProductionId(TVar::ZZGG, TVar::JHUGen), // Sample gen. production mode
-fileLevel(0), // -1: ReadMode, 0: LHE, 1: Pythia,
-pythiaStep(1), //0: GEN, 1: GEN-SIM
-isGenHZZ(1), // H->ZZ or H->WW
-isRecoHZZ(1), // H->ZZ or H->WW
-genDecayMode(0), // 4l with HZZ, 2l2nu with HWW, see Event::constructVVCandidates(bool isZZ, int fstype)
-recoDecayMode(0), // 4l with HZZ, 2l2nu with HWW, see Event::constructVVCandidates(bool isZZ, int fstype)
-recoSelBehaviour(0),
-recoSmearBehaviour(0),
-genHiggsCandidateSelectionScheme(HiggsComparators::BestZ1ThenZ2ScSumPt),
-recoHiggsCandidateSelectionScheme(HiggsComparators::BestZ1ThenZ2ScSumPt),
+  mPOLE(125.), // mH
+  wPOLE(4.07e-3), // GammaH
+  wPOLEStandard(4.07e-3), // GHSM
+  erg_tev(13), // C.o.M. energy in TeV
+  includeGenInfo(1), // Record gen. level quantities
+  includeRecoInfo(1), // Record reco. level quantities
+  removeDaughterMasses(1), // Force lepton masses to 0 in MELA
+  computeDecayAngles(1), // Decay angles
+  computeVBFAngles(0), // VBF production angles
+  computeVHAngles(0), // VH production angles
+  computeTTHAngles(0), // VH production angles
+  fileLevel(0), // -1: ReadMode, 0: LHE, 1: Pythia,
+  pythiaStep(1), //0: GEN, 1: GEN-SIM
+  isGenHZZ(1), // H->ZZ or H->WW
+  isRecoHZZ(1), // H->ZZ or H->WW
+  genDecayMode(0), // 4l with HZZ, 2l2nu with HWW, see Event::constructVVCandidates(bool isZZ, int fstype)
+  recoDecayMode(0), // 4l with HZZ, 2l2nu with HWW, see Event::constructVVCandidates(bool isZZ, int fstype)
+  recoSelBehaviour(0),
+  recoSmearBehaviour(0),
+  genHiggsCandidateSelectionScheme(HiggsComparators::BestZ1ThenZ2ScSumPt),
+  recoHiggsCandidateSelectionScheme(HiggsComparators::BestZ1ThenZ2ScSumPt),
 
-recastGenTopologyToLOQCDVH(false),
-recastGenTopologyToLOQCDVBF(false),
+  recastGenTopologyToLOQCDVH(false),
+  recastGenTopologyToLOQCDVBF(false),
 
-jetDeltaRIso(0.5),
-jetAlgo("ak"),
+  jetDeltaRIso(0.4),
+  jetAlgo("ak"),
 
-indir("./"),
-outdir("./"),
-tmpDir("./tmpStore/"),
-coutput("tmp.root"),
-maxEvents(-1)
+  indir("./"),
+  outdir("./"),
+  coutput("tmp.root"),
+  tmpDir("./tmpStore/"),
+  maxEvents(-1),
+
+  sampleProductionId(TVar::ZZGG, TVar::JHUGen) // Sample gen. production mode
 {
   for (int a=0; a<argc; a++){
     string tmpArg(argv[a]);
@@ -61,12 +66,12 @@ void OptionParser::analyze(){
     if (wish=="JetAlgorithm" || wish=="jetAlgorithm" || wish=="jetalgorithm") hasJetAlgo=true;
   }
 
-  if (filename.size()==0){ cerr << "You have to specify the input files." << endl; if(!hasInvalidOption) hasInvalidOption=true; }
+  if (filename.size()==0){ cerr << "You have to specify the input files." << endl; if (!hasInvalidOption) hasInvalidOption=true; }
   else{
     for (unsigned int f=0; f<filename.size(); f++){
       if ((filename.at(f).find(".lhe")!=string::npos && fileLevel!=0) || (filename.at(f).find(".root")!=string::npos && fileLevel==0)){
         cerr << "Inconsistent file name " << filename.at(f) << " and fileLevel option " << fileLevel << "!" << endl;
-        if(!hasInvalidOption) hasInvalidOption=true;
+        if (!hasInvalidOption) hasInvalidOption=true;
       }
     }
   }
@@ -87,12 +92,12 @@ void OptionParser::analyze(){
   }
   if (isRecoHZZ==-1){ cerr << "Reco. Higgs decay cannot be disabled." << endl; if (!hasInvalidOption) hasInvalidOption=true; }
   if (includeGenInfo==0 && includeRecoInfo==0){ cerr << "Cannot omit both reco. and gen. level info." << endl; if (!hasInvalidOption) hasInvalidOption=true; }
-  if (mPOLE==0 || wPOLE==0 || erg_tev==0){ cerr << "Cannot have mH, GammaH or sqrts == 0" << endl; if(!hasInvalidOption) hasInvalidOption=true; }
-  if (genHiggsCandidateSelectionScheme>=HiggsComparators::nCandidateSelections){ cerr << "Gen. H selection scheme is invalid!" << endl; if(!hasInvalidOption) hasInvalidOption=true; }
-  if (recoHiggsCandidateSelectionScheme>=HiggsComparators::nCandidateSelections){ cerr << "Reco. H selection scheme is invalid!" << endl; if(!hasInvalidOption) hasInvalidOption=true; }
+  if (mPOLE==0 || wPOLE==0 || erg_tev==0){ cerr << "Cannot have mH, GammaH or sqrts == 0" << endl; if (!hasInvalidOption) hasInvalidOption=true; }
+  if (genHiggsCandidateSelectionScheme>=HiggsComparators::nCandidateSelections){ cerr << "Gen. H selection scheme is invalid!" << endl; if (!hasInvalidOption) hasInvalidOption=true; }
+  if (recoHiggsCandidateSelectionScheme>=HiggsComparators::nCandidateSelections){ cerr << "Reco. H selection scheme is invalid!" << endl; if (!hasInvalidOption) hasInvalidOption=true; }
   if (hasGenProdProb && sampleProductionId.first==TVar::ZZGG){ cerr << "sampleProductionId==ZZGG is not a valid option (ME is not implemented). Use decay MEs instead for ZZGG or specify another production." << endl; if (!hasInvalidOption) hasInvalidOption=true; }
   if (!(((jetDeltaRIso==0.4 || jetDeltaRIso==0.5 || jetDeltaRIso==0.8) && jetAlgo=="ak") || ((jetDeltaRIso==0.4 || jetDeltaRIso==0.6) && jetAlgo=="kt"))){ cerr << "Jet algorithm can only be used with object isolations 0.4, 0.5 or 0.8 for ak, and 0.4 or 0.6 for kt jets at this moment." << endl; if (!hasInvalidOption) hasInvalidOption=true; }
-  else{ jetAlgo.append(std::to_string((int)(10*jetDeltaRIso))); if(hasJetAlgo) cout << "Jet algorithm string " << jetAlgo << " has the isolation appended." << endl; }
+  else{ jetAlgo.append(std::to_string((int) (10*jetDeltaRIso))); if (hasJetAlgo) cout << "Jet algorithm string " << jetAlgo << " has the isolation appended." << endl; }
   if (recastGenTopologyToLOQCDVH && recastGenTopologyToLOQCDVBF){ cerr << "Cannot recast the gen. topology to both VH and VBF LO QCD. Please choose only one!" << endl; hasInvalidOption=true; }
   if (recastGenTopologyToLOQCDVH && !(sampleProductionId.first==TVar::Had_ZH || sampleProductionId.first==TVar::Had_WH)){ cerr << "Cannot recast the gen. topology to VH without any dpecification of WH or ZH production!" << endl; hasInvalidOption=true; }
 
@@ -105,20 +110,20 @@ void OptionParser::analyze(){
   if (hasInvalidOption) printOptionsHelp();
 
   // Append extra "/" if they do not exist.
-  unsigned int tlen=(unsigned int)indir.length();
+  unsigned int tlen=(unsigned int) indir.length();
   if (tlen>1 && indir[tlen-1]!='/') indir.append("/");
-  tlen=(unsigned int)outdir.length();
+  tlen=(unsigned int) outdir.length();
   if (tlen>1 && outdir[tlen-1]!='/') outdir.append("/");
-  tlen=(unsigned int)tmpDir.length();
+  tlen=(unsigned int) tmpDir.length();
   if (tlen>1 && tmpDir[tlen-1]!='/') tmpDir.append("/");
-  
+
   // Set isolation
   ParticleComparators::setJetDeltaR(jetDeltaRIso);
 
   // Initialize the global Mela if needed
   configureMela();
 }
-void OptionParser::splitOption(const string& rawoption, string& wish, string& value, char delimiter){
+void OptionParser::splitOption(std::string const& rawoption, std::string& wish, std::string& value, char delimiter){
   size_t posEq = rawoption.find(delimiter);
   if (posEq!=string::npos){
     wish=rawoption;
@@ -130,7 +135,7 @@ void OptionParser::splitOption(const string& rawoption, string& wish, string& va
     value=rawoption;
   }
 }
-void OptionParser::splitOptionRecursive(const string& rawoption, vector<string>& splitoptions, char delimiter){
+void OptionParser::splitOptionRecursive(std::string const& rawoption, std::vector<std::string>& splitoptions, char delimiter){
   string suboption=rawoption, result=rawoption;
   string remnant;
   while (result!=""){
@@ -140,7 +145,7 @@ void OptionParser::splitOptionRecursive(const string& rawoption, vector<string>&
   }
   if (remnant!="") splitoptions.push_back(remnant);
 }
-Bool_t OptionParser::isAnExcludedBranch(const string& branchname){
+Bool_t OptionParser::isAnExcludedBranch(std::string const& branchname){
   bool isExcluded=false;
   for (unsigned int eb=0; eb<excludedBranch.size(); eb++){
     if (branchname.find(excludedBranch.at(eb))!=string::npos && !(branchname.find("Gen")!=string::npos && excludedBranch.at(eb).find("Gen")==string::npos)){
@@ -150,12 +155,12 @@ Bool_t OptionParser::isAnExcludedBranch(const string& branchname){
   }
   return isExcluded;
 }
-void OptionParser::extractSkippedEvents(const string& rawoption){
-  vector<string> skipPair;
-  splitOptionRecursive(rawoption, skipPair, ',');
-  for (unsigned int p=0; p<skipPair.size(); p++){
+void OptionParser::extractSkippedEvents(std::string const& rawoption){
+  vector<string> skipPairs;
+  splitOptionRecursive(rawoption, skipPairs, ',');
+  for (string const& skipPair:skipPairs){
     string strlow, strhigh;
-    splitOption(skipPair.at(p), strlow, strhigh, '.');
+    splitOption(skipPair, strlow, strhigh, '.');
 
     bool firstInclusive = true;
     size_t posFirstInc=strlow.find("[");
@@ -171,7 +176,7 @@ void OptionParser::extractSkippedEvents(const string& rawoption){
       }
       else strlow = strlow.substr(posFirstInc+1);
     }
-    Int_t firstId=(Int_t)atoi(strlow.c_str());
+    Int_t firstId=(Int_t) atoi(strlow.c_str());
     if (!firstInclusive) firstId++;
 
     bool lastInclusive = false;
@@ -188,7 +193,7 @@ void OptionParser::extractSkippedEvents(const string& rawoption){
         strhigh.erase(strhigh.begin()+posLastInc, strhigh.end());
       }
     }
-    Int_t lastId=(Int_t)atoi(strhigh.c_str());
+    Int_t lastId=(Int_t) atoi(strhigh.c_str());
     if (!lastInclusive) lastId--;
 
     if ((lastId>=0 && lastId<firstId) || (firstId<0 && lastId<0)){
@@ -200,14 +205,13 @@ void OptionParser::extractSkippedEvents(const string& rawoption){
     eventSkipRanges.push_back(tmpPair);
   }
 }
-void OptionParser::extractGlobalRecordSet(const string& rawoption){
+void OptionParser::extractGlobalRecordSet(std::string const& rawoption){
   vector<string> compositePair;
   splitOptionRecursive(rawoption, compositePair, ',');
-  for (int p=0; p<compositePair.size(); p++){
+  for (string const& cpair:compositePair){
     string strname, strvalue;
-    splitOption(compositePair.at(p), strname, strvalue, ':');
+    splitOption(cpair, strname, strvalue, ':');
 
-    bool firstbracket = true;
     size_t posFirstBrac=strname.find("[");
     size_t posLastBrac=strvalue.find("]");
     if (posFirstBrac==string::npos || posLastBrac==string::npos){
@@ -233,7 +237,7 @@ void OptionParser::configureMela(){
 void OptionParser::deconfigureMela(){
   if (melaHelpers::melaHandle) delete melaHelpers::melaHandle;
 }
-void OptionParser::extractMelaGenProdId(string rawoption){
+void OptionParser::extractMelaGenProdId(std::string const& rawoption){
   vector<string> prod_me_pair;
   splitOptionRecursive(rawoption, prod_me_pair, ',');
   if (prod_me_pair.size()!=2){
@@ -263,38 +267,33 @@ void OptionParser::extractMelaGenProdId(string rawoption){
     sampleProductionId = tmpPair;
   }
 }
-Bool_t OptionParser::checkListVariable(const vector<string>& list, const string& var)const{
-  for (unsigned int v=0; v<list.size(); v++){
-    if (list.at(v)==var) return true; // Look for exact match
-  }
-  return false;
-}
-Bool_t OptionParser::hasGenDecayME(const string& str){
+Bool_t OptionParser::checkListVariable(std::vector<std::string> const& list, std::string const& var)const{ return TUtilHelpers::checkElementExists(var, list); }
+Bool_t OptionParser::hasGenDecayME(std::string const& str){
   if (str=="" || str=="*"){
     return (includeGenDecayProb.size()>0 && processGenInfo());
   }
   return (checkListVariable(includeGenDecayProb, str) && processGenInfo());
 }
-Bool_t OptionParser::hasRecoDecayME(const string& str){
+Bool_t OptionParser::hasRecoDecayME(std::string const& str){
   if (str=="" || str=="*"){
     return (includeRecoDecayProb.size()>0 && processGenInfo());
   }
   return (checkListVariable(includeRecoDecayProb, str) && processRecoInfo());
 }
-Bool_t OptionParser::hasRecoProdME(const string& str){
+Bool_t OptionParser::hasRecoProdME(std::string const& str){
   if (str=="" || str=="*"){
     return (includeRecoProdProb.size()>0 && processGenInfo());
   }
   return (checkListVariable(includeRecoProdProb, str) && processRecoInfo());
 }
-Bool_t OptionParser::hasGenProdME(const string& str){ // This one is a little bit trickier to avoid unneeded gen. prod. MEs
+Bool_t OptionParser::hasGenProdME(std::string const& str){ // This one is a little bit trickier to avoid unneeded gen. prod. MEs
   if (str=="" || str=="*"){
     return (includeGenProdProb.size()>0 && processGenInfo());
   }
   return (checkListVariable(includeGenProdProb, str) && processGenInfo());
 }
 
-void OptionParser::interpretOption(const string& wish, string value){
+void OptionParser::interpretOption(std::string const& wish, std::string const& value){
   if (wish.empty()){
     if (value.find(".lhe")!=string::npos || value.find(".root")!=string::npos) filename.push_back(value);
     else if (value.find("help")!= string::npos) printOptionsHelp();

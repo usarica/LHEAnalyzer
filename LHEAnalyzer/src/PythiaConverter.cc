@@ -220,7 +220,6 @@ void PythiaConverter::readEvent(TTree* tin, const int& ev, vector<MELAParticle*>
   int nEvents = tin->GetEntries();
   vectorDouble weights;
   if (ev>=nEvents){
-    double weight = 0;
     genSuccess=false;
     smearedSuccess=false;
     weights.push_back(0);
