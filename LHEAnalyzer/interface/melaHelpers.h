@@ -24,6 +24,7 @@ namespace melaHelpers{
   TVar::Production getFirstAssociatedHadronicVProduction(MELACandidate const* cand);
 
   Float_t melaBranchMEInterpreter(std::string& branchname);
+
 }
 
 #endif

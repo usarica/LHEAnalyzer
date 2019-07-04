@@ -20,9 +20,10 @@ protected:
   void extractSkippedEvents(std::string const& rawoption);
   void extractGlobalRecordSet(std::string const& rawoption);
 
-  void configureMela();
-  void deconfigureMela();
-  void extractMelaGenProdId(std::string const& rawoption);
+  void configureMela()const;
+  void deconfigureMela()const;
+  void extractMElines();
+  static void extractMElines(std::string const& sfile, std::vector<std::string>& llist);
 
   Bool_t checkListVariable(std::vector<std::string> const& list, std::string const& var)const;
 
@@ -50,9 +51,6 @@ protected:
   HiggsComparators::CandidateSelection genHiggsCandidateSelectionScheme;
   HiggsComparators::CandidateSelection recoHiggsCandidateSelectionScheme;
 
-  Bool_t recastGenTopologyToLOQCDVH;
-  Bool_t recastGenTopologyToLOQCDVBF;
-
   Double_t jetDeltaRIso;
   std::string jetAlgo;
 
@@ -64,12 +62,11 @@ protected:
   std::vector<std::string> excludedBranch;
   Int_t maxEvents;
 
-  // Mela probabilities to include, has to be in abbreviated form (eg. "All", "None", "p0plus", "g1", "g1_prime2" etc.)
-  std::pair<TVar::Production, TVar::MatrixElement> sampleProductionId;
-  std::vector<std::string> includeGenDecayProb;
-  std::vector<std::string> includeRecoDecayProb;
-  std::vector<std::string> includeGenProdProb;
-  std::vector<std::string> includeRecoProdProb;
+  // MELA probabilities to compute
+  std::string lheMEfile;
+  std::string recoMEfile;
+  std::vector<std::string> lheMElist;
+  std::vector<std::string> recoMElist;
 
   std::vector<std::pair<Int_t, Int_t>> eventSkipRanges;
   std::vector<std::pair<std::string, std::string>> globalRecordSet;
@@ -79,56 +76,45 @@ public:
   ~OptionParser(){ deconfigureMela(); };
 
   void analyze();
-  void splitOption(std::string const& rawoption, std::string& wish, std::string& value, char delimiter='=');
-  void splitOptionRecursive(std::string const& rawoption, std::vector<std::string>& splitoptions, char delimiter=',');
   void interpretOption(std::string const& wish, std::string const& value);
-  void printOptionsHelp();
-  void printOptionSummary();
+  void printOptionsHelp()const;
+  void printOptionSummary()const;
 
-  Bool_t processGenInfo(){ bool doProcess=true; if (includeGenInfo==0) doProcess=false; return doProcess; }
-  Bool_t processRecoInfo(){ bool doProcess=true; if (includeRecoInfo==0) doProcess=false; return doProcess; }
-  Bool_t isAnExcludedBranch(std::string const& branchname);
-  Int_t analysisLevel(){ return fileLevel; }
-  Int_t pythiaType(){ return pythiaStep; }
-  std::string jetAlgorithm(){ return jetAlgo; }
-  Int_t doGenHZZdecay(){ return isGenHZZ; }
-  Int_t doRecoHZZdecay(){ return isRecoHZZ; }
-  Int_t genDecayProducts(){ return genDecayMode; }
-  Int_t recoDecayProducts(){ return recoDecayMode; }
-  Int_t recoSelectionMode(){ return recoSelBehaviour; }
-  Int_t recoSmearingMode(){ return recoSmearBehaviour; }
-  HiggsComparators::CandidateSelection getHiggsCandidateSelectionScheme(bool isGen=false){ if (isGen) return genHiggsCandidateSelectionScheme; else return recoHiggsCandidateSelectionScheme; }
-  std::string inputDir(){ return indir; }
-  std::string outputDir(){ return outdir; }
-  std::string getTempDir(){ return tmpDir; }
-  std::string outputFilename(){ return coutput; }
-  std::vector<std::string> inputfiles(){ return filename; }
-  Int_t maxEventsToProcess(){ return maxEvents; };
-  std::vector<std::pair<Int_t, Int_t>> getSkippedEvents(){ return eventSkipRanges; };
+  Bool_t processGenInfo()const{ return (includeGenInfo!=0); }
+  Bool_t processRecoInfo()const{ return (includeRecoInfo!=0); }
+  Bool_t isAnExcludedBranch(std::string const& branchname) const;
+  Int_t analysisLevel()const{ return fileLevel; }
+  Int_t pythiaType()const{ return pythiaStep; }
+  std::string jetAlgorithm()const{ return jetAlgo; }
+  Int_t doGenHZZdecay()const{ return isGenHZZ; }
+  Int_t doRecoHZZdecay()const{ return isRecoHZZ; }
+  Int_t genDecayProducts()const{ return genDecayMode; }
+  Int_t recoDecayProducts()const{ return recoDecayMode; }
+  Int_t recoSelectionMode()const{ return recoSelBehaviour; }
+  Int_t recoSmearingMode()const{ return recoSmearBehaviour; }
+  HiggsComparators::CandidateSelection getHiggsCandidateSelectionScheme(bool isGen)const{ return (isGen ? genHiggsCandidateSelectionScheme : recoHiggsCandidateSelectionScheme); }
+  std::string inputDir()const{ return indir; }
+  std::string outputDir()const{ return outdir; }
+  std::string getTempDir()const{ return tmpDir; }
+  std::string outputFilename()const{ return coutput; }
+  std::vector<std::string> inputfiles()const{ return filename; }
+  Int_t maxEventsToProcess()const{ return maxEvents; };
+  std::vector<std::pair<Int_t, Int_t>> getSkippedEvents()const{ return eventSkipRanges; };
 
-  Bool_t hasGlobalRecord(){ return !globalRecordSet.empty(); }
-  std::vector<std::pair<std::string, std::string>> getGlobalRecordSet(){ return globalRecordSet; }
+  Bool_t hasGlobalRecord()const{ return !globalRecordSet.empty(); }
+  std::vector<std::pair<std::string, std::string>> getGlobalRecordSet()const{ return globalRecordSet; }
 
   // MELA-related options
-  Double_t mH(){ return mPOLE; }
-  Double_t GammaH(){ return wPOLE; }
-  Int_t sqrts(){ return erg_tev; }
-  Bool_t initializeMELABranches(){ return (!includeGenDecayProb.empty() && !includeRecoDecayProb.empty() && !includeGenProdProb.empty() && !includeRecoProdProb.empty()); }
-  Bool_t doRemoveLepMasses(){ bool doProcess=true; if (removeDaughterMasses==0) doProcess=false; return doProcess; }
-  Bool_t doComputeDecayAngles(){ bool doProcess=true; if (computeDecayAngles==0) doProcess=false; return doProcess; }
-  Bool_t doComputeVBFAngles(){ bool doProcess=true; if (computeVBFAngles==0) doProcess=false; return doProcess; }
-  Bool_t doComputeVHAngles(){ bool doProcess=true; if (computeVHAngles==0) doProcess=false; return doProcess; }
-  Bool_t doComputeTTHAngles(){ bool doProcess=true; if (computeTTHAngles==0) doProcess=false; return doProcess; }
-  Int_t computeVHAnglesOrder(){ return computeVHAngles; }
-  Bool_t hasGenDecayME(std::string const& str);
-  Bool_t hasRecoDecayME(std::string const& str);
-  Bool_t hasGenProdME(std::string const& str);
-  Bool_t hasRecoProdME(std::string const& str);
-
-  const Bool_t& doRecastGenTopologyToLOQCDVH() const{ return recastGenTopologyToLOQCDVH; }
-  const Bool_t& doRecastGenTopologyToLOQCDVBF() const{ return recastGenTopologyToLOQCDVBF; }
-
-  std::pair<TVar::Production, TVar::MatrixElement> getSampleProductionId(){ return sampleProductionId; }
+  Double_t mH()const{ return mPOLE; }
+  Double_t GammaH()const{ return wPOLE; }
+  Int_t sqrts()const{ return erg_tev; }
+  Bool_t doMEComputations()const{ return !(lheMElist.empty() && recoMElist.empty()); }
+  Bool_t doRemoveLepMasses()const{ return (removeDaughterMasses!=0); }
+  Bool_t doComputeDecayAngles()const{ return (computeDecayAngles!=0); }
+  Bool_t doComputeVBFAngles()const{ return (computeVBFAngles!=0); }
+  Bool_t doComputeVHAngles()const{ return (computeVHAngles!=0); }
+  Bool_t doComputeTTHAngles()const{ return (computeTTHAngles!=0); }
+  Int_t computeVHAnglesOrder()const{ return computeVHAngles; }
 
 };
 

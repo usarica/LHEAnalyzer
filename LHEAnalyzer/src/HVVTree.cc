@@ -1,6 +1,15 @@
 #include "HVVTree.h"
 
 
+HVVTree::HVVTree() :BaseTree(), options(0){}
+HVVTree::HVVTree(std::string treename) : BaseTree(treename), options(0){}
+HVVTree::HVVTree(std::string treename, std::string treetitle) : BaseTree(treename, treetitle), options(0){}
+HVVTree::HVVTree(std::string treename, TFile* fin) : BaseTree(treename, fin), options(0){}
+HVVTree::~HVVTree(){
+  // Delete MELA branches
+  clearMELABranches();
+}
+
 bool HVVTree::reserveBranch(string branchname, const BaseTree::BranchTypes& branchtype, const bool& doSetAddress){
   bool isAvailable = true;
   if (options->isAnExcludedBranch(branchname)){
@@ -82,7 +91,7 @@ void HVVTree::bookAllBranches(const bool& doSetAddress){
     bookPtEtaPhiMassIdBranches("CandDau", BaseTree::bVectorFloat, doSetAddress, true, false, false);
   }
   bookAngularBranches(doSetAddress);
-  if (options->initializeMELABranches() || doSetAddress) bookMELABranches(doSetAddress);
+  //if (options->initializeMELABranches() || doSetAddress) bookMELABranches(doSetAddress);
   actuateBranches(doSetAddress);
 }
 
@@ -210,30 +219,6 @@ void HVVTree::getAngularBranches(vector<string>& blist, const Int_t& prodFlag /*
   }
 }
 
-
-void HVVTree::bookMELABranches(const bool& doSetAddress){
-  vector<string> tmpBranchList = constructMELABranchList(doSetAddress);
-  for (unsigned int b=0; b<tmpBranchList.size(); b++){
-    bool isReserved = reserveBranch(tmpBranchList.at(b), BaseTree::bFloat, doSetAddress);
-    if (isReserved){
-      melaProbBranches.push_back(tmpBranchList.at(b));
-    }
-  }
-}
-
-vector<string> HVVTree::constructMELABranchList(const bool& doSetAddress){
-  vector<string> blist;
-  return blist;
-}
-void HVVTree::setupMELASignalMECases(vector<string>& accumulatedlist, TVar::Production prod, TVar::MatrixElement me, bool isGen, bool isProdME, bool doSetAddress){
-  return;
-}
-vector<string> HVVTree::getMELASignalMEBranches(TVar::Production prod, TVar::MatrixElement me, vector<string> gList, vector<int> gCountRe, vector<int> gCountIm, bool isGen, bool isProdME, bool doSetAddress){
-  vector<string> blist;
-  return blist;
-}
-
-
 void HVVTree::fillMotherInfo(const MELAParticle* mother){
   if (options && options->processGenInfo() && mother){
     setVal("GenMotherPz", mother->z());
@@ -245,56 +230,31 @@ void HVVTree::fillMotherInfo(const MELAParticle* mother){
 void HVVTree::fillCandidate(MELACandidate* pH, bool isGen){
   if (!options) return;
   if ((!options->processGenInfo() && isGen) || (!options->processRecoInfo() && !isGen)) return;
-  if (pH==0) return;
-
-  MELACandidate* pHactive=pH;
-  MELACandidateRecaster* recaster=0;
-  if (isGen){
-    if (options->doRecastGenTopologyToLOQCDVH()){
-      recaster = new MELACandidateRecaster(options->getSampleProductionId().first);
-      MELACandidate* candModified=nullptr;
-      MELAParticle* bestAV = MELACandidateRecaster::getBestAssociatedV(pHactive, options->getSampleProductionId().first);
-      if (bestAV){
-        recaster->copyCandidate(pHactive, candModified);
-        recaster->deduceLOVHTopology(candModified);
-        pHactive = candModified;
-      }
-    }
-    else if (options->doRecastGenTopologyToLOQCDVBF()){
-      recaster = new MELACandidateRecaster(TVar::JJVBF);
-      MELACandidate* candModified=nullptr;
-      recaster->copyCandidate(pHactive, candModified);
-      recaster->reduceJJtoQuarks(candModified);
-      pHactive = candModified;
-    }
-  }
+  if (!pH) return;
 
   string varname;
   string strcore = "ZZ";
   if (isGen) strcore = "GenH";
-  varname = strcore + "Mass"; setVal(varname, (pHactive ? pHactive->m() : 0.));
-  varname = strcore + "Pt"; setVal(varname, (pHactive ? pHactive->pt() : 0));
-  varname = strcore + "Pz"; setVal(varname, (pHactive ? pHactive->z() : 0));
-  varname = strcore + "Phi"; setVal(varname, (pHactive ? pHactive->phi() : 0));
+  varname = strcore + "Mass"; setVal(varname, (pH ? pH->m() : 0.));
+  varname = strcore + "Pt"; setVal(varname, (pH ? pH->pt() : 0));
+  varname = strcore + "Pz"; setVal(varname, (pH ? pH->z() : 0));
+  varname = strcore + "Phi"; setVal(varname, (pH ? pH->phi() : 0));
 
-  fillCandidateDaughters(pHactive, isGen);
-  fillDaughterProducts(pHactive, isGen);
-  fillAssociatedInfo(pHactive, isGen);
+  fillCandidateDaughters(pH, isGen);
+  fillDaughterProducts(pH, isGen);
+  fillAssociatedInfo(pH, isGen);
 
-  if (melaHelpers::melaHandle && pHactive){
-    melaHelpers::melaHandle->setCurrentCandidate(pHactive);
+  if (melaHelpers::melaHandle && pH){
+    melaHelpers::melaHandle->setCurrentCandidate(pH);
 
     if (options->doComputeDecayAngles()) fillDecayAngles(isGen);
     if (options->doComputeVBFAngles()) fillVBFProductionAngles(isGen);
     if (options->doComputeVHAngles()) fillVHProductionAngles(isGen);
     if (options->doComputeTTHAngles()) fillTTHProductionAngles(isGen);
-    if (melaProbBranches.size()>0) fillMELAProbabilities(isGen); // Do it at the last step
+    fillMELAProbabilities(isGen); // Do it at the last step
 
     melaHelpers::melaHandle->resetInputEvent();
   }
-
-  if (pHactive!=pH) delete pHactive;
-  if (recaster) delete recaster;
 }
 void HVVTree::fillCandidateDaughters(MELACandidate* pH, bool isGen){
   string varname;
@@ -764,12 +724,7 @@ void HVVTree::fillTTHProductionAngles(bool isGen){
   }
 }
 void HVVTree::fillMELAProbabilities(bool isGen){
-  for (unsigned int b=0; b<melaProbBranches.size(); b++){
-    string branchname = melaProbBranches.at(b);
-    if ((isGen && branchname.find("Gen")==string::npos) || (!isGen && branchname.find("Gen")!=string::npos)) continue;
-    Float_t prob = melaHelpers::melaBranchMEInterpreter(branchname);
-    setVal(branchname, prob);
-  }
+  computeMELABranches(isGen);
 }
 
 
@@ -778,3 +733,789 @@ void HVVTree::fillEventVariables(const Float_t& weight, const Int_t& passSelecti
   if (options && options->processRecoInfo()) setVal("isSelected", passSelection);
 }
 
+
+void HVVTree::buildMELABranches(std::vector<std::string> const& lheMElist_, std::vector<std::string> const& recoMElist_){
+  /****************************/
+  /***** RECO ME BRANCHES *****/
+  /****************************/
+  for (auto const strRecoME:recoMElist_){
+    MELAOptionParser* me_opt;
+    // First find out if the option has a copy specification
+    // These copy options will be evaulated in a separate loop
+    if (strRecoME.find("Copy")!=string::npos){
+      me_opt = new MELAOptionParser(strRecoME);
+      recome_copyopts.push_back(me_opt);
+      continue;
+    }
+
+    // Create a hypothesis for each option
+    MELAHypothesis* me_hypo = new MELAHypothesis(melaHelpers::melaHandle, strRecoME);
+    recome_units.push_back(me_hypo);
+
+    me_opt = me_hypo->getOption();
+    if (me_opt->isAliased()) recome_aliased_units.push_back(me_hypo);
+
+    // Create a computation for each hypothesis
+    MELAComputation* me_computer = new MELAComputation(me_hypo);
+    recome_computers.push_back(me_computer);
+
+    // Add the computation to a named cluster to keep track of JECUp/JECDn, or for best-pWH_SM Lep_WH computations
+    GMECHelperFunctions::addToMELACluster(me_computer, recome_clusters);
+
+    this->bookMELABranches(me_opt, me_computer, false);
+  }
+  // Resolve copy options
+  for (MELAOptionParser* me_opt:recome_copyopts){
+    MELAHypothesis* original_hypo=nullptr;
+    MELAOptionParser* original_opt=nullptr;
+    // Find the original options
+    for (auto* me_aliased_unit:recome_aliased_units){
+      if (me_opt->testCopyAlias(me_aliased_unit->getOption()->getAlias())){
+        original_hypo = me_aliased_unit;
+        original_opt = original_hypo->getOption();
+        break;
+      }
+    }
+    if (!original_opt) continue;
+    else me_opt->pickOriginalOptions(original_opt);
+    // Create a new computation for the copy options
+    MELAComputation* me_computer = new MELAComputation(original_hypo);
+    me_computer->setOption(me_opt);
+    recome_computers.push_back(me_computer);
+
+    // The rest is the same story...
+    // Add the computation to a named cluster to keep track of JECUp/JECDn, or for best-pWH_SM Lep_WH computations
+    GMECHelperFunctions::addToMELACluster(me_computer, recome_clusters);
+
+    // Create the necessary branches for each computation
+    // Notice that no tree is passed, so no TBranches are created.
+    this->bookMELABranches(me_opt, me_computer, true);
+  }
+  // Loop over the computations to add any contingencies to aliased hypotheses
+  for (auto& me_computer:recome_computers) me_computer->addContingencies(recome_aliased_units);
+
+
+  /***************************/
+  /***** LHE ME BRANCHES *****/
+  /***************************/
+  for (auto const strLHEME:lheMElist_){
+    MELAOptionParser* me_opt;
+    // First find out if the option has a copy specification
+    // These copy options will be evaulated in a separate loop
+    if (strLHEME.find("Copy")!=string::npos){
+      me_opt = new MELAOptionParser(strLHEME);
+      lheme_copyopts.push_back(me_opt);
+      continue;
+    }
+
+    // Create a hypothesis for each option
+    MELAHypothesis* me_hypo = new MELAHypothesis(melaHelpers::melaHandle, strLHEME);
+    lheme_units.push_back(me_hypo);
+
+    me_opt = me_hypo->getOption();
+    if (me_opt->isAliased()) lheme_aliased_units.push_back(me_hypo);
+
+    // Create a computation for each hypothesis
+    MELAComputation* me_computer = new MELAComputation(me_hypo);
+    lheme_computers.push_back(me_computer);
+
+    // Add the computation to a named cluster to keep track of JECUp/JECDn, or for best-pWH_SM Lep_WH computations
+    GMECHelperFunctions::addToMELACluster(me_computer, lheme_clusters);
+
+    this->bookMELABranches(me_opt, me_computer, false);
+  }
+  // Resolve copy options
+  for (MELAOptionParser* me_opt:lheme_copyopts){
+    MELAHypothesis* original_hypo=nullptr;
+    MELAOptionParser* original_opt=nullptr;
+    // Find the original options
+    for (auto* me_aliased_unit:lheme_aliased_units){
+      if (me_opt->testCopyAlias(me_aliased_unit->getOption()->getAlias())){
+        original_hypo = me_aliased_unit;
+        original_opt = original_hypo->getOption();
+        break;
+      }
+    }
+    if (!original_opt) continue;
+    else me_opt->pickOriginalOptions(original_opt);
+    // Create a new computation for the copy options
+    MELAComputation* me_computer = new MELAComputation(original_hypo);
+    me_computer->setOption(me_opt);
+    lheme_computers.push_back(me_computer);
+
+    // The rest is the same story...
+    // Add the computation to a named cluster to keep track of JECUp/JECDn, or for best-pWH_SM Lep_WH computations
+    GMECHelperFunctions::addToMELACluster(me_computer, lheme_clusters);
+
+    // Create the necessary branches for each computation
+    // Notice that no tree is passed, so no TBranches are created.
+    this->bookMELABranches(me_opt, me_computer, true);
+  }
+  // Loop over the computations to add any contingencies to aliased hypotheses
+  for (auto& me_computer:lheme_computers) me_computer->addContingencies(lheme_aliased_units);
+}
+void HVVTree::bookMELABranches(MELAOptionParser* me_opt, MELAComputation* computer, bool doCopy){
+  if (!me_opt){
+    cerr << "HVVTree::bookMELABranches: Did not receive a valid me_opt. Something went wrong." << endl;
+    assert(0);
+  }
+  if (!computer){
+    cerr << "HVVTree::bookMELABranches: ME computation for the MELABranch " << me_opt->getName() << " is null. Something went wrong." << endl;
+    assert(0);
+  }
+
+  std::vector<MELABranch*>* me_branches = (me_opt->isGen() ? &(this->lheme_branches) : &(this->recome_branches));
+
+  vector<TTree*> trees;
+  if (!doCopy){
+    trees.push_back(hvvtree);
+    //if (me_opt->isGen()) trees.push_back(_failedTree);
+  }
+  else trees.push_back(nullptr); // Copy branches should not contain a tree reference
+
+  if (me_opt->doBranch()){
+    for (auto* tree:trees){
+      string basename = me_opt->getName();
+      if (me_opt->isGen()) basename = string("Gen_") + basename;
+      MELABranch* tmpbranch;
+      Float_t defVal=1.;
+      if (me_opt->hasPAux()){
+        tmpbranch = new MELABranch(
+          tree, TString((string("pAux_") + basename).c_str()),
+          defVal, computer
+        );
+        me_branches->push_back(tmpbranch);
+      }
+      if (me_opt->hasPConst()){
+        tmpbranch = new MELABranch(
+          tree, TString((string("pConst_") + basename).c_str()),
+          defVal, computer
+        );
+        me_branches->push_back(tmpbranch);
+      }
+      defVal = me_opt->getDefaultME();
+      tmpbranch = new MELABranch(
+        tree, TString((string("p_") + basename).c_str()),
+        defVal, computer
+      );
+      me_branches->push_back(tmpbranch);
+    }
+  }
+}
+void HVVTree::clearMELABranches(){
+#define CLEAR_MELA_BRANCHES_CMD(thelist) for (auto*& v:thelist) delete v;
+
+  CLEAR_MELA_BRANCHES_CMD(lheme_branches);
+  CLEAR_MELA_BRANCHES_CMD(lheme_clusters);
+  CLEAR_MELA_BRANCHES_CMD(lheme_computers);
+  CLEAR_MELA_BRANCHES_CMD(lheme_copyopts);
+  // Do not delete me_aliased_units. They are deleted together with me_units.
+  CLEAR_MELA_BRANCHES_CMD(lheme_units);
+
+  CLEAR_MELA_BRANCHES_CMD(recome_branches);
+  CLEAR_MELA_BRANCHES_CMD(recome_clusters);
+  CLEAR_MELA_BRANCHES_CMD(recome_computers);
+  CLEAR_MELA_BRANCHES_CMD(recome_copyopts);
+  // Do not delete me_aliased_units. They are deleted together with me_units.
+  CLEAR_MELA_BRANCHES_CMD(recome_units);
+
+#undef CLEAR_MELA_BRANCHES_CMD
+}
+
+
+void HVVTree::computeMELABranches(bool isGen){
+  if (!melaHelpers::melaHandle) return;
+  // Sequantial computation
+  updateMELAClusters_Common("Common", isGen);
+  updateMELAClusters_J1JEC("J1JECNominal", isGen); updateMELAClusters_J1JEC("J1JECUp", isGen); updateMELAClusters_J1JEC("J1JECDn", isGen);
+  updateMELAClusters_J2JEC("J2JECNominal", isGen); updateMELAClusters_J2JEC("J2JECUp", isGen); updateMELAClusters_J2JEC("J2JECDn", isGen);
+  updateMELAClusters_LepWH("LepWH", isGen);
+  updateMELAClusters_LepZH("LepZH", isGen);
+  updateMELAClusters_NoInitialQ("NoInitialQ", isGen);
+  updateMELAClusters_NoInitialG("NoInitialG", isGen);
+  updateMELAClusters_BestLOAssociatedZ("BestLOAssociatedZ", isGen);
+  updateMELAClusters_BestLOAssociatedW("BestLOAssociatedW", isGen);
+  updateMELAClusters_BestLOAssociatedVBF("BestLOAssociatedVBF", isGen);
+  updateMELAClusters_BestNLOVHApproximation("BestNLOZHApproximation", isGen);
+  updateMELAClusters_BestNLOVHApproximation("BestNLOWHApproximation", isGen);
+  updateMELAClusters_BestNLOVBFApproximation("BestNLOVBFApproximation", isGen);
+  updateMELAClusters_NoAssociatedG("NoAssociatedG", isGen);
+  updateMELAClusters_NoInitialGNoAssociatedG("NoInitialGNoAssociatedG", isGen);
+  // Reverse sequence
+  updateMELAClusters_NoInitialGNoAssociatedG("NoInitialGNoAssociatedGLast", isGen);
+  updateMELAClusters_NoAssociatedG("NoAssociatedGLast", isGen);
+  updateMELAClusters_BestNLOVBFApproximation("BestNLOVBFApproximationLast", isGen);
+  updateMELAClusters_BestNLOVHApproximation("BestNLOWHApproximationLast", isGen);
+  updateMELAClusters_BestNLOVHApproximation("BestNLOZHApproximationLast", isGen);
+  updateMELAClusters_BestLOAssociatedVBF("BestLOAssociatedVBFLast", isGen);
+  updateMELAClusters_BestLOAssociatedW("BestLOAssociatedWLast", isGen);
+  updateMELAClusters_BestLOAssociatedZ("BestLOAssociatedZLast", isGen);
+  updateMELAClusters_NoInitialG("NoInitialGLast", isGen);
+  updateMELAClusters_NoInitialQ("NoInitialQLast", isGen);
+  updateMELAClusters_LepZH("LepZHLast", isGen);
+  updateMELAClusters_LepWH("LepWHLast", isGen);
+  updateMELAClusters_J2JEC("J2JECNominalLast", isGen); updateMELAClusters_J2JEC("J2JECUpLast", isGen); updateMELAClusters_J2JEC("J2JECDnLast", isGen);
+  updateMELAClusters_J1JEC("J1JECNominalLast", isGen); updateMELAClusters_J1JEC("J1JECUpLast", isGen); updateMELAClusters_J1JEC("J1JECDnLast", isGen);
+  updateMELAClusters_Common("CommonLast", isGen);
+}
+void HVVTree::pushMELABranches(bool isGen){
+  std::vector<MELABranch*>& me_branches = (isGen ? lheme_branches : recome_branches);
+  std::vector<MELACluster*>& me_clusters = (isGen ? lheme_clusters : recome_clusters);
+  // Pull + push...
+  for (MELABranch* v:me_branches) v->setVal();
+  // ...then reset
+  for (MELACluster* v:me_clusters) v->reset();
+}
+// Common ME computations that do not manipulate the LHE candidate
+void HVVTree::updateMELAClusters_Common(const string clustertype, bool isGen){
+  MELACandidate* melaCand = melaHelpers::melaHandle->getCurrentCandidate();
+  if (!melaCand) return;
+
+  std::vector<MELACluster*>& me_clusters = (isGen ? lheme_clusters : recome_clusters);
+  for (MELACluster* theCluster:me_clusters){
+    if (theCluster->getName()==clustertype){
+      // Re-compute all related hypotheses first...
+      theCluster->computeAll();
+      // ...then update the cluster
+      theCluster->update();
+    }
+  }
+}
+// Common ME computations for JECNominal, Up and Down variations, case where ME requires 1 jet
+void HVVTree::updateMELAClusters_J1JEC(const string clustertype, bool isGen){
+  constexpr int njecnum = 3;
+  const int jecnumsel = -1
+    + int(clustertype=="J1JECNominal")*1
+    + int(clustertype=="J1JECUp")*2
+    + int(clustertype=="J1JECDn")*3;
+  if (jecnumsel<0) return;
+
+  // First determine if any of the candidates has only one jet
+  bool doSkip=true;
+  for (int jecnum=0; jecnum<njecnum; jecnum++){
+    melaHelpers::melaHandle->setCurrentCandidateFromIndex(jecnum);
+    MELACandidate* melaCand = melaHelpers::melaHandle->getCurrentCandidate();
+    if (!melaCand) continue;
+
+    unsigned int nGoodJets=melaCand->getNAssociatedJets();
+    doSkip = doSkip && (nGoodJets!=1);
+  }
+  if (doSkip) return; // If none of the candidates have exactly 1 jet, skip the computations
+
+  std::vector<MELACluster*>& me_clusters = (isGen ? lheme_clusters : recome_clusters);
+
+  for (int jecnum=0; jecnum<njecnum; jecnum++){
+    if (jecnum!=jecnumsel) continue;
+
+    melaHelpers::melaHandle->setCurrentCandidateFromIndex(jecnum);
+    MELACandidate* melaCand = melaHelpers::melaHandle->getCurrentCandidate();
+    if (!melaCand) continue;
+
+    const unsigned int nGoodJets=std::min(1, melaCand->getNAssociatedJets());
+    for (unsigned int firstjet = 0; firstjet < nGoodJets; firstjet++){ // Loop over first jet
+
+      for (unsigned int disableJet=0; disableJet<nGoodJets; disableJet++) melaCand->getAssociatedJet(disableJet)->setSelected(disableJet==firstjet); // Disable the other jets
+
+      for (MELACluster* theCluster:me_clusters){
+        if (theCluster->getName()==clustertype){
+          // Re-compute all related hypotheses first...
+          theCluster->computeAll();
+          // ...then force an update the cluster
+          theCluster->forceUpdate(); // MELAComputation::testMaximizationCache still prevents update for a second time if there are no contingencies.
+        }
+      } // End loop over clusters
+
+    } // End loop over first jet
+    // Turn associated jets back on
+    for (unsigned int disableJet=0; disableJet<nGoodJets; disableJet++) melaCand->getAssociatedJet(disableJet)->setSelected(true); // Turn all jets back on
+  } // End jecnum loop
+}
+// Common ME computations for JECNominal, Up and Down variations, case where ME requires 2 jets
+void HVVTree::updateMELAClusters_J2JEC(const string clustertype, bool isGen){
+  constexpr int njecnum = 3;
+  const int jecnumsel = -1
+    + int(clustertype=="J2JECNominal")*1
+    + int(clustertype=="J2JECUp")*2
+    + int(clustertype=="J2JECDn")*3;
+  if (jecnumsel<0) return;
+
+  std::vector<MELACluster*>& me_clusters = (isGen ? lheme_clusters : recome_clusters);
+
+  for (int jecnum=0; jecnum<njecnum; jecnum++){
+    if (jecnum!=jecnumsel) continue;
+
+    melaHelpers::melaHandle->setCurrentCandidateFromIndex(jecnum);
+    MELACandidate* melaCand = melaHelpers::melaHandle->getCurrentCandidate();
+    if (!melaCand) continue;
+
+    const unsigned int nGoodJets=melaCand->getNAssociatedJets();
+    for (unsigned int firstjet = 0; firstjet < nGoodJets; firstjet++){ // Loop over first jet
+      for (unsigned int secondjet = firstjet+1; secondjet < nGoodJets; secondjet++){ // Loop over second jet
+        // Disable jets and tops
+        for (unsigned int disableJet=0; disableJet<nGoodJets; disableJet++) melaCand->getAssociatedJet(disableJet)->setSelected((disableJet==firstjet || disableJet==secondjet)); // Disable the other jets
+        unsigned int nDisabledStableTops=0;
+        for (MELATopCandidate_t* einTop:melaCand->getAssociatedTops()){
+          if (einTop->getNDaughters()==3) einTop->setSelected(false); // All unstable tops are disabled in the loop for jets (where "jet"=="stable top") since we are looping over jecnum
+          else{
+            einTop->setSelected((nDisabledStableTops==firstjet || nDisabledStableTops==secondjet)); // Disable the other stable tops
+            nDisabledStableTops++;
+          }
+        }
+
+        for (MELACluster* theCluster:me_clusters){
+          if (theCluster->getName()==clustertype){
+            // Re-compute all related hypotheses first...
+            theCluster->computeAll();
+            // ...then force an update the cluster
+            theCluster->forceUpdate(); // MELAComputation::testMaximizationCache still prevents update for a second time if there are no contingencies.
+          }
+        } // End loop over clusters
+
+      } // End loop over second jet
+    } // End loop over first jet
+    // Turn associated jets/tops back on
+    for (unsigned int disableJet=0; disableJet<nGoodJets; disableJet++) melaCand->getAssociatedJet(disableJet)->setSelected(true); // Turn all jets back on
+    for (MELATopCandidate_t* einTop:melaCand->getAssociatedTops()) einTop->setSelected(true); // Turn all tops back on
+  } // End jecnum loop
+}
+// Common ME computations for leptonic WH: Loops over possible fake neutrinos
+void HVVTree::updateMELAClusters_LepWH(const string clustertype, bool isGen){
+  melaHelpers::melaHandle->setCurrentCandidateFromIndex(0);
+  MELACandidate* melaCand = melaHelpers::melaHandle->getCurrentCandidate();
+  if (!melaCand) return;
+
+  std::vector<MELACluster*>& me_clusters = (isGen ? lheme_clusters : recome_clusters);
+
+  int nNeutrinos = melaCand->getNAssociatedNeutrinos();
+  for (int inu=0; inu<nNeutrinos; inu++){
+    // Notice: Looping over Ws does not make much sense unless you have more than one lepton since the fake neutrino is already calculated from the available lepton with W mass constraint.
+    // Such a loop over Ws only makes sense if there are more than one lepton in the event, but in that case, it still does not make sense to cross-match neutrinos and leptons.
+    for (int disableNu=0; disableNu<nNeutrinos; disableNu++) melaCand->getAssociatedNeutrino(disableNu)->setSelected(disableNu==inu); // Disable all neutrinos other than index==inu
+    for (MELACluster* theCluster:me_clusters){
+      if (theCluster->getName()==clustertype){
+        // Re-compute all related hypotheses first...
+        theCluster->computeAll();
+        // ...then force an update the cluster
+        theCluster->forceUpdate(); // MELAComputation::testMaximizationCache still prevents update for a second time if there are no contingencies.
+      }
+    } // End loop over clusters
+  } // End loop over possible neutrinos
+  // Re-enable all neutrinos
+  for (int disableNu=0; disableNu<nNeutrinos; disableNu++) melaCand->getAssociatedNeutrino(disableNu)->setSelected(true);
+}
+// Common ME computations for leptonic ZH: Picks best Z3
+void HVVTree::updateMELAClusters_LepZH(const string clustertype, bool isGen){
+  melaHelpers::melaHandle->setCurrentCandidateFromIndex(0);
+  MELACandidate* melaCand = melaHelpers::melaHandle->getCurrentCandidate();
+  if (!melaCand) return;
+
+  std::vector<MELACluster*>& me_clusters = (isGen ? lheme_clusters : recome_clusters);
+
+  std::vector<MELAParticle*> associatedVs = melaCand->getAssociatedSortedVs();
+  const unsigned int nSortedVs = associatedVs.size();
+  constexpr unsigned int iSortedVstart=0;
+  double dZmass=-1;
+  int chosenZ=-1;
+  // Choose the Z by mass closest to mZ (~equivalent to ordering by best SM ME but would be equally valid for BSM MEs as well)
+  for (unsigned int iV=iSortedVstart; iV<nSortedVs; iV++){
+    MELAParticle const* associatedV = associatedVs.at(iV);
+    if (!PDGHelpers::isAZBoson(associatedV->id)) continue;
+    if (!PDGHelpers::isALepton(associatedV->getDaughter(0)->id)) continue;
+    if (chosenZ<0 || fabs(associatedV->m()-PDGHelpers::Zmass)<dZmass){ dZmass=fabs(associatedV->m()-PDGHelpers::Zmass); chosenZ=(int) iV; }
+  }
+  if (chosenZ>=0){
+    // Disable every associated Z boson (and not its daughters!) unless it is the chosen one
+    for (unsigned int disableV=iSortedVstart; disableV<nSortedVs; disableV++){
+      bool flag=(((int) disableV)==chosenZ);
+      MELAParticle* einV = associatedVs.at(disableV);
+      if (PDGHelpers::isAZBoson(einV->id)) einV->setSelected(flag);
+    }
+
+    for (MELACluster* theCluster:me_clusters){
+      if (theCluster->getName()==clustertype){
+        // Re-compute all related hypotheses first...
+        theCluster->computeAll();
+        // ...then force an update the cluster
+        theCluster->forceUpdate(); // MELAComputation::testMaximizationCache still prevents update for a second time if there are no contingencies.
+      }
+    } // End loop over clusters
+
+  } // End if chosenZ>=0
+  // Re-enable every associated Z boson and its daughters unless it is the chosen one
+  for (MELAParticle* einV:associatedVs){ if (PDGHelpers::isAZBoson(einV->id)) einV->setSelected(true); }
+}
+// ME computations that require no quark initial state
+void HVVTree::updateMELAClusters_NoInitialQ(const string clustertype, bool isGen){
+  MELACandidate* melaCand = melaHelpers::melaHandle->getCurrentCandidate();
+  if (!melaCand) return;
+
+  // Manipulate the candidate
+  // Assign 0 to the id of quark mothers
+  std::vector<int> motherIds;
+  for (int imot=0; imot<melaCand->getNMothers(); imot++){
+    motherIds.push_back(melaCand->getMother(imot)->id);
+    if (PDGHelpers::isAQuark(melaCand->getMother(imot)->id)) melaCand->getMother(imot)->id = 0;
+  }
+
+  std::vector<MELACluster*>& me_clusters = (isGen ? lheme_clusters : recome_clusters);
+  for (MELACluster* theCluster:me_clusters){
+    if (theCluster->getName()==clustertype){
+      // Re-compute all related hypotheses first...
+      theCluster->computeAll();
+      // ...then update the cluster
+      theCluster->update();
+    }
+  }
+
+  // Restore the candidate properties
+  for (int imot=0; imot<melaCand->getNMothers(); imot++) melaCand->getMother(imot)->id = motherIds.at(imot); // Restore all mother ids
+}
+// ME computations that require no gluon initial state
+void HVVTree::updateMELAClusters_NoInitialG(const string clustertype, bool isGen){
+  MELACandidate* melaCand = melaHelpers::melaHandle->getCurrentCandidate();
+  if (!melaCand) return;
+
+  // Manipulate the candidate
+  // Assign 0 to the id of gluon mothers
+  std::vector<int> motherIds;
+  for (int imot=0; imot<melaCand->getNMothers(); imot++){
+    motherIds.push_back(melaCand->getMother(imot)->id);
+    if (PDGHelpers::isAGluon(melaCand->getMother(imot)->id)) melaCand->getMother(imot)->id = 0;
+  }
+
+  std::vector<MELACluster*>& me_clusters = (isGen ? lheme_clusters : recome_clusters);
+  for (MELACluster* theCluster:me_clusters){
+    if (theCluster->getName()==clustertype){
+      // Re-compute all related hypotheses first...
+      theCluster->computeAll();
+      // ...then update the cluster
+      theCluster->update();
+    }
+  }
+
+  // Restore the candidate properties
+  for (int imot=0; imot<melaCand->getNMothers(); imot++) melaCand->getMother(imot)->id = motherIds.at(imot); // Restore all mother ids
+}
+// ME computations that require no gluons as associated particles
+void HVVTree::updateMELAClusters_NoAssociatedG(const string clustertype, bool isGen){
+  MELACandidate* melaCand = melaHelpers::melaHandle->getCurrentCandidate();
+  if (!melaCand) return;
+
+  // Manipulate the candidate
+  // Assign 0 to the id of gluon mothers
+  std::vector<int> ajetIds;
+  for (int ijet=0; ijet<melaCand->getNAssociatedJets(); ijet++){
+    ajetIds.push_back(melaCand->getAssociatedJet(ijet)->id);
+    if (PDGHelpers::isAGluon(melaCand->getAssociatedJet(ijet)->id)) melaCand->getAssociatedJet(ijet)->id = 0;
+  }
+
+  std::vector<MELACluster*>& me_clusters = (isGen ? lheme_clusters : recome_clusters);
+  for (MELACluster* theCluster:me_clusters){
+    if (theCluster->getName()==clustertype){
+      // Re-compute all related hypotheses first...
+      theCluster->computeAll();
+      // ...then update the cluster
+      theCluster->update();
+    }
+  }
+
+  // Restore the candidate properties
+  for (int ijet=0; ijet<melaCand->getNAssociatedJets(); ijet++) melaCand->getAssociatedJet(ijet)->id = ajetIds.at(ijet); // Restore all jets
+}
+// ME computations that require no gluon initial state and no gluons as associated particles
+void HVVTree::updateMELAClusters_NoInitialGNoAssociatedG(const string clustertype, bool isGen){
+  MELACandidate* melaCand = melaHelpers::melaHandle->getCurrentCandidate();
+  if (!melaCand) return;
+
+  // Manipulate the candidate
+  // Assign 0 to the id of gluon mothers
+  std::vector<int> motherIds;
+  std::vector<int> ajetIds;
+  for (int imot=0; imot<melaCand->getNMothers(); imot++){
+    motherIds.push_back(melaCand->getMother(imot)->id);
+    if (PDGHelpers::isAGluon(melaCand->getMother(imot)->id)) melaCand->getMother(imot)->id = 0;
+  }
+  for (int ijet=0; ijet<melaCand->getNAssociatedJets(); ijet++){
+    ajetIds.push_back(melaCand->getAssociatedJet(ijet)->id);
+    if (PDGHelpers::isAGluon(melaCand->getAssociatedJet(ijet)->id)) melaCand->getAssociatedJet(ijet)->id = 0;
+  }
+
+  std::vector<MELACluster*>& me_clusters = (isGen ? lheme_clusters : recome_clusters);
+  for (MELACluster* theCluster:me_clusters){
+    if (theCluster->getName()==clustertype){
+      // Re-compute all related hypotheses first...
+      theCluster->computeAll();
+      // ...then update the cluster
+      theCluster->update();
+    }
+  }
+
+  // Restore the candidate properties
+  for (int imot=0; imot<melaCand->getNMothers(); imot++) melaCand->getMother(imot)->id = motherIds.at(imot); // Restore all mother ids
+  for (int ijet=0; ijet<melaCand->getNAssociatedJets(); ijet++) melaCand->getAssociatedJet(ijet)->id = ajetIds.at(ijet); // Restore all jets
+}
+// ME computations that require best Z, W or VBF topology at LO (no gluons)
+void HVVTree::updateMELAClusters_BestLOAssociatedZ(const string clustertype, bool isGen){
+  MELACandidate* melaCand = melaHelpers::melaHandle->getCurrentCandidate();
+  if (!melaCand) return;
+
+  // Manipulate the candidate
+  // Assign 0 to the id of gluon mothers
+  std::vector<int> motherIds;
+  std::vector<int> ajetIds;
+  for (int imot=0; imot<melaCand->getNMothers(); imot++){
+    motherIds.push_back(melaCand->getMother(imot)->id);
+    if (PDGHelpers::isAGluon(melaCand->getMother(imot)->id)) melaCand->getMother(imot)->id = 0;
+  }
+  for (int ijet=0; ijet<melaCand->getNAssociatedJets(); ijet++){
+    ajetIds.push_back(melaCand->getAssociatedJet(ijet)->id);
+    if (PDGHelpers::isAGluon(melaCand->getAssociatedJet(ijet)->id)) melaCand->getAssociatedJet(ijet)->id = 0;
+  }
+  // Give precedence to leptonic V decays
+  bool hasALepV=false;
+  for (int iv=2; iv<melaCand->getNSortedVs(); iv++){
+    MELAParticle* Vtmp = melaCand->getSortedV(iv);
+    if (Vtmp!=0 && PDGHelpers::isAZBoson(Vtmp->id) && Vtmp->getNDaughters()>=1){
+      if (
+        PDGHelpers::isALepton(Vtmp->getDaughter(0)->id)
+        ||
+        PDGHelpers::isANeutrino(Vtmp->getDaughter(0)->id)
+        ){
+        hasALepV=true;
+      }
+    }
+  }
+  int bestVbyMass=-1;
+  float bestVMassDiff=1e5;
+  for (int iv=2; iv<melaCand->getNSortedVs(); iv++){
+    MELAParticle* Vtmp = melaCand->getSortedV(iv);
+    if (Vtmp!=0 && PDGHelpers::isAZBoson(Vtmp->id) && Vtmp->getNDaughters()>=1){
+      if (
+        PDGHelpers::isAJet(Vtmp->getDaughter(0)->id)
+        && hasALepV
+        ){
+        for (int idau=0; idau<Vtmp->getNDaughters(); idau++) Vtmp->getDaughter(idau)->setSelected(false);
+      }
+      else if (fabs(Vtmp->m()-PDGHelpers::Zmass)<bestVMassDiff){
+        bestVMassDiff=fabs(Vtmp->m()-PDGHelpers::Zmass);
+        bestVbyMass = iv;
+      }
+    }
+  }
+  for (int iv=2; iv<melaCand->getNSortedVs(); iv++){
+    MELAParticle* Vtmp = melaCand->getSortedV(iv);
+    if (Vtmp!=0 && PDGHelpers::isAZBoson(Vtmp->id) && Vtmp->getNDaughters()>=1){
+      for (int idau=0; idau<Vtmp->getNDaughters(); idau++) Vtmp->getDaughter(idau)->setSelected((iv==bestVbyMass));
+    }
+  }
+
+  std::vector<MELACluster*>& me_clusters = (isGen ? lheme_clusters : recome_clusters);
+  for (MELACluster* theCluster:me_clusters){
+    if (theCluster->getName()==clustertype){
+      // Re-compute all related hypotheses first...
+      theCluster->computeAll();
+      // ...then update the cluster
+      theCluster->update();
+    }
+  }
+
+  // Restore the candidate properties
+  for (int imot=0; imot<melaCand->getNMothers(); imot++) melaCand->getMother(imot)->id = motherIds.at(imot); // Restore all mother ids
+  for (int ijet=0; ijet<melaCand->getNAssociatedJets(); ijet++) melaCand->getAssociatedJet(ijet)->id = ajetIds.at(ijet); // Restore all jets
+  for (int iv=2; iv<melaCand->getNSortedVs(); iv++){
+    MELAParticle* Vtmp = melaCand->getSortedV(iv);
+    if (Vtmp!=0 && PDGHelpers::isAZBoson(Vtmp->id) && Vtmp->getNDaughters()>=1){
+      for (int idau=0; idau<Vtmp->getNDaughters(); idau++) Vtmp->getDaughter(idau)->setSelected(true);
+    }
+  }
+}
+void HVVTree::updateMELAClusters_BestLOAssociatedW(const string clustertype, bool isGen){
+  MELACandidate* melaCand = melaHelpers::melaHandle->getCurrentCandidate();
+  if (!melaCand) return;
+
+  // Manipulate the candidate
+  // Assign 0 to the id of gluon mothers
+  std::vector<int> motherIds;
+  std::vector<int> ajetIds;
+  for (int imot=0; imot<melaCand->getNMothers(); imot++){
+    motherIds.push_back(melaCand->getMother(imot)->id);
+    if (PDGHelpers::isAGluon(melaCand->getMother(imot)->id)) melaCand->getMother(imot)->id = 0;
+  }
+  for (int ijet=0; ijet<melaCand->getNAssociatedJets(); ijet++){
+    ajetIds.push_back(melaCand->getAssociatedJet(ijet)->id);
+    if (PDGHelpers::isAGluon(melaCand->getAssociatedJet(ijet)->id)) melaCand->getAssociatedJet(ijet)->id = 0;
+  }
+  // Give precedence to leptonic V decays
+  bool hasALepV=false;
+  for (int iv=2; iv<melaCand->getNSortedVs(); iv++){
+    MELAParticle* Vtmp = melaCand->getSortedV(iv);
+    if (Vtmp!=0 && PDGHelpers::isAWBoson(Vtmp->id) && Vtmp->getNDaughters()>=1){
+      if (
+        PDGHelpers::isALepton(Vtmp->getDaughter(0)->id)
+        ||
+        PDGHelpers::isANeutrino(Vtmp->getDaughter(0)->id)
+        ){
+        hasALepV=true;
+      }
+    }
+  }
+  int bestVbyMass=-1;
+  float bestVMassDiff=1e5;
+  for (int iv=2; iv<melaCand->getNSortedVs(); iv++){
+    MELAParticle* Vtmp = melaCand->getSortedV(iv);
+    if (Vtmp!=0 && PDGHelpers::isAWBoson(Vtmp->id) && Vtmp->getNDaughters()>=1){
+      if (
+        PDGHelpers::isAJet(Vtmp->getDaughter(0)->id)
+        && hasALepV
+        ){
+        for (int idau=0; idau<Vtmp->getNDaughters(); idau++) Vtmp->getDaughter(idau)->setSelected(false);
+      }
+      else if (fabs(Vtmp->m()-PDGHelpers::Wmass)<bestVMassDiff){
+        bestVMassDiff=fabs(Vtmp->m()-PDGHelpers::Wmass);
+        bestVbyMass = iv;
+      }
+    }
+  }
+  for (int iv=2; iv<melaCand->getNSortedVs(); iv++){
+    MELAParticle* Vtmp = melaCand->getSortedV(iv);
+    if (Vtmp!=0 && PDGHelpers::isAWBoson(Vtmp->id) && Vtmp->getNDaughters()>=1){
+      for (int idau=0; idau<Vtmp->getNDaughters(); idau++) Vtmp->getDaughter(idau)->setSelected((iv==bestVbyMass));
+    }
+  }
+
+  std::vector<MELACluster*>& me_clusters = (isGen ? lheme_clusters : recome_clusters);
+  for (MELACluster* theCluster:me_clusters){
+    if (theCluster->getName()==clustertype){
+      // Re-compute all related hypotheses first...
+      theCluster->computeAll();
+      // ...then update the cluster
+      theCluster->update();
+    }
+  }
+
+  // Restore the candidate properties
+  for (int imot=0; imot<melaCand->getNMothers(); imot++) melaCand->getMother(imot)->id = motherIds.at(imot); // Restore all mother ids
+  for (int ijet=0; ijet<melaCand->getNAssociatedJets(); ijet++) melaCand->getAssociatedJet(ijet)->id = ajetIds.at(ijet); // Restore all jets
+  for (int iv=2; iv<melaCand->getNSortedVs(); iv++){
+    MELAParticle* Vtmp = melaCand->getSortedV(iv);
+    if (Vtmp!=0 && PDGHelpers::isAWBoson(Vtmp->id) && Vtmp->getNDaughters()>=1){
+      for (int idau=0; idau<Vtmp->getNDaughters(); idau++) Vtmp->getDaughter(idau)->setSelected(true);
+    }
+  }
+}
+void HVVTree::updateMELAClusters_BestLOAssociatedVBF(const string clustertype, bool isGen){
+  // Same as updateMELAClusters_NoInitialGNoAssociatedG, but keep a separate function for future studies
+  MELACandidate* melaCand = melaHelpers::melaHandle->getCurrentCandidate();
+  if (!melaCand) return;
+
+  // Manipulate the candidate
+  // Assign 0 to the id of gluon mothers
+  std::vector<int> motherIds;
+  std::vector<int> ajetIds;
+  for (int imot=0; imot<melaCand->getNMothers(); imot++){
+    motherIds.push_back(melaCand->getMother(imot)->id);
+    if (PDGHelpers::isAGluon(melaCand->getMother(imot)->id)) melaCand->getMother(imot)->id = 0;
+  }
+  for (int ijet=0; ijet<melaCand->getNAssociatedJets(); ijet++){
+    ajetIds.push_back(melaCand->getAssociatedJet(ijet)->id);
+    if (PDGHelpers::isAGluon(melaCand->getAssociatedJet(ijet)->id)) melaCand->getAssociatedJet(ijet)->id = 0;
+  }
+
+  std::vector<MELACluster*>& me_clusters = (isGen ? lheme_clusters : recome_clusters);
+  for (MELACluster* theCluster:me_clusters){
+    if (theCluster->getName()==clustertype){
+      // Re-compute all related hypotheses first...
+      theCluster->computeAll();
+      // ...then update the cluster
+      theCluster->update();
+    }
+  }
+
+  // Restore the candidate properties
+  for (int imot=0; imot<melaCand->getNMothers(); imot++) melaCand->getMother(imot)->id = motherIds.at(imot); // Restore all mother ids
+  for (int ijet=0; ijet<melaCand->getNAssociatedJets(); ijet++) melaCand->getAssociatedJet(ijet)->id = ajetIds.at(ijet); // Restore all jets
+}
+// ME computations that can approximate the NLO QCD (-/+ MiNLO extra jet) phase space to LO QCD in signal VBF or VH
+// Use these for POWHEG samples
+// MELACandidateRecaster has very specific use cases, so do not use these functions for other cases.
+void HVVTree::updateMELAClusters_BestNLOVHApproximation(const string clustertype, bool isGen){
+  MELACandidate* melaCand = melaHelpers::melaHandle->getCurrentCandidate();
+  if (!melaCand) return;
+
+  // Check if any clusters request this computation
+  bool clustersRequest=false;
+  std::vector<MELACluster*>& me_clusters = (isGen ? lheme_clusters : recome_clusters);
+  for (MELACluster* theCluster:me_clusters){
+    if (theCluster->getName()==clustertype){
+      clustersRequest=true;
+      break;
+    }
+  }
+  if (!clustersRequest) return;
+
+  // Need one recaster for each of ZH and WH, so distinguish by the cluster name
+  TVar::Production candScheme;
+  if (clustertype.find("BestNLOZHApproximation")!=string::npos) candScheme = TVar::Had_ZH;
+  else if (clustertype.find("BestNLOWHApproximation")!=string::npos) candScheme = TVar::Had_WH;
+  else return;
+
+  MELACandidateRecaster recaster(candScheme);
+  MELACandidate* candModified=nullptr;
+  MELAParticle* bestAV = MELACandidateRecaster::getBestAssociatedV(melaCand, candScheme);
+  if (bestAV){
+    recaster.copyCandidate(melaCand, candModified);
+    recaster.deduceLOVHTopology(candModified);
+    melaHelpers::melaHandle->setCurrentCandidate(candModified);
+  }
+  else return; // No associated Vs found. The algorithm won't work.
+
+  for (MELACluster* theCluster:me_clusters){
+    if (theCluster->getName()==clustertype){
+      // Re-compute all related hypotheses first...
+      theCluster->computeAll();
+      // ...then update the cluster
+      theCluster->update();
+    }
+  }
+
+  delete candModified;
+  melaHelpers::melaHandle->setCurrentCandidate(melaCand); // Go back to the original candidate
+}
+void HVVTree::updateMELAClusters_BestNLOVBFApproximation(const string clustertype, bool isGen){
+  MELACandidate* melaCand = melaHelpers::melaHandle->getCurrentCandidate();
+  if (!melaCand) return;
+
+  // Check if any clusters request this computation
+  bool clustersRequest=false;
+  std::vector<MELACluster*>& me_clusters = (isGen ? lheme_clusters : recome_clusters);
+  for (MELACluster* theCluster:me_clusters){
+    if (theCluster->getName()==clustertype){
+      clustersRequest=true;
+      break;
+    }
+  }
+  if (!clustersRequest) return;
+
+  // Need one recaster for VBF
+  TVar::Production candScheme;
+  if (clustertype.find("BestNLOVBFApproximation")!=string::npos) candScheme = TVar::JJVBF;
+  else return;
+
+  MELACandidateRecaster recaster(candScheme);
+  MELACandidate* candModified=nullptr;
+  recaster.copyCandidate(melaCand, candModified);
+  recaster.reduceJJtoQuarks(candModified);
+  melaHelpers::melaHandle->setCurrentCandidate(candModified);
+
+  for (MELACluster* theCluster:me_clusters){
+    if (theCluster->getName()==clustertype){
+      // Re-compute all related hypotheses first...
+      theCluster->computeAll();
+      // ...then update the cluster
+      theCluster->update();
+    }
+  }
+
+  delete candModified;
+  melaHelpers::melaHandle->setCurrentCandidate(melaCand); // Go back to the original candidate
+}

@@ -1,8 +1,12 @@
+#include <fstream>
 #include "TUtilHelpers.hh"
 #include "OptionParser.h"
+#include "HostHelpersCore.h"
+#include "HelperFunctions.h"
 
 
 using namespace std;
+using namespace HelperFunctions;
 
 
 OptionParser::OptionParser(int argc, char** argv) :
@@ -28,9 +32,6 @@ OptionParser::OptionParser(int argc, char** argv) :
   genHiggsCandidateSelectionScheme(HiggsComparators::BestZ1ThenZ2ScSumPt),
   recoHiggsCandidateSelectionScheme(HiggsComparators::BestZ1ThenZ2ScSumPt),
 
-  recastGenTopologyToLOQCDVH(false),
-  recastGenTopologyToLOQCDVBF(false),
-
   jetDeltaRIso(0.4),
   jetAlgo("ak"),
 
@@ -38,9 +39,7 @@ OptionParser::OptionParser(int argc, char** argv) :
   outdir("./"),
   coutput("tmp.root"),
   tmpDir("./tmpStore/"),
-  maxEvents(-1),
-
-  sampleProductionId(TVar::ZZGG, TVar::JHUGen) // Sample gen. production mode
+  maxEvents(-1)
 {
   for (int a=0; a<argc; a++){
     string tmpArg(argv[a]);
@@ -53,7 +52,6 @@ void OptionParser::analyze(){
   bool hasInvalidOption=false;
   bool redefinedOutputFile=false;
   bool hasDecayAngles=false;
-  bool hasGenProdProb=false;
   bool hasJetAlgo=false;
   char rawdelimiter = '=';
   for (unsigned int opt=1; opt<rawOptions.size(); opt++){
@@ -62,7 +60,6 @@ void OptionParser::analyze(){
     interpretOption(wish, value);
     if (wish=="outfile") redefinedOutputFile=true;
     if (wish=="computeDecayAngles") hasDecayAngles=true;
-    if (wish=="includeGenProdProb") hasGenProdProb=true;
     if (wish=="JetAlgorithm" || wish=="jetAlgorithm" || wish=="jetalgorithm") hasJetAlgo=true;
   }
 
@@ -83,10 +80,6 @@ void OptionParser::analyze(){
   // Check for any invalid options and print an error
   if (isGenHZZ==-1){
     cout << "Gen. Higgs decay is disabled. Disabling MEs, decay angles and anything reco. as well." << endl;
-    includeGenDecayProb.clear();
-    includeRecoDecayProb.clear();
-    includeGenProdProb.clear();
-    includeRecoProdProb.clear();
     includeRecoInfo=0;
     hasDecayAngles=false; computeDecayAngles=0;
   }
@@ -95,11 +88,8 @@ void OptionParser::analyze(){
   if (mPOLE==0 || wPOLE==0 || erg_tev==0){ cerr << "Cannot have mH, GammaH or sqrts == 0" << endl; if (!hasInvalidOption) hasInvalidOption=true; }
   if (genHiggsCandidateSelectionScheme>=HiggsComparators::nCandidateSelections){ cerr << "Gen. H selection scheme is invalid!" << endl; if (!hasInvalidOption) hasInvalidOption=true; }
   if (recoHiggsCandidateSelectionScheme>=HiggsComparators::nCandidateSelections){ cerr << "Reco. H selection scheme is invalid!" << endl; if (!hasInvalidOption) hasInvalidOption=true; }
-  if (hasGenProdProb && sampleProductionId.first==TVar::ZZGG){ cerr << "sampleProductionId==ZZGG is not a valid option (ME is not implemented). Use decay MEs instead for ZZGG or specify another production." << endl; if (!hasInvalidOption) hasInvalidOption=true; }
   if (!(((jetDeltaRIso==0.4 || jetDeltaRIso==0.5 || jetDeltaRIso==0.8) && jetAlgo=="ak") || ((jetDeltaRIso==0.4 || jetDeltaRIso==0.6) && jetAlgo=="kt"))){ cerr << "Jet algorithm can only be used with object isolations 0.4, 0.5 or 0.8 for ak, and 0.4 or 0.6 for kt jets at this moment." << endl; if (!hasInvalidOption) hasInvalidOption=true; }
   else{ jetAlgo.append(std::to_string((int) (10*jetDeltaRIso))); if (hasJetAlgo) cout << "Jet algorithm string " << jetAlgo << " has the isolation appended." << endl; }
-  if (recastGenTopologyToLOQCDVH && recastGenTopologyToLOQCDVBF){ cerr << "Cannot recast the gen. topology to both VH and VBF LO QCD. Please choose only one!" << endl; hasInvalidOption=true; }
-  if (recastGenTopologyToLOQCDVH && !(sampleProductionId.first==TVar::Had_ZH || sampleProductionId.first==TVar::Had_WH)){ cerr << "Cannot recast the gen. topology to VH without any dpecification of WH or ZH production!" << endl; hasInvalidOption=true; }
 
   // Warnings-only
   if (!redefinedOutputFile) cout << "WARNING: No output file specified. Defaulting to " << coutput << "." << endl;
@@ -123,32 +113,10 @@ void OptionParser::analyze(){
   // Initialize the global Mela if needed
   configureMela();
 }
-void OptionParser::splitOption(std::string const& rawoption, std::string& wish, std::string& value, char delimiter){
-  size_t posEq = rawoption.find(delimiter);
-  if (posEq!=string::npos){
-    wish=rawoption;
-    value=rawoption.substr(posEq+1);
-    wish.erase(wish.begin()+posEq,wish.end());
-  }
-  else{
-    wish="";
-    value=rawoption;
-  }
-}
-void OptionParser::splitOptionRecursive(std::string const& rawoption, std::vector<std::string>& splitoptions, char delimiter){
-  string suboption=rawoption, result=rawoption;
-  string remnant;
-  while (result!=""){
-    splitOption(suboption, result, remnant, delimiter);
-    if (result!="") splitoptions.push_back(result);
-    suboption = remnant;
-  }
-  if (remnant!="") splitoptions.push_back(remnant);
-}
-Bool_t OptionParser::isAnExcludedBranch(std::string const& branchname){
+Bool_t OptionParser::isAnExcludedBranch(std::string const& branchname)const{
   bool isExcluded=false;
-  for (unsigned int eb=0; eb<excludedBranch.size(); eb++){
-    if (branchname.find(excludedBranch.at(eb))!=string::npos && !(branchname.find("Gen")!=string::npos && excludedBranch.at(eb).find("Gen")==string::npos)){
+  for (auto const& exbranch:excludedBranch){
+    if (branchname.find(exbranch)!=string::npos && !(branchname.find("Gen")!=string::npos && exbranch.find("Gen")==string::npos)){
       isExcluded=true;
       break;
     }
@@ -227,71 +195,41 @@ void OptionParser::extractGlobalRecordSet(std::string const& rawoption){
   }
 }
 
-void OptionParser::configureMela(){
-  Bool_t needMela = initializeMELABranches() || doComputeDecayAngles() || doComputeVBFAngles() || doComputeVHAngles();
+void OptionParser::configureMela()const{
+  Bool_t needMela = doMEComputations() || doComputeDecayAngles() || doComputeVBFAngles() || doComputeVHAngles() || doComputeTTHAngles();
   if (needMela) melaHelpers::melaHandle = new Mela((int)erg_tev, (float)mPOLE);
   melaHelpers::setSamplePoleWidth(wPOLE);
   melaHelpers::setStandardPoleWidth(wPOLEStandard);
   TUtil::applyLeptonMassCorrection(doRemoveLepMasses()); // Remains fixed, so not a problem to set it here
 }
-void OptionParser::deconfigureMela(){
+void OptionParser::deconfigureMela()const{
   if (melaHelpers::melaHandle) delete melaHelpers::melaHandle;
 }
-void OptionParser::extractMelaGenProdId(std::string const& rawoption){
-  vector<string> prod_me_pair;
-  splitOptionRecursive(rawoption, prod_me_pair, ',');
-  if (prod_me_pair.size()!=2){
-    cerr << "Incorrect specification for sampleProductionId. Has to follow the format (TVar::Production, TVar::MatrixElement) (no parentheses)." << endl;
-    printOptionsHelp(); // The process ends here.
-  }
-  else{
-    TVar::Production tmpProd; TVar::MatrixElement tmpME;
-
-    if (prod_me_pair.at(0) == "JJQCD") tmpProd = TVar::JJQCD;
-    else if (prod_me_pair.at(0) == "JJVBF") tmpProd = TVar::JJVBF;
-    else if (prod_me_pair.at(0) == "JJEW") tmpProd = TVar::JJEW;
-    else if (prod_me_pair.at(0) == "JQCD") tmpProd = TVar::JQCD;
-    else if (prod_me_pair.at(0) == "GammaH") tmpProd = TVar::GammaH;
-    else if (prod_me_pair.at(0) == "Had_ZH") tmpProd = TVar::Had_ZH;
-    else if (prod_me_pair.at(0) == "Had_WH") tmpProd = TVar::Had_WH;
-    else if (prod_me_pair.at(0) == "Lep_ZH") tmpProd = TVar::Lep_ZH;
-    else if (prod_me_pair.at(0) == "Lep_WH") tmpProd = TVar::Lep_WH;
-    else if (prod_me_pair.at(0) == "ttH") tmpProd = TVar::ttH;
-    else if (prod_me_pair.at(0) == "bbH") tmpProd = TVar::bbH;
-    else tmpProd = TVar::ZZGG;
-
-    if (prod_me_pair.at(1) == "MCFM") tmpME = TVar::MCFM;
-    else tmpME = TVar::JHUGen;
-
-    pair<TVar::Production, TVar::MatrixElement> tmpPair(tmpProd, tmpME);
-    sampleProductionId = tmpPair;
+void OptionParser::extractMElines(){
+  OptionParser::extractMElines(lheMEfile, lheMElist);
+  OptionParser::extractMElines(recoMEfile, recoMElist);
+}
+void OptionParser::extractMElines(std::string const& sfile, std::vector<std::string>& llist){
+  using namespace HostHelpers;
+  if (!sfile.empty()){
+    if (FileReadable(sfile.c_str())){
+      ifstream fin(sfile.c_str());
+      if (fin.good()){
+        while (!fin.eof()){
+          string strline;
+          getline(fin, strline);
+          string strlinestrip=strline;
+          lstrip(strlinestrip, " \"");
+          rstrip(strlinestrip, " \",");
+          if (strlinestrip.find('#')==0) continue;
+          else if (!strlinestrip.empty()) llist.push_back(strlinestrip);
+        }
+      }
+      fin.close();
+    }
   }
 }
 Bool_t OptionParser::checkListVariable(std::vector<std::string> const& list, std::string const& var)const{ return TUtilHelpers::checkElementExists(var, list); }
-Bool_t OptionParser::hasGenDecayME(std::string const& str){
-  if (str=="" || str=="*"){
-    return (includeGenDecayProb.size()>0 && processGenInfo());
-  }
-  return (checkListVariable(includeGenDecayProb, str) && processGenInfo());
-}
-Bool_t OptionParser::hasRecoDecayME(std::string const& str){
-  if (str=="" || str=="*"){
-    return (includeRecoDecayProb.size()>0 && processGenInfo());
-  }
-  return (checkListVariable(includeRecoDecayProb, str) && processRecoInfo());
-}
-Bool_t OptionParser::hasRecoProdME(std::string const& str){
-  if (str=="" || str=="*"){
-    return (includeRecoProdProb.size()>0 && processGenInfo());
-  }
-  return (checkListVariable(includeRecoProdProb, str) && processRecoInfo());
-}
-Bool_t OptionParser::hasGenProdME(std::string const& str){ // This one is a little bit trickier to avoid unneeded gen. prod. MEs
-  if (str=="" || str=="*"){
-    return (includeGenProdProb.size()>0 && processGenInfo());
-  }
-  return (checkListVariable(includeGenProdProb, str) && processGenInfo());
-}
 
 void OptionParser::interpretOption(std::string const& wish, std::string const& value){
   if (wish.empty()){
@@ -320,11 +258,14 @@ void OptionParser::interpretOption(std::string const& wish, std::string const& v
     if (value=="BestZ1ThenZ2" || value=="BestZ1ThenZ2ScSumPt") recoHiggsCandidateSelectionScheme = HiggsComparators::BestZ1ThenZ2ScSumPt;
   }
 
-  else if (wish=="JetAlgorithm" || wish=="jetAlgorithm" || wish=="jetalgorithm") jetAlgo = value;
   else if (wish=="indir") indir = value;
   else if (wish=="outdir") outdir = value;
   else if (wish=="tmpDir" || wish=="tempDir") tmpDir = value;
+
   else if (wish=="outfile") coutput = value;
+  else if (wish=="lheMEfile") lheMEfile = value;
+  else if (wish=="recoMEfile") recoMEfile = value;
+
   else if (wish=="excludeBranch") splitOptionRecursive(value, excludedBranch, ',');
   else if (wish=="maxevents" || wish=="maxEvents") maxEvents = (int)atoi(value.c_str());
   else if (wish=="skipevents" || wish=="skipEvents") extractSkippedEvents(value);
@@ -335,25 +276,18 @@ void OptionParser::interpretOption(std::string const& wish, std::string const& v
   else if (wish=="GH" || wish=="GaH" || wish=="GammaH" || wish=="wPOLE") wPOLE = (double)atof(value.c_str());
   else if (wish=="GHSM" || wish=="GaHSM" || wish=="GammaHSM" || wish=="wPOLEStandard") wPOLEStandard = (double)atof(value.c_str());
   else if (wish=="sqrts") erg_tev = (int)atoi(value.c_str());
+  else if (wish=="JetAlgorithm" || wish=="jetAlgorithm" || wish=="jetalgorithm") jetAlgo = value;
   else if (wish=="jetDeltaR" || wish=="jetIso" || wish=="jetIsolation" || wish=="jetDeltaRIso" || wish=="jetDeltaRIsolation") jetDeltaRIso = (double)atof(value.c_str());
-  else if (wish=="recastGenTopologyToLOQCDVH") recastGenTopologyToLOQCDVH = ((int) atoi(value.c_str()))>0;
-  else if (wish=="recastGenTopologyToLOQCDVBF") recastGenTopologyToLOQCDVBF = ((int) atoi(value.c_str()))>0;
   else if (wish=="removeDaughterMasses") removeDaughterMasses = (int) atoi(value.c_str());
   else if (wish=="computeDecayAngles") computeDecayAngles = (int)atoi(value.c_str());
   else if (wish=="computeVBFProdAngles") computeVBFAngles = (int)atoi(value.c_str());
   else if (wish=="computeVHProdAngles") computeVHAngles = (int)atoi(value.c_str());
   else if (wish=="computeTTHProdAngles") computeTTHAngles = (int) atoi(value.c_str());
 
-  else if (wish=="includeRecoDecayProb") splitOptionRecursive(value, includeRecoDecayProb, ',');
-  else if (wish=="includeRecoProdProb") splitOptionRecursive(value, includeRecoProdProb, ',');
-  else if (wish=="includeGenDecayProb") splitOptionRecursive(value, includeGenDecayProb, ',');
-  else if (wish=="includeGenProdProb") splitOptionRecursive(value, includeGenProdProb, ',');
-  else if (wish=="sampleProductionId") extractMelaGenProdId(value);
-
   else cerr << "Unknown specified argument: " << value << " with specifier " << wish << endl;
 }
 
-void OptionParser::printOptionsHelp(){
+void OptionParser::printOptionsHelp()const{
   cout << endl;
   cout << "The options implemented for the LHEAnalyzer (format: specifier=value):\n\n";
 
@@ -373,8 +307,6 @@ void OptionParser::printOptionsHelp(){
   cout << "- computeVBFProdAngles: Switch to control the VBF production angles computation. Default=0\n\n";
   cout << "- computeVHProdAngles: Switch to control the VH production angles computation. Default=0.\n\tPossible values are 0 (==disable), 1 (==compute from jets only), 2 (==compute from leptons only), 3 (==compute from jets and leptons, with separate variable suffixes \"*_VHhadronic\" and \"*_VHleptonic\".).\n\n";
   cout << "- computeTTHProdAngles: Switch to control the ttH production angles computation. Default=0.\n\tPossible values are 0 (==disable), 1 (==compute from jets and leptons, with same variable suffixes\".).\n\n";
-  cout << "- includeGenDecayProb, includeGenProdProb, includeRecoDecayProb, includeRecoProdProb: Comma-separated list of spin-0 gen. or reco. decay or production MEs. Default=Empty (==None).\n\tThe explicit values tested are g1, g2, g4, g1_prime2; g1_pi2, g2_pi2, g4_pi2, g1_prime2_pi2, m4l, None, All.\n\t Gen. MEs are present for the purpose of reweighting. The appropriate target and origin combinations are left to the user at an analysis step.\n\n";
-  cout << "- sampleProductionId: Production mechanism used in the computation of includeGenProdProb. Follows the format (TVar::Production, TVar::MatrixElement) with no parentheses. Default=(ZZGG, JHUGen)\n\tProduction==ZZGG is an invalid option since one can use decay MEs for this purpose, and the ghg_i couplings are not enabled in the MEs.\n\n";
 
   cout << "- mH / MH / mPOLE: Mass of the Higgs. Used in common for generator and reco. objects. Default=125 (GeV)\n\n";
   cout << "- GH / GaH / GammaH / wPOLE: Width of the generated Higgs. Used in generator objects. Default=4.07 (MeV)\n\n";
@@ -393,13 +325,13 @@ void OptionParser::printOptionsHelp(){
   cout << "- recoSmearBehavior / recoSmearBehaviour: Smearing behaviour on all reco. final states. Does not apply to ReadMode. Default=0.\n\t0==Apply smearing in LHE mode, no smearing in Pythia mode\n\t1==Opposite of 0\n\n";
   cout << "- genCandidateSelection, recoCandidateSelection: Higgs candidate selection algorithm. Values accepted are\n\t->BestZ1ThenZ2 (=BestZ1ThenZ2ScSumPt).\n\tDefaults==(BestZ1ThenZ2, BestZ1ThenZ2)\n\n";
 
-  cout << "- recastGenTopologyToLOQCDVH: Recast the V+N-jets topology back to LO V(+H) by merging gluons/extra quark pairs. Need to specify the sample production id (sampleProductionId) option as well. Default=0\n\n";
-  cout << "- recastGenTopologyToLOQCDVBF: Recast the JJ+N-jets topology back to VBF by merging gluons/extra quark pairs. Default=0\n\n";
-
   cout << "- JetAlgorithm / jetAlgorithm / jetalgorithm: Jet algorithm to use if available in the input tree. Isolation needs to be set separately if different from the default value. Default=ak\n\n";
   cout << "- jetDeltaR / jetIso / jetIsolation / jetDeltaRIso / jetDeltaRIsolation: deltaR_jet isolation cut used in selecting jets. This value (x10) is appended to the jet algorithm string and can only be 0.4, 0.5 or 0.8 for ak, and 0.4 or 0.6 for kt jets at the moment. Default=0.5\n\n";
 
   cout << "- excludeBranch: Comma-separated list of excluded branches. Default is to include all branches called via HVVTree::bookAllBranches.\n\n";
+
+  cout << "- lheMEfile: File listing truth-level MEs. Default=\"\"\n\n";
+  cout << "- recoMEfile: File listing reco-level MEs. Default=\"\"\n\n";
 
   cout << "- globalRecord: Global values to set (e.g. cross section). Creates SelectedTree_Globals with a single event. Default=none.\n\tBranches are assigned in the form [name:type_value], and multiple forms can be specified with comma separation. Use C++ type names (e.g. [xsec:float_0.001].\n\n";
 
@@ -407,7 +339,7 @@ void OptionParser::printOptionsHelp(){
   assert(0);
 }
 
-void OptionParser::printOptionSummary(){
+void OptionParser::printOptionSummary()const{
 
 }
 

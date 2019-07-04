@@ -206,7 +206,7 @@ void Reader::run(){
             if (options->doComputeDecayAngles()) tree->fillDecayAngles(true);
             if (options->doComputeVBFAngles()) tree->fillVBFProductionAngles(true);
             if (options->doComputeVHAngles()) tree->fillVHProductionAngles(true);
-            if (options->initializeMELABranches()) tree->fillMELAProbabilities(true);
+            tree->fillMELAProbabilities(true);
 
             melaHelpers::melaHandle->resetInputEvent();
           }
@@ -221,7 +221,7 @@ void Reader::run(){
               if (options->doComputeDecayAngles()) tree->fillDecayAngles(false);
               if (options->doComputeVBFAngles()) tree->fillVBFProductionAngles(false);
               if (options->doComputeVHAngles()) tree->fillVHProductionAngles(false);
-              if (options->initializeMELABranches()) tree->fillMELAProbabilities(false); // Do it at the last step
+              tree->fillMELAProbabilities(false); // Do it at the last step
 
               melaHelpers::melaHandle->resetInputEvent();
             }

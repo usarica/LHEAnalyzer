@@ -3,18 +3,47 @@
 
 #include "BaseTree.h"
 #include "OptionParser.h"
+#include "GMECHelperFunctions.h"
+
+
+using namespace BranchHelpers;
+
 
 class HVVTree : public BaseTree{
+protected:
+  OptionParser* options;
+
+  std::vector<std::string> recoMElist;
+  std::vector<MELAOptionParser*> recome_copyopts;
+  std::vector<MELAHypothesis*> recome_units;
+  std::vector<MELAHypothesis*> recome_aliased_units;
+  std::vector<MELAComputation*> recome_computers;
+  std::vector<MELACluster*> recome_clusters;
+  std::vector<MELABranch*> recome_branches;
+
+  std::vector<std::string> lheMElist;
+  std::vector<MELAOptionParser*> lheme_copyopts;
+  std::vector<MELAHypothesis*> lheme_units;
+  std::vector<MELAHypothesis*> lheme_aliased_units;
+  std::vector<MELAComputation*> lheme_computers;
+  std::vector<MELACluster*> lheme_clusters;
+  std::vector<MELABranch*> lheme_branches;
+
 public:
-  HVVTree():BaseTree(), options(0){}
-  HVVTree(string treename) : BaseTree(treename), options(0){}
-  HVVTree(string treename, string treetitle) : BaseTree(treename, treetitle), options(0){}
-  HVVTree(string treename, TFile* fin) : BaseTree(treename, fin), options(0){}
+  HVVTree();
+  HVVTree(std::string treename);
+  HVVTree(std::string treename, std::string treetitle);
+  HVVTree(std::string treename, TFile* fin);
+  virtual ~HVVTree();
 
   void setOptions(OptionParser* options_){ options=options_; }
-  vector<string> getMELABranchList()const;
 
-  bool reserveBranch(string branchname, const BaseTree::BranchTypes& branchtype, const bool& doSetAddress);
+  std::vector<MELABranch*>* getRecoMELABranches(){ return &recome_branches; }
+  std::vector<MELABranch*>* getLHEMELABranches(){ return &lheme_branches; }
+  std::vector<MELABranch*> const* getRecoMELABranches() const{ return &recome_branches; }
+  std::vector<MELABranch*> const* getLHEMELABranches() const{ return &lheme_branches; }
+
+  bool reserveBranch(std::string branchname, const BaseTree::BranchTypes& branchtype, const bool& doSetAddress);
   void bookAllBranches(const bool& doSetAddress);
 
   void fillEventVariables(const Float_t& weight, const Int_t& passSelection);
@@ -32,21 +61,35 @@ public:
   void fillMELAProbabilities(bool isGen);
 
 protected:
-  void bookPtEtaPhiMassIdBranches(const string& owner, const BaseTree::BranchTypes& btype, const bool& doSetAddress, const bool& addId, const bool& usePz, bool isGen);
+  void bookPtEtaPhiMassIdBranches(const std::string& owner, const BaseTree::BranchTypes& btype, const bool& doSetAddress, const bool& addId, const bool& usePz, bool isGen);
   void bookMotherParticleBranches(const BaseTree::BranchTypes& btype, const bool& doSetAddress);
-  void getPtEtaPhiMIdBranches(vector<string>& blist, const string& owner, const bool& addId, const bool& usePz, bool isGen);
+  void getPtEtaPhiMIdBranches(std::vector<std::string>& blist, const std::string& owner, const bool& addId, const bool& usePz, bool isGen);
 
   void bookAngularBranches(const bool& doSetAddress);
-  void getAngularBranches(vector<string>& blist, const Int_t& prodFlag /* 0: Decay, 1: VBF, 2: VH */, bool isGen);
+  void getAngularBranches(std::vector<std::string>& blist, const Int_t& prodFlag /* 0: Decay, 1: VBF, 2: VH */, bool isGen);
 
-  void bookMELABranches(const bool& doSetAddress);
+  void buildMELABranches(std::vector<std::string> const& lheMElist_, std::vector<std::string> const& recoMElist_);
+  void bookMELABranches(MELAOptionParser* me_opt, MELAComputation* computer, bool doCopy);
+  void clearMELABranches();
 
-  vector<string> constructMELABranchList(const bool& doSetAddress);
-  void setupMELASignalMECases(vector<string>& accumulatedlist, TVar::Production prod, TVar::MatrixElement me, bool isGen, bool isProdME, bool doSetAddress);
-  vector<string> getMELASignalMEBranches(TVar::Production prod, TVar::MatrixElement me, vector<string> gList, vector<int> gCountRe, vector<int> gCountIm, bool isGen, bool isProdME, bool doSetAddress);
+  void computeMELABranches(bool isGen);
+  void pushMELABranches(bool isGen);
 
-  OptionParser* options;
-  vector<string> melaProbBranches;
+  void updateMELAClusters_Common(const string clustertype, bool isGen);
+  void updateMELAClusters_J1JEC(const string clustertype, bool isGen);
+  void updateMELAClusters_J2JEC(const string clustertype, bool isGen);
+  void updateMELAClusters_LepWH(const string clustertype, bool isGen);
+  void updateMELAClusters_LepZH(const string clustertype, bool isGen);
+  void updateMELAClusters_NoInitialQ(const string clustertype, bool isGen);
+  void updateMELAClusters_NoInitialG(const string clustertype, bool isGen);
+  void updateMELAClusters_NoAssociatedG(const string clustertype, bool isGen);
+  void updateMELAClusters_NoInitialGNoAssociatedG(const string clustertype, bool isGen);
+  void updateMELAClusters_BestLOAssociatedZ(const string clustertype, bool isGen);
+  void updateMELAClusters_BestLOAssociatedW(const string clustertype, bool isGen);
+  void updateMELAClusters_BestLOAssociatedVBF(const string clustertype, bool isGen);
+  void updateMELAClusters_BestNLOVHApproximation(const string clustertype, bool isGen);
+  void updateMELAClusters_BestNLOVBFApproximation(const string clustertype, bool isGen);
+
 };
 
 #endif

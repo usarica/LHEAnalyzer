@@ -43,4 +43,3 @@ Float_t melaHelpers::melaBranchMEInterpreter(std::string& branchname){
   //MELACandidate* cand=melaHandle->getCurrentCandidate(),
   return 0.;
 }
-

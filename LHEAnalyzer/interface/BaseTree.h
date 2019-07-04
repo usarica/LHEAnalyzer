@@ -25,7 +25,7 @@ public:
   BaseTree(string treename);
   BaseTree(string treename, string treetitle);
   BaseTree(string treename, TFile* fin);
-  virtual ~BaseTree(){ if (hvvtree!=0) delete hvvtree; cleanBranches(); }
+  virtual ~BaseTree(){ delete hvvtree; cleanBranches(); }
 
   // Innocuous functions
   void initTree(string treename, string treetitle){ hvvtree = new TTree(treename.c_str(), treetitle.c_str()); hvvtree->SetAutoSave(5000000000); }
