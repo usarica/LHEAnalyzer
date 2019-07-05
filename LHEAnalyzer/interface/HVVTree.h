@@ -13,7 +13,7 @@ class HVVTree : public BaseTree{
 protected:
   OptionParser* options;
 
-  std::vector<std::string> recoMElist;
+  std::vector<MELAOptionParser*> recome_originalopts; // Be careful: Only for reading
   std::vector<MELAOptionParser*> recome_copyopts;
   std::vector<MELAHypothesis*> recome_units;
   std::vector<MELAHypothesis*> recome_aliased_units;
@@ -21,7 +21,7 @@ protected:
   std::vector<MELACluster*> recome_clusters;
   std::vector<MELABranch*> recome_branches;
 
-  std::vector<std::string> lheMElist;
+  std::vector<MELAOptionParser*> lheme_originalopts; // Be careful: Only for reading
   std::vector<MELAOptionParser*> lheme_copyopts;
   std::vector<MELAHypothesis*> lheme_units;
   std::vector<MELAHypothesis*> lheme_aliased_units;
@@ -68,27 +68,27 @@ protected:
   void bookAngularBranches(const bool& doSetAddress);
   void getAngularBranches(std::vector<std::string>& blist, const Int_t& prodFlag /* 0: Decay, 1: VBF, 2: VH */, bool isGen);
 
-  void buildMELABranches(std::vector<std::string> const& lheMElist_, std::vector<std::string> const& recoMElist_);
+  void buildMELABranches(bool doSetAddress);
   void bookMELABranches(MELAOptionParser* me_opt, MELAComputation* computer, bool doCopy);
   void clearMELABranches();
 
   void computeMELABranches(bool isGen);
   void pushMELABranches(bool isGen);
 
-  void updateMELAClusters_Common(const string clustertype, bool isGen);
-  void updateMELAClusters_J1JEC(const string clustertype, bool isGen);
-  void updateMELAClusters_J2JEC(const string clustertype, bool isGen);
-  void updateMELAClusters_LepWH(const string clustertype, bool isGen);
-  void updateMELAClusters_LepZH(const string clustertype, bool isGen);
-  void updateMELAClusters_NoInitialQ(const string clustertype, bool isGen);
-  void updateMELAClusters_NoInitialG(const string clustertype, bool isGen);
-  void updateMELAClusters_NoAssociatedG(const string clustertype, bool isGen);
-  void updateMELAClusters_NoInitialGNoAssociatedG(const string clustertype, bool isGen);
-  void updateMELAClusters_BestLOAssociatedZ(const string clustertype, bool isGen);
-  void updateMELAClusters_BestLOAssociatedW(const string clustertype, bool isGen);
-  void updateMELAClusters_BestLOAssociatedVBF(const string clustertype, bool isGen);
-  void updateMELAClusters_BestNLOVHApproximation(const string clustertype, bool isGen);
-  void updateMELAClusters_BestNLOVBFApproximation(const string clustertype, bool isGen);
+  void updateMELAClusters_Common(const std::string clustertype, bool isGen);
+  void updateMELAClusters_J1JEC(const std::string clustertype, bool isGen);
+  void updateMELAClusters_J2JEC(const std::string clustertype, bool isGen);
+  void updateMELAClusters_LepWH(const std::string clustertype, bool isGen);
+  void updateMELAClusters_LepZH(const std::string clustertype, bool isGen);
+  void updateMELAClusters_NoInitialQ(const std::string clustertype, bool isGen);
+  void updateMELAClusters_NoInitialG(const std::string clustertype, bool isGen);
+  void updateMELAClusters_NoAssociatedG(const std::string clustertype, bool isGen);
+  void updateMELAClusters_NoInitialGNoAssociatedG(const std::string clustertype, bool isGen);
+  void updateMELAClusters_BestLOAssociatedZ(const std::string clustertype, bool isGen);
+  void updateMELAClusters_BestLOAssociatedW(const std::string clustertype, bool isGen);
+  void updateMELAClusters_BestLOAssociatedVBF(const std::string clustertype, bool isGen);
+  void updateMELAClusters_BestNLOVHApproximation(const std::string clustertype, bool isGen);
+  void updateMELAClusters_BestNLOVBFApproximation(const std::string clustertype, bool isGen);
 
 };
 

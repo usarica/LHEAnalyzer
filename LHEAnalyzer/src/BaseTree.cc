@@ -1,18 +1,22 @@
 #include "BaseTree.h"
 
-BaseTree::BaseTree(string treename){ initTree(treename, ""); }
-BaseTree::BaseTree(string treename, string treetitle){ initTree(treename, treetitle); }
-BaseTree::BaseTree(string treename, TFile* fin){ getTreeFromFile(treename, fin); }
 
-void BaseTree::getTreeFromFile(string treename, TFile* fin){
+using namespace std;
+
+
+BaseTree::BaseTree(std::string treename){ initTree(treename, ""); }
+BaseTree::BaseTree(std::string treename, string treetitle){ initTree(treename, treetitle); }
+BaseTree::BaseTree(std::string treename, TFile* fin){ getTreeFromFile(treename, fin); }
+
+void BaseTree::getTreeFromFile(std::string treename, TFile* fin){
   if (fin!=0 && !fin->IsZombie() && fin->IsOpen()) hvvtree = (TTree*)fin->Get(treename.c_str());
   else hvvtree=0;
   if (hvvtree==0) cout << "Failed to extract the tree named " << treename << "!" << endl;
 }
 
-bool BaseTree::bookBranch(string& branchname, const BaseTree::BranchTypes& bType, const bool& doSetAddress){
+bool BaseTree::bookBranch(std::string& branchname, const BaseTree::BranchTypes& bType, const bool& doSetAddress){
   bool success=true;
-  if (hvvtree!=0){
+  if (hvvtree){
     if (bType==BaseTree::bInt){
       Int_t* container = 0;
       if (!doSetAddress || hvvtree->GetBranchStatus(branchname.c_str())){
@@ -101,17 +105,17 @@ bool BaseTree::actuateBranches(const bool& doSetAddress){
   if (!success) cerr << "BaseTree::actuateBranch: Failed to actuate the branches!" << endl;
   return success;
 }
-vector<string> BaseTree::getBranchList(){
+std::vector<std::string> BaseTree::getBranchList()const{
   vector<string> branchlist;
-  for (unsigned int el=0; el<intBranches.size(); el++) branchlist.push_back(intBranches.at(el).first);
-  for (unsigned int el=0; el<floatBranches.size(); el++) branchlist.push_back(floatBranches.at(el).first);
-  for (unsigned int el=0; el<vectorIntBranches.size(); el++) branchlist.push_back(vectorIntBranches.at(el).first);
-  for (unsigned int el=0; el<vectorFloatBranches.size(); el++) branchlist.push_back(vectorFloatBranches.at(el).first);
-  for (unsigned int el=0; el<vectorDoubleBranches.size(); el++) branchlist.push_back(vectorDoubleBranches.at(el).first);
+  for (auto const& el:intBranches) branchlist.push_back(el.first);
+  for (auto const& el:floatBranches) branchlist.push_back(el.first);
+  for (auto const& el:vectorIntBranches) branchlist.push_back(el.first);
+  for (auto const& el:vectorFloatBranches) branchlist.push_back(el.first);
+  for (auto const& el:vectorDoubleBranches) branchlist.push_back(el.first);
   return branchlist;
 }
 
-BaseTree::BranchTypes BaseTree::searchArray(const string& branchname, int& position){
+BaseTree::BranchTypes BaseTree::searchArray(const std::string& branchname, int& position){
   for (unsigned int el=0; el<intBranches.size(); el++){
     if (branchname==intBranches.at(el).first){
       position = el;

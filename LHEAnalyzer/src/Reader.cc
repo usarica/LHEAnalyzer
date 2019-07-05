@@ -42,10 +42,10 @@ void Reader::bindInputBranches(HVVTree* tin){
     pos=-1;
     BaseTree::BranchTypes oBT = tree->searchArray(branchname, pos);
     bool outfound = !(pos==-1 || oBT==BaseTree::nBranchTypes || iBT!=oBT);
-    if (!outfound && tree->getBranchList().size()==0) unreservedBranches.push_back(pair<string, BaseTree::BranchTypes>(branchname, iBT));
+    if (!outfound && tree->getBranchList().empty()) unreservedBranches.push_back(pair<string, BaseTree::BranchTypes>(branchname, iBT));
   }
-  if (unreservedBranches.size()>0){
-    for (unsigned int b=0; b<unreservedBranches.size(); b++) tree->reserveBranch(unreservedBranches.at(b).first, unreservedBranches.at(b).second, false);
+  if (!unreservedBranches.empty()){
+    for (pair<string, BaseTree::BranchTypes> const& tmp_branch:unreservedBranches) tree->reserveBranch(tmp_branch.first, tmp_branch.second, false);
     tree->actuateBranches(false);
   }
 
@@ -150,12 +150,13 @@ void Reader::run(){
       int nProcessed = 0;
 
       HVVTree* tin = new HVVTree("SelectedTree", fin);
-      if (tin->getTree()!=0){
+      if (tin->getTree()){
         tin->setOptions(options);
         tin->bookAllBranches(true);
         cout << "Input tree branches booked...";
         bindInputBranches(tin);
         cout << "bound..." << endl;
+
         foutput->cd();
         if (firstFile){
           tree->bookAllBranches(false);

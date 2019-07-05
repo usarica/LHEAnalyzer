@@ -16,20 +16,18 @@ typedef std::vector<int> vectorInt;
 typedef std::vector<float> vectorFloat;
 typedef std::vector<double> vectorDouble;
 
-using namespace std;
-
 
 class BaseTree{
 public:
-  BaseTree(){ hvvtree=0; };
-  BaseTree(string treename);
-  BaseTree(string treename, string treetitle);
-  BaseTree(string treename, TFile* fin);
+  BaseTree(){ hvvtree=nullptr; }
+  BaseTree(std::string treename);
+  BaseTree(std::string treename, std::string treetitle);
+  BaseTree(std::string treename, TFile* fin);
   virtual ~BaseTree(){ delete hvvtree; cleanBranches(); }
 
   // Innocuous functions
-  void initTree(string treename, string treetitle){ hvvtree = new TTree(treename.c_str(), treetitle.c_str()); hvvtree->SetAutoSave(5000000000); }
-  void getTreeFromFile(string treename, TFile* fin);
+  void initTree(std::string treename, std::string treetitle){ hvvtree = new TTree(treename.c_str(), treetitle.c_str()); hvvtree->SetAutoSave(5000000000); }
+  void getTreeFromFile(std::string treename, TFile* fin);
   TTree* getTree(){ return hvvtree; }
   void record(){ hvvtree->Fill(); }
   void writeTree(TFile* foutput){ foutput->cd(); foutput->WriteTObject(hvvtree); }
@@ -43,15 +41,15 @@ public:
     bVectorDouble,
     nBranchTypes
   };
-  bool bookBranch(string& branchname, const BaseTree::BranchTypes& bType, const bool& doSetAddress);
+  bool bookBranch(std::string& branchname, const BaseTree::BranchTypes& bType, const bool& doSetAddress);
   bool actuateBranches(const bool& doSetAddress);
-  vector<string> getBranchList();
-  BranchTypes searchArray(const string& branchname, int& position);
-  template<typename varType> void setVal(const string& branchname, const varType& value){
+  std::vector<std::string> getBranchList()const;
+  BranchTypes searchArray(const std::string& branchname, int& position);
+  template<typename varType> void setVal(const std::string& branchname, const varType& value){
     int varposition=-1;
     BaseTree::BranchTypes varbranchtype = searchArray(branchname, varposition);
     if (varposition==-1 || varbranchtype==BaseTree::nBranchTypes){
-      cerr << "BaseTree::setVal -> Could not find the branch called " << branchname << "!" << endl;
+      std::cerr << "BaseTree::setVal -> Could not find the branch called " << branchname << "!" << std::endl;
     }
     else{
       if (varbranchtype==BaseTree::bInt) *(intBranches.at(varposition).second)=value;
@@ -61,11 +59,11 @@ public:
       else if (varbranchtype==BaseTree::bVectorDouble) vectorDoubleBranches.at(varposition).second->push_back(value);
     }
   }
-  void* getBranchHandleRef(const string& branchname){
+  void* getBranchHandleRef(const std::string& branchname){
     int varposition=-1;
     BaseTree::BranchTypes varbranchtype = searchArray(branchname, varposition);
     if (varposition==-1 || varbranchtype==BaseTree::nBranchTypes){
-      cerr << "Could not find the branch called " << branchname << "!" << endl;
+      std::cerr << "Could not find the branch called " << branchname << "!" << std::endl;
       return 0;
     }
     else{
@@ -85,11 +83,11 @@ public:
 protected:
   TTree* hvvtree;
 
-  vector < pair<string, Int_t*> > intBranches;
-  vector < pair<string, Float_t*> > floatBranches;
-  vector < pair<string, vectorInt*> > vectorIntBranches;
-  vector < pair<string, vectorFloat*> > vectorFloatBranches;
-  vector < pair<string, vectorDouble*> > vectorDoubleBranches;
+  std::vector < std::pair<std::string, Int_t*> > intBranches;
+  std::vector < std::pair<std::string, Float_t*> > floatBranches;
+  std::vector < std::pair<std::string, vectorInt*> > vectorIntBranches;
+  std::vector < std::pair<std::string, vectorFloat*> > vectorFloatBranches;
+  std::vector < std::pair<std::string, vectorDouble*> > vectorDoubleBranches;
 };
 
 #endif
