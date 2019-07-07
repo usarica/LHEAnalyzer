@@ -729,6 +729,7 @@ void HVVTree::fillTTHProductionAngles(bool isGen){
 }
 void HVVTree::fillMELAProbabilities(bool isGen){
   computeMELABranches(isGen);
+  pushMELABranches(isGen);
 }
 
 
@@ -739,36 +740,11 @@ void HVVTree::fillEventVariables(const Float_t& weight, const Int_t& passSelecti
 
 
 void HVVTree::buildMELABranches(bool doSetAddress){
-  std::vector<std::string> const lheMElist = options->getLHEMEList();
-  std::vector<std::string> const recoMElist = options->getRecoMEList();
+  std::vector<std::string> const& lheMElist = options->getLHEMEList();
+  std::vector<std::string> const& recoMElist = options->getRecoMEList();
 
   if (!melaHelpers::melaHandle){
     // If the MELA object exists, there is no need to prompt binding because the branches will be recomputed.
-    /****************************/
-    /***** RECO ME BRANCHES *****/
-    /****************************/
-    for (auto const& strRecoME:recoMElist){
-      MELAOptionParser* me_opt = new MELAOptionParser(strRecoME);
-      if (strRecoME.find("Copy")!=string::npos) recome_copyopts.push_back(me_opt);
-      else recome_originalopts.push_back(me_opt);
-    }
-    // Resolve original options
-    for (MELAOptionParser* me_opt:recome_originalopts) bookMELABranches(me_opt, nullptr, false);
-    // Resolve copy options
-    for (MELAOptionParser* me_opt:recome_copyopts){
-      MELAOptionParser* original_opt=nullptr;
-      // Find the original options
-      for (MELAOptionParser* tmp_opt:recome_originalopts){
-        if (me_opt->testCopyAlias(tmp_opt->getAlias())){
-          original_opt = tmp_opt;
-          break;
-        }
-      }
-      if (!original_opt) continue;
-      else me_opt->pickOriginalOptions(original_opt);
-      bookMELABranches(me_opt, nullptr, false);
-    }
-
     /***************************/
     /***** LHE ME BRANCHES *****/
     /***************************/
@@ -784,6 +760,31 @@ void HVVTree::buildMELABranches(bool doSetAddress){
       MELAOptionParser* original_opt=nullptr;
       // Find the original options
       for (MELAOptionParser* tmp_opt:lheme_originalopts){
+        if (me_opt->testCopyAlias(tmp_opt->getAlias())){
+          original_opt = tmp_opt;
+          break;
+        }
+      }
+      if (!original_opt) continue;
+      else me_opt->pickOriginalOptions(original_opt);
+      bookMELABranches(me_opt, nullptr, false);
+    }
+
+    /****************************/
+    /***** RECO ME BRANCHES *****/
+    /****************************/
+    for (auto const& strRecoME:recoMElist){
+      MELAOptionParser* me_opt = new MELAOptionParser(strRecoME);
+      if (strRecoME.find("Copy")!=string::npos) recome_copyopts.push_back(me_opt);
+      else recome_originalopts.push_back(me_opt);
+    }
+    // Resolve original options
+    for (MELAOptionParser* me_opt:recome_originalopts) bookMELABranches(me_opt, nullptr, false);
+    // Resolve copy options
+    for (MELAOptionParser* me_opt:recome_copyopts){
+      MELAOptionParser* original_opt=nullptr;
+      // Find the original options
+      for (MELAOptionParser* tmp_opt:recome_originalopts){
         if (me_opt->testCopyAlias(tmp_opt->getAlias())){
           original_opt = tmp_opt;
           break;
@@ -810,6 +811,65 @@ void HVVTree::buildMELABranches(bool doSetAddress){
     clearMELABranches();
   }
   else if (!doSetAddress){
+    /***************************/
+    /***** LHE ME BRANCHES *****/
+    /***************************/
+    for (auto const& strLHEME:lheMElist){
+      MELAOptionParser* me_opt;
+      // First find out if the option has a copy specification
+      // These copy options will be evaulated in a separate loop
+      if (strLHEME.find("Copy")!=string::npos){
+        me_opt = new MELAOptionParser(strLHEME);
+        lheme_copyopts.push_back(me_opt);
+        continue;
+      }
+
+      // Create a hypothesis for each option
+      MELAHypothesis* me_hypo = new MELAHypothesis(melaHelpers::melaHandle, strLHEME);
+      lheme_units.push_back(me_hypo);
+
+      me_opt = me_hypo->getOption();
+      if (me_opt->isAliased()) lheme_aliased_units.push_back(me_hypo);
+
+      // Create a computation for each hypothesis
+      MELAComputation* me_computer = new MELAComputation(me_hypo);
+      lheme_computers.push_back(me_computer);
+
+      // Add the computation to a named cluster to keep track of JECUp/JECDn, or for best-pWH_SM Lep_WH computations
+      GMECHelperFunctions::addToMELACluster(me_computer, lheme_clusters);
+
+      this->bookMELABranches(me_opt, me_computer, false);
+    }
+    // Resolve copy options
+    for (MELAOptionParser* me_opt:lheme_copyopts){
+      MELAHypothesis* original_hypo=nullptr;
+      MELAOptionParser* original_opt=nullptr;
+      // Find the original options
+      for (auto* me_aliased_unit:lheme_aliased_units){
+        if (me_opt->testCopyAlias(me_aliased_unit->getOption()->getAlias())){
+          original_hypo = me_aliased_unit;
+          original_opt = original_hypo->getOption();
+          break;
+        }
+      }
+      if (!original_opt) continue;
+      else me_opt->pickOriginalOptions(original_opt);
+      // Create a new computation for the copy options
+      MELAComputation* me_computer = new MELAComputation(original_hypo);
+      me_computer->setOption(me_opt);
+      lheme_computers.push_back(me_computer);
+
+      // The rest is the same story...
+      // Add the computation to a named cluster to keep track of JECUp/JECDn, or for best-pWH_SM Lep_WH computations
+      GMECHelperFunctions::addToMELACluster(me_computer, lheme_clusters);
+
+      // Create the necessary branches for each computation
+      // Notice that no tree is passed, so no TBranches are created.
+      this->bookMELABranches(me_opt, me_computer, true);
+    }
+    // Loop over the computations to add any contingencies to aliased hypotheses
+    for (auto& me_computer:lheme_computers) me_computer->addContingencies(lheme_aliased_units);
+
     /****************************/
     /***** RECO ME BRANCHES *****/
     /****************************/
@@ -869,65 +929,18 @@ void HVVTree::buildMELABranches(bool doSetAddress){
     // Loop over the computations to add any contingencies to aliased hypotheses
     for (auto& me_computer:recome_computers) me_computer->addContingencies(recome_aliased_units);
 
-
-    /***************************/
-    /***** LHE ME BRANCHES *****/
-    /***************************/
-    for (auto const& strLHEME:lheMElist){
-      MELAOptionParser* me_opt;
-      // First find out if the option has a copy specification
-      // These copy options will be evaulated in a separate loop
-      if (strLHEME.find("Copy")!=string::npos){
-        me_opt = new MELAOptionParser(strLHEME);
-        lheme_copyopts.push_back(me_opt);
-        continue;
+    if (!lheme_clusters.empty()){
+      cout << "HVVTree::buildMELABranches: LHE ME clusters:" << endl;
+      for (auto const* me_cluster:lheme_clusters){
+        cout << "\t- Cluster " << me_cluster->getName() << " has " << me_cluster->getComputations()->size() << " computations registered." << endl;
       }
-
-      // Create a hypothesis for each option
-      MELAHypothesis* me_hypo = new MELAHypothesis(melaHelpers::melaHandle, strLHEME);
-      lheme_units.push_back(me_hypo);
-
-      me_opt = me_hypo->getOption();
-      if (me_opt->isAliased()) lheme_aliased_units.push_back(me_hypo);
-
-      // Create a computation for each hypothesis
-      MELAComputation* me_computer = new MELAComputation(me_hypo);
-      lheme_computers.push_back(me_computer);
-
-      // Add the computation to a named cluster to keep track of JECUp/JECDn, or for best-pWH_SM Lep_WH computations
-      GMECHelperFunctions::addToMELACluster(me_computer, lheme_clusters);
-
-      this->bookMELABranches(me_opt, me_computer, false);
     }
-    // Resolve copy options
-    for (MELAOptionParser* me_opt:lheme_copyopts){
-      MELAHypothesis* original_hypo=nullptr;
-      MELAOptionParser* original_opt=nullptr;
-      // Find the original options
-      for (auto* me_aliased_unit:lheme_aliased_units){
-        if (me_opt->testCopyAlias(me_aliased_unit->getOption()->getAlias())){
-          original_hypo = me_aliased_unit;
-          original_opt = original_hypo->getOption();
-          break;
-        }
+    if (!recome_clusters.empty()){
+      cout << "HVVTree::buildMELABranches: Reco ME clusters:" << endl;
+      for (auto const* me_cluster:recome_clusters){
+        cout << "\t- Cluster " << me_cluster->getName() << " has " << me_cluster->getComputations()->size() << " computations registered." << endl;
       }
-      if (!original_opt) continue;
-      else me_opt->pickOriginalOptions(original_opt);
-      // Create a new computation for the copy options
-      MELAComputation* me_computer = new MELAComputation(original_hypo);
-      me_computer->setOption(me_opt);
-      lheme_computers.push_back(me_computer);
-
-      // The rest is the same story...
-      // Add the computation to a named cluster to keep track of JECUp/JECDn, or for best-pWH_SM Lep_WH computations
-      GMECHelperFunctions::addToMELACluster(me_computer, lheme_clusters);
-
-      // Create the necessary branches for each computation
-      // Notice that no tree is passed, so no TBranches are created.
-      this->bookMELABranches(me_opt, me_computer, true);
     }
-    // Loop over the computations to add any contingencies to aliased hypotheses
-    for (auto& me_computer:lheme_computers) me_computer->addContingencies(lheme_aliased_units);
   }
 }
 void HVVTree::bookMELABranches(MELAOptionParser* me_opt, MELAComputation* computer, bool doCopy){
@@ -971,11 +984,14 @@ void HVVTree::bookMELABranches(MELAOptionParser* me_opt, MELAComputation* comput
         defVal, computer
       );
       me_branches->push_back(tmpbranch);
+      cout << "HVVTree::bookMELABranches: Constructed branch with base name " << basename << endl;
     }
   }
 }
 void HVVTree::clearMELABranches(){
-#define CLEAR_MELA_BRANCHES_CMD(thelist) for (auto*& v:thelist) delete v;
+#define CLEAR_MELA_BRANCHES_CMD(thelist) \
+for (auto*& v:thelist) delete v; \
+thelist.clear();
 
   CLEAR_MELA_BRANCHES_CMD(lheme_branches);
   CLEAR_MELA_BRANCHES_CMD(lheme_clusters);
@@ -1064,10 +1080,18 @@ void HVVTree::updateMELAClusters_J1JEC(const string clustertype, bool isGen){
     + int(clustertype=="J1JECDn")*3;
   if (jecnumsel<0) return;
 
+  //cout << "Begin HVVTree::updateMELAClusters_J1JEC(" << clustertype << "," << isGen << ")" << endl;
+
   // First determine if any of the candidates has only one jet
   bool doSkip=true;
+  int nMelaStored = melaHelpers::melaHandle->getNCandidates();
+  bool setJECcand = (nMelaStored == njecnum);
+  if (!(setJECcand || nMelaStored==0)) return;
+
   for (int jecnum=0; jecnum<njecnum; jecnum++){
-    melaHelpers::melaHandle->setCurrentCandidateFromIndex(jecnum);
+    if (setJECcand) melaHelpers::melaHandle->setCurrentCandidateFromIndex(jecnum);
+    else if (jecnum>0) break;
+
     MELACandidate* melaCand = melaHelpers::melaHandle->getCurrentCandidate();
     if (!melaCand) continue;
 
@@ -1081,7 +1105,9 @@ void HVVTree::updateMELAClusters_J1JEC(const string clustertype, bool isGen){
   for (int jecnum=0; jecnum<njecnum; jecnum++){
     if (jecnum!=jecnumsel) continue;
 
-    melaHelpers::melaHandle->setCurrentCandidateFromIndex(jecnum);
+    if (setJECcand) melaHelpers::melaHandle->setCurrentCandidateFromIndex(jecnum);
+    else if (jecnum>0) break;
+
     MELACandidate* melaCand = melaHelpers::melaHandle->getCurrentCandidate();
     if (!melaCand) continue;
 
@@ -1103,6 +1129,8 @@ void HVVTree::updateMELAClusters_J1JEC(const string clustertype, bool isGen){
     // Turn associated jets back on
     for (unsigned int disableJet=0; disableJet<nGoodJets; disableJet++) melaCand->getAssociatedJet(disableJet)->setSelected(true); // Turn all jets back on
   } // End jecnum loop
+
+  //cout << "End HVVTree::updateMELAClusters_J1JEC(" << clustertype << "," << isGen << ")" << endl;
 }
 // Common ME computations for JECNominal, Up and Down variations, case where ME requires 2 jets
 void HVVTree::updateMELAClusters_J2JEC(const string clustertype, bool isGen){
@@ -1113,12 +1141,20 @@ void HVVTree::updateMELAClusters_J2JEC(const string clustertype, bool isGen){
     + int(clustertype=="J2JECDn")*3;
   if (jecnumsel<0) return;
 
+  //cout << "Begin HVVTree::updateMELAClusters_J2JEC(" << clustertype << "," << isGen << ")" << endl;
+
+  int nMelaStored = melaHelpers::melaHandle->getNCandidates();
+  bool setJECcand = (nMelaStored == njecnum);
+  if (!(setJECcand || nMelaStored==0)) return;
+
   std::vector<MELACluster*>& me_clusters = (isGen ? lheme_clusters : recome_clusters);
 
   for (int jecnum=0; jecnum<njecnum; jecnum++){
     if (jecnum!=jecnumsel) continue;
 
-    melaHelpers::melaHandle->setCurrentCandidateFromIndex(jecnum);
+    if (setJECcand) melaHelpers::melaHandle->setCurrentCandidateFromIndex(jecnum);
+    else if (jecnum>0) break;
+
     MELACandidate* melaCand = melaHelpers::melaHandle->getCurrentCandidate();
     if (!melaCand) continue;
 
@@ -1151,10 +1187,16 @@ void HVVTree::updateMELAClusters_J2JEC(const string clustertype, bool isGen){
     for (unsigned int disableJet=0; disableJet<nGoodJets; disableJet++) melaCand->getAssociatedJet(disableJet)->setSelected(true); // Turn all jets back on
     for (MELATopCandidate_t* einTop:melaCand->getAssociatedTops()) einTop->setSelected(true); // Turn all tops back on
   } // End jecnum loop
+
+  //cout << "End HVVTree::updateMELAClusters_J2JEC(" << clustertype << "," << isGen << ")" << endl;
 }
 // Common ME computations for leptonic WH: Loops over possible fake neutrinos
 void HVVTree::updateMELAClusters_LepWH(const string clustertype, bool isGen){
-  melaHelpers::melaHandle->setCurrentCandidateFromIndex(0);
+  int nMelaStored = melaHelpers::melaHandle->getNCandidates();
+  bool setLepHypoCand = (nMelaStored == 1);
+  if (!(setLepHypoCand || nMelaStored==0)) return;
+
+  if (setLepHypoCand) melaHelpers::melaHandle->setCurrentCandidateFromIndex(0);
   MELACandidate* melaCand = melaHelpers::melaHandle->getCurrentCandidate();
   if (!melaCand) return;
 
@@ -1179,7 +1221,11 @@ void HVVTree::updateMELAClusters_LepWH(const string clustertype, bool isGen){
 }
 // Common ME computations for leptonic ZH: Picks best Z3
 void HVVTree::updateMELAClusters_LepZH(const string clustertype, bool isGen){
-  melaHelpers::melaHandle->setCurrentCandidateFromIndex(0);
+  int nMelaStored = melaHelpers::melaHandle->getNCandidates();
+  bool setLepHypoCand = (nMelaStored == 1);
+  if (!(setLepHypoCand || nMelaStored==0)) return;
+
+  if (setLepHypoCand) melaHelpers::melaHandle->setCurrentCandidateFromIndex(0);
   MELACandidate* melaCand = melaHelpers::melaHandle->getCurrentCandidate();
   if (!melaCand) return;
 

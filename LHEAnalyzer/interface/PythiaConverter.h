@@ -1,10 +1,10 @@
 #ifndef PYTHIACONVERTER_H
 #define PYTHIACONVERTER_H
 
-#include "converter.h"
 #include <cstdlib>
 #include <sstream>
 #include <utility>
+#include "converter.h"
 //#include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
 //#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 //#include "DataFormats/Common/interface/Wrapper.h"
@@ -26,17 +26,18 @@
 //#include "DataFormats/PatCandidates/interface/Tau.h"
 //#include "DataFormats/PatCandidates/interface/PackedTriggerPrescales.h"
 
+
 class PythiaConverter : public converter{
 public:
   PythiaConverter(OptionParser* options_);
-  ~PythiaConverter(){};
+  ~PythiaConverter(){}
   void run();
 
 protected:
   void configure(); // Set output file, tree
   void finalizeRun();
-  void readEvent(TTree* tin, const int& ev, vector<MELAParticle*>& genCollection, bool& genSuccess, vector<MELAParticle*>& recoCollection, bool& smearedSuccess, double& eventWeight);
+  void readEvent(TTree* tin, const int& ev, std::vector<MELAParticle*>& genCollection, bool& genSuccess, std::vector<MELAParticle*>& recoCollection, bool& smearedSuccess, double& eventWeight);
 
-  TFile* getIntermediateFile(const string& cinput);
+  TFile* getIntermediateFile(const std::string& cinput);
 };
 #endif

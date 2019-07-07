@@ -3,7 +3,6 @@
 
 #include "converter.h"
 
-using namespace std;
 
 class LHEConverter : public converter{
 public:
@@ -14,6 +13,7 @@ public:
 protected:
   void configure(); // Set output file, tree
   void finalizeRun();
-  vector<MELAParticle*> readEvent(ifstream& input_lhe, int& fline, double& weight);
+  std::vector<MELAParticle*> readEvent(std::ifstream& input_lhe, int& fline, double& weight);
+
 };
 #endif

@@ -63,7 +63,7 @@ void OptionParser::analyze(){
     if (wish=="JetAlgorithm" || wish=="jetAlgorithm" || wish=="jetalgorithm") hasJetAlgo=true;
   }
 
-  if (filename.size()==0){ cerr << "You have to specify the input files." << endl; if (!hasInvalidOption) hasInvalidOption=true; }
+  if (filename.empty()){ cerr << "You have to specify the input files." << endl; if (!hasInvalidOption) hasInvalidOption=true; }
   else{
     for (unsigned int f=0; f<filename.size(); f++){
       if ((filename.at(f).find(".lhe")!=string::npos && fileLevel!=0) || (filename.at(f).find(".root")!=string::npos && fileLevel==0)){
@@ -111,6 +111,7 @@ void OptionParser::analyze(){
   ParticleComparators::setJetDeltaR(jetDeltaRIso);
 
   // Initialize the global Mela if needed
+  extractMElines();
   configureMela();
 }
 Bool_t OptionParser::isAnExcludedBranch(std::string const& branchname)const{
@@ -212,6 +213,7 @@ void OptionParser::extractMElines(){
 void OptionParser::extractMElines(std::string const& sfile, std::vector<std::string>& llist){
   using namespace HostHelpers;
   if (!sfile.empty()){
+    cout << "OptionParser::extractMElines: Attempting to read the ME file " << sfile << '.' << endl;
     if (FileReadable(sfile.c_str())){
       ifstream fin(sfile.c_str());
       if (fin.good()){
@@ -222,11 +224,15 @@ void OptionParser::extractMElines(std::string const& sfile, std::vector<std::str
           lstrip(strlinestrip, " \"");
           rstrip(strlinestrip, " \",");
           if (strlinestrip.find('#')==0) continue;
-          else if (!strlinestrip.empty()) llist.push_back(strlinestrip);
+          else if (!strlinestrip.empty()){
+            cout << "\t- Adding ME option " << strlinestrip << "..." << endl;
+            llist.push_back(strlinestrip);
+          }
         }
       }
       fin.close();
     }
+    else cerr << "OptionParser::extractMElines: ME file " << sfile << " is not readable." << endl;
   }
 }
 Bool_t OptionParser::checkListVariable(std::vector<std::string> const& list, std::string const& var)const{ return TUtilHelpers::checkElementExists(var, list); }

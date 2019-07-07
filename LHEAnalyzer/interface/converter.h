@@ -10,12 +10,11 @@
 #include "LHEParticleSmear.h"
 #include "HVVTree.h"
 
-using namespace std;
 
 class converter{
 public:
   converter(OptionParser* options_);
-  virtual ~converter(){ finalizeRun(); };
+  virtual ~converter(){ finalizeRun(); }
 
   virtual void run()=0;
 
@@ -24,8 +23,9 @@ protected:
   virtual void finalizeRun();
 
   OptionParser* options;
-  vector<string> filename; // Input files
+  std::vector<std::string> filename; // Input files
   TFile* foutput;
   HVVTree* tree;
+
 };
 #endif

@@ -16,10 +16,12 @@ public:
   // records the result to the corresponding branch,
   // and returns a bool to indicate the success or failure of the operation.
   // The function prohibits the modification of the MELAEvent object and checks the return type via dynamic_cast to a pointer to it.
-  template<typename returnType> bool setVariable(const MELAEvent* ev, string& branchname, returnType(*evalVar)(const MELAEvent*, string&));
+  template<typename returnType> bool setVariable(const MELAEvent* ev, std::string& branchname, returnType(*evalVar)(const MELAEvent*, std::string&));
 
   // Add the branch name - function pointer pairs to the arrays for easier access.
-  template<typename returnType> void addFunction(string& branchname, returnType(*evalVar)(const MELAEvent*, string&, int)){
+  template<typename returnType> void addFunction(std::string& branchname, returnType(*evalVar)(const MELAEvent*, std::string&, int)){
+    using namespace std;
+
     int varposition=-1;
     BaseTree::BranchTypes varbranchtype = tree->searchArray(branchname, varposition);
     if (varposition==-1 || varbranchtype==BaseTree::nBranchTypes){
@@ -40,24 +42,24 @@ public:
 protected:
   void configure();
   void finalizeRun();
-  void readEvent(MELAEvent& outEvent, vector<MELAParticle*>& particles, bool isGen);
+  void readEvent(MELAEvent& outEvent, std::vector<MELAParticle*>& particles, bool isGen);
 
   void bindInputBranches(HVVTree* tin);
   void synchMappedBranches();
   void resetBranchBinding();
 
   // Vectors of branch name - evaluation function pointer pairs for streamlined evaluation of multiple functions and their recording to the output tree
-  vector < pair<string, Int_t(*)(const MELAEvent*, string&, int)> > intFunctions;
-  vector < pair<string, Float_t(*)(const MELAEvent*, string&, int)> > floatFunctions;
-  vector < pair<string, vectorInt(*)(const MELAEvent*, string&, int)> > vectorIntFunctions;
-  vector < pair<string, vectorFloat(*)(const MELAEvent*, string&, int)> > vectorFloatFunctions;
-  vector < pair<string, vectorDouble(*)(const MELAEvent*, string&, int)> > vectorDoubleFunctions;
+  std::vector < std::pair<std::string, Int_t(*)(const MELAEvent*, std::string&, int)> > intFunctions;
+  std::vector < std::pair<std::string, Float_t(*)(const MELAEvent*, std::string&, int)> > floatFunctions;
+  std::vector < std::pair<std::string, vectorInt(*)(const MELAEvent*, std::string&, int)> > vectorIntFunctions;
+  std::vector < std::pair<std::string, vectorFloat(*)(const MELAEvent*, std::string&, int)> > vectorFloatFunctions;
+  std::vector < std::pair<std::string, vectorDouble(*)(const MELAEvent*, std::string&, int)> > vectorDoubleFunctions;
 
   // Vectors of branch pairs between input HVVTree (first) and output HVVTree (second)
-  vector < pair<Int_t*, Int_t*> > intBranchMap;
-  vector < pair<Float_t*, Float_t*> > floatBranchMap;
-  vector < pair<vectorInt**, vectorInt**> > vectorIntBranchMap; // Map double pointer to pointer due to the object SetBranchAddress in the first HVVTree receives
-  vector < pair<vectorFloat**, vectorFloat**> > vectorFloatBranchMap; // Map double pointer to pointer due to the object SetBranchAddress in the first HVVTree receives
-  vector < pair<vectorDouble**, vectorDouble**> > vectorDoubleBranchMap; // Map double pointer to pointer due to the object SetBranchAddress in the first HVVTree receives
+  std::vector < std::pair<Int_t*, Int_t*> > intBranchMap;
+  std::vector < std::pair<Float_t*, Float_t*> > floatBranchMap;
+  std::vector < std::pair<vectorInt**, vectorInt**> > vectorIntBranchMap; // Map double pointer to pointer due to the object SetBranchAddress in the first HVVTree receives
+  std::vector < std::pair<vectorFloat**, vectorFloat**> > vectorFloatBranchMap; // Map double pointer to pointer due to the object SetBranchAddress in the first HVVTree receives
+  std::vector < std::pair<vectorDouble**, vectorDouble**> > vectorDoubleBranchMap; // Map double pointer to pointer due to the object SetBranchAddress in the first HVVTree receives
 };
 #endif

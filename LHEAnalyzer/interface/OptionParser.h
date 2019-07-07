@@ -97,9 +97,9 @@ public:
   std::string outputDir()const{ return outdir; }
   std::string getTempDir()const{ return tmpDir; }
   std::string outputFilename()const{ return coutput; }
-  std::vector<std::string> inputfiles()const{ return filename; }
-  std::vector<std::string> getLHEMEList()const{ return lheMElist; }
-  std::vector<std::string> getRecoMEList()const{ return recoMElist; }
+  std::vector<std::string> const& inputfiles()const{ return filename; }
+  std::vector<std::string> const& getLHEMEList()const{ return lheMElist; }
+  std::vector<std::string> const& getRecoMEList()const{ return recoMElist; }
 
   Int_t maxEventsToProcess()const{ return maxEvents; };
   std::vector<std::pair<Int_t, Int_t>> getSkippedEvents()const{ return eventSkipRanges; };

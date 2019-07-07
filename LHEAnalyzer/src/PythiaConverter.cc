@@ -5,7 +5,10 @@
 #include "TLorentzVector.h"
 #include "PythiaConverter.h"
 
+
+using namespace std;
 using namespace PDGHelpers;
+
 
 PythiaConverter::PythiaConverter(OptionParser* options_) : converter(options_){
   configure();
@@ -190,7 +193,7 @@ void PythiaConverter::run(){
 }
 
 
-TFile* PythiaConverter::getIntermediateFile(const string& cinput){
+TFile* PythiaConverter::getIntermediateFile(const std::string& cinput){
   string coutput = options->getTempDir();
   const bool usePython = true;
   stringstream streamCmd;
@@ -216,7 +219,7 @@ TFile* PythiaConverter::getIntermediateFile(const string& cinput){
 }
 
 
-void PythiaConverter::readEvent(TTree* tin, const int& ev, vector<MELAParticle*>& genCollection, bool& genSuccess, vector<MELAParticle*>& recoCollection, bool& smearedSuccess, double& eventWeight){
+void PythiaConverter::readEvent(TTree* tin, const int& ev, std::vector<MELAParticle*>& genCollection, bool& genSuccess, std::vector<MELAParticle*>& recoCollection, bool& smearedSuccess, double& eventWeight){
   int nEvents = tin->GetEntries();
   vectorDouble weights;
   if (ev>=nEvents){

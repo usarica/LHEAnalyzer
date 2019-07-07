@@ -5,7 +5,10 @@
 #include "TLorentzVector.h"
 #include "Reader.h"
 
+
+using namespace std;
 using namespace PDGHelpers;
+
 
 Reader::Reader(OptionParser* options_) : converter(options_){
   configure();
@@ -17,7 +20,7 @@ void Reader::configure(){
 }
 void Reader::finalizeRun(){}
 
-template<typename returnType> bool Reader::setVariable(const MELAEvent* ev, string& branchname, returnType(*evalVar)(const MELAEvent*, string&)){
+template<typename returnType> bool Reader::setVariable(const MELAEvent* ev, std::string& branchname, returnType(*evalVar)(const MELAEvent*, std::string&)){
   returnType result = evalVar(ev, branchname);
   returnType* resultPtr = &result;
   if (dynamic_cast<vectorInt*>(resultPtr) || dynamic_cast<vectorDouble*>(resultPtr) || dynamic_cast<vectorFloat*>(resultPtr)){
@@ -270,7 +273,7 @@ void Reader::run(){
   finalizeRun();
 }
 
-void Reader::readEvent(MELAEvent& outEvent, vector<MELAParticle*>& particles, bool isGen){
+void Reader::readEvent(MELAEvent& outEvent, std::vector<MELAParticle*>& particles, bool isGen){
   typedef vectorFloat VectorPrecision_t;
 
   string varname;

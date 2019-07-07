@@ -13,8 +13,11 @@
 #include "TLorentzVector.h"
 #include "LHEConverter.h"
 
+
+using namespace std;
 using namespace PDGHelpers;
 using namespace LHEParticleSmear;
+
 
 LHEConverter::LHEConverter(OptionParser* options_) : converter(options_){
   configure();
@@ -166,10 +169,10 @@ void LHEConverter::run(){
         else cerr << "Weight=0 at event " << ev << endl;
         ev++;
 
-        for (auto*& tmpPart:smearedCandList) delete tmpPart; smearedCandList.clear();
-        for (auto*& tmpPart:smearedParticleList) delete tmpPart; smearedParticleList.clear();
-        for (auto*& tmpPart:candList) delete tmpPart; candList.clear();
-        for (auto*& tmpPart:particleList) delete tmpPart; particleList.clear();
+        for (auto*& tmpPart:smearedCandList) delete tmpPart;
+        for (auto*& tmpPart:smearedParticleList) delete tmpPart;
+        for (auto*& tmpPart:candList) delete tmpPart;
+        for (auto*& tmpPart:particleList) delete tmpPart;
 
         globalNEvents++;
         if (globalNEvents % 100000 == 0) cout << "Event " << globalNEvents << "..." << endl;
@@ -181,7 +184,7 @@ void LHEConverter::run(){
   finalizeRun();
 }
 
-vector<MELAParticle*> LHEConverter::readEvent(ifstream& input_lhe, int& fline, double& weight){
+std::vector<MELAParticle*> LHEConverter::readEvent(std::ifstream& input_lhe, int& fline, double& weight){
   string event_beginning = "<event>";
   string event_end = "</event>";
   string file_closing = "</LesHouchesEvents>";
