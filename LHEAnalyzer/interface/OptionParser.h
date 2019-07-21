@@ -23,6 +23,7 @@ protected:
   void configureMela()const;
   void deconfigureMela()const;
   void extractMElines();
+  void extractXsec();
   static void extractMElines(std::string const& sfile, std::vector<std::string>& llist);
 
   Bool_t checkListVariable(std::vector<std::string> const& list, std::string const& var)const;
@@ -32,6 +33,10 @@ protected:
   Double_t mPOLE;
   Double_t wPOLE;
   Double_t wPOLEStandard;
+
+  Float_t sampleXsec;
+  Float_t sampleXsecErr;
+
   Int_t erg_tev;
   Int_t includeGenInfo;
   Int_t includeRecoInfo;
@@ -48,6 +53,7 @@ protected:
   Int_t recoDecayMode;
   Int_t recoSelBehaviour;
   Int_t recoSmearBehaviour;
+
   HiggsComparators::CandidateSelection genHiggsCandidateSelectionScheme;
   HiggsComparators::CandidateSelection recoHiggsCandidateSelectionScheme;
 
@@ -110,6 +116,9 @@ public:
   // MELA-related options
   Double_t mH()const{ return mPOLE; }
   Double_t GammaH()const{ return wPOLE; }
+  Float_t get_xsec()const{ return sampleXsec; }
+  Float_t get_xsecerr()const{ return sampleXsecErr; }
+
   Int_t sqrts()const{ return erg_tev; }
   Bool_t doMEComputations()const{ return !(lheMElist.empty() && recoMElist.empty()); }
   Bool_t doRemoveLepMasses()const{ return (removeDaughterMasses!=0); }

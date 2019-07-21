@@ -72,16 +72,17 @@ void PythiaConverter::run(){
         double weight;
         bool genSuccess=false, smearedSuccess=false;
 
+        // Bookkeeping
         vector<MELAParticle*> genParticleList;
         vector<MELAParticle*> smearedParticleList;
-        vector<MELACandidate*> genCandList; // Bookkeeping
-        vector<MELACandidate*> smearedCandList; // Bookkeeping
+        vector<MELACandidate*> genCandList;
+        vector<MELACandidate*> smearedCandList;
 
         tree->initializeBranches();
 
         readEvent(tin, ev, genParticleList, genSuccess, smearedParticleList, smearedSuccess, weight);
 
-        if (weight!=0){
+        if (weight!=0.){
           MC_weight = (float)weight;
 
           MELAEvent genEvent;
@@ -152,35 +153,19 @@ void PythiaConverter::run(){
           }
 
           tree->fillEventVariables(MC_weight, isSelected);
+          tree->fillXsec(options->get_xsec(), options->get_xsecerr());
+
           if ((smearedSuccess && options->processRecoInfo()) || (genSuccess && options->processGenInfo())){
             tree->record();
             nProcessed++;
           }
         }
 
-        for (unsigned int p=0; p<smearedCandList.size(); p++){ // Bookkeeping
-          MELACandidate* tmpCand = (MELACandidate*)smearedCandList.at(p);
-          if (tmpCand!=0) delete tmpCand;
-        }
-        for (unsigned int p=0; p<smearedParticleList.size(); p++){ // Bookkeeping
-          MELAParticle* tmpPart = (MELAParticle*)smearedParticleList.at(p);
-          if (tmpPart!=0) delete tmpPart;
-        }
-
-        for (unsigned int p=0; p<genCandList.size(); p++){ // Bookkeeping
-          MELACandidate* tmpCand = (MELACandidate*)genCandList.at(p);
-          if (tmpCand!=0) delete tmpCand;
-        }
-        for (unsigned int p=0; p<genParticleList.size(); p++){ // Bookkeeping
-          MELAParticle* tmpPart = (MELAParticle*)genParticleList.at(p);
-          if (tmpPart!=0) delete tmpPart;
-        }
-
         // Bookkeeping
-        smearedCandList.clear();
-        smearedParticleList.clear();
-        genCandList.clear();
-        genParticleList.clear();
+        for (auto*& tmpPart:smearedCandList) delete tmpPart;
+        for (auto*& tmpPart:smearedParticleList) delete tmpPart;
+        for (auto*& tmpPart:genCandList) delete tmpPart;
+        for (auto*& tmpPart:genParticleList) delete tmpPart;
 
         globalNEvents++;
         if (globalNEvents % 100000 == 0) cout << "Event " << globalNEvents << "..." << endl;
@@ -195,7 +180,7 @@ void PythiaConverter::run(){
 
 TFile* PythiaConverter::getIntermediateFile(const std::string& cinput){
   string coutput = options->getTempDir();
-  const bool usePython = true;
+  constexpr bool usePython = false;
   stringstream streamCmd;
   if (!usePython){
     streamCmd

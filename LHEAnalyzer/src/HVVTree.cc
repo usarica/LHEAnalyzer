@@ -34,6 +34,8 @@ void HVVTree::bookAllBranches(const bool& doSetAddress){
   }
 
   reserveBranch("MC_weight", BaseTree::bFloat, doSetAddress);
+  reserveBranch("xsec", BaseTree::bFloat, doSetAddress);
+  reserveBranch("xsecerr", BaseTree::bFloat, doSetAddress);
   if (options->processGenInfo()){
     bookMotherParticleBranches(BaseTree::bVectorFloat, doSetAddress);
     bookPtEtaPhiMassIdBranches("H", BaseTree::bFloat, doSetAddress, false, true, true);
@@ -733,6 +735,10 @@ void HVVTree::fillMELAProbabilities(bool isGen){
 }
 
 
+void HVVTree::fillXsec(const Float_t& val, const Float_t& err){
+  setVal("xsec", val);
+  setVal("xsecerr", err);
+}
 void HVVTree::fillEventVariables(const Float_t& weight, const Int_t& passSelection){
   setVal("MC_weight", weight);
   if (options && options->processRecoInfo()) setVal("isSelected", passSelection);

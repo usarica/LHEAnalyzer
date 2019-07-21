@@ -46,6 +46,7 @@ public:
   bool reserveBranch(std::string branchname, const BaseTree::BranchTypes& branchtype, const bool& doSetAddress);
   void bookAllBranches(const bool& doSetAddress);
 
+  void fillXsec(const Float_t& val, const Float_t& err);
   void fillEventVariables(const Float_t& weight, const Int_t& passSelection);
   void fillMotherInfo(const MELAParticle* mother);
 

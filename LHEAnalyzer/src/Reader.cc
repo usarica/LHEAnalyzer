@@ -52,10 +52,8 @@ void Reader::bindInputBranches(HVVTree* tin){
     tree->actuateBranches(false);
   }
 
-  for (unsigned int br=0; br<inputBranches.size(); br++){
+  for (string const& branchname:inputBranches){
     int pos=-1;
-    string branchname = inputBranches.at(br);
-
     BaseTree::BranchTypes iBT = tin->searchArray(branchname, pos);
     pos=-1;
     BaseTree::BranchTypes oBT = tree->searchArray(branchname, pos);
@@ -106,29 +104,21 @@ void Reader::resetBranchBinding(){
   vectorDoubleBranchMap.clear();
 }
 void Reader::synchMappedBranches(){
-  for (unsigned int b=0; b<intBranchMap.size(); b++) *(intBranchMap.at(b).second) = *(intBranchMap.at(b).first);
-  for (unsigned int b=0; b<floatBranchMap.size(); b++) *(floatBranchMap.at(b).second) = *(floatBranchMap.at(b).first);
-  for (unsigned int b=0; b<vectorIntBranchMap.size(); b++){
-    vectorInt* inhandle = *(vectorIntBranchMap.at(b).first);
-    vectorInt* outhandle = *(vectorIntBranchMap.at(b).second);
-    for (unsigned int el=0; el<inhandle->size(); el++){
-      outhandle->push_back(inhandle->at(el));
-    }
+#define Reader_synchMappedBranches_Command(type_s) \
+  for (auto& map_pp:type_s##BranchMap) *(map_pp.second) = *(map_pp.first);
+  Reader_synchMappedBranches_Command(int);
+  Reader_synchMappedBranches_Command(float);
+#undef Reader_synchMappedBranches_Command
+#define Reader_synchMappedBranches_Command(type_s) \
+  for (auto& map_pp:type_s##BranchMap){ \
+    type_s* const& inhandle = *(map_pp.first); \
+    type_s* const& outhandle = *(map_pp.second); \
+    if (inhandle && outhandle){ for (auto const& vv:(*inhandle)) outhandle->push_back(vv); } \
   }
-  for (unsigned int b=0; b<vectorFloatBranchMap.size(); b++){
-    vectorFloat* inhandle = *(vectorFloatBranchMap.at(b).first);
-    vectorFloat* outhandle = *(vectorFloatBranchMap.at(b).second);
-    for (unsigned int el=0; el<inhandle->size(); el++){
-      outhandle->push_back(inhandle->at(el));
-    }
-  }
-  for (unsigned int b=0; b<vectorDoubleBranchMap.size(); b++){
-    vectorDouble* inhandle = *(vectorDoubleBranchMap.at(b).first);
-    vectorDouble* outhandle = *(vectorDoubleBranchMap.at(b).second);
-    for (unsigned int el=0; el<inhandle->size(); el++){
-      outhandle->push_back(inhandle->at(el));
-    }
-  }
+  Reader_synchMappedBranches_Command(vectorInt);
+  Reader_synchMappedBranches_Command(vectorFloat);
+  Reader_synchMappedBranches_Command(vectorDouble);
+#undef Reader_synchMappedBranches_Command
 }
 
 void Reader::run(){
@@ -140,16 +130,16 @@ void Reader::run(){
   for (string const& cinput:filename){
     cout << "Processing " << cinput << "..." << endl;
     TFile* fin = new TFile(cinput.c_str(), "read");
-    if (fin!=0 && fin->IsZombie()){
+    if (fin && fin->IsZombie()){
       if (fin->IsOpen()) fin->Close();
       delete fin;
       fin=0;
     }
-    else if (fin!=0 && !fin->IsOpen()){ // Separate if-statement on purpose
+    else if (fin && !fin->IsOpen()){ // Separate if-statement on purpose
       delete fin;
       fin=0;
     }
-    else if (fin!=0){
+    else if (fin){
       int nProcessed = 0;
 
       HVVTree* tin = new HVVTree("SelectedTree", fin);
@@ -180,10 +170,11 @@ void Reader::run(){
           }
           if (doSkipEvent){ globalNEvents++; continue; }
 
+          // Bookkeeping
           vector<MELAParticle*> genParticleList;
           vector<MELAParticle*> recoParticleList;
-          vector<MELACandidate*> genCandList; // Bookkeeping
-          vector<MELACandidate*> recoCandList; // Bookkeeping
+          vector<MELACandidate*> genCandList;
+          vector<MELACandidate*> recoCandList;
 
           tree->initializeBranches();
 
@@ -232,36 +223,21 @@ void Reader::run(){
           }
           else if (options->recoSelectionMode()!=0) tree->fillEventVariables(*((Float_t*)tree->getBranchHandleRef("MC_weight")), 0 /*isSelected*/);
 
+          tree->fillXsec(options->get_xsec(), options->get_xsecerr()); // Override the value in the branch handle
+
           if ((recoCand && options->processRecoInfo()) || (genCand && options->processGenInfo())){
             tree->record();
             nProcessed++;
           }
 
-          for (unsigned int p=0; p<recoCandList.size(); p++){ // Bookkeeping
-            MELACandidate* tmpCand = (MELACandidate*)recoCandList.at(p);
-            if (tmpCand!=0) delete tmpCand;
-          }
-          for (unsigned int p=0; p<recoParticleList.size(); p++){ // Bookkeeping
-            MELAParticle* tmpPart = (MELAParticle*)recoParticleList.at(p);
-            if (tmpPart!=0) delete tmpPart;
-          }
-
-          for (unsigned int p=0; p<genCandList.size(); p++){ // Bookkeeping
-            MELACandidate* tmpCand = (MELACandidate*)genCandList.at(p);
-            if (tmpCand!=0) delete tmpCand;
-          }
-          for (unsigned int p=0; p<genParticleList.size(); p++){ // Bookkeeping
-            MELAParticle* tmpPart = (MELAParticle*)genParticleList.at(p);
-            if (tmpPart!=0) delete tmpPart;
-          }
-
           // Bookkeeping
-          recoCandList.clear();
-          recoParticleList.clear();
-          genCandList.clear();
-          genParticleList.clear();
+          for (auto*& tmpPart:recoCandList) delete tmpPart;
+          for (auto*& tmpPart:recoParticleList) delete tmpPart;
+          for (auto*& tmpPart:genCandList) delete tmpPart;
+          for (auto*& tmpPart:genParticleList) delete tmpPart;
 
           globalNEvents++;
+          if (globalNEvents % 100000 == 0) cout << "Event " << globalNEvents << "..." << endl;
         }
         resetBranchBinding();
         cout << "Processed number of events from the input file (recorded events / sample size observed / cumulative traversed): " << nProcessed << " / " << nInputEvents << " / " << globalNEvents << endl;
@@ -391,8 +367,7 @@ void Reader::readEvent(MELAEvent& outEvent, std::vector<MELAParticle*>& particle
       }
     }
 
-    for (unsigned int d=0; d<candFinalDaughters.size(); d++){
-      MELAParticle* part = candFinalDaughters.at(d);
+    for (MELAParticle* part:candFinalDaughters){
       if (isALepton(part->id)) outEvent.addLepton(part);
       else if (isANeutrino(part->id)) outEvent.addNeutrino(part);
       else if (isAPhoton(part->id)) outEvent.addPhoton(part);
@@ -401,12 +376,8 @@ void Reader::readEvent(MELAEvent& outEvent, std::vector<MELAParticle*>& particle
       else outEvent.addParticle(part);
     }
     outEvent.constructVVCandidates(options->doGenHZZdecay(), options->genDecayProducts());
-    for (unsigned int p=0; p<motherParticles.size(); p++){
-      MELAParticle* part = motherParticles.at(p);
-      outEvent.addMother(part);
-    }
-    for (unsigned int d=0; d<associatedParticles.size(); d++){
-      MELAParticle* part = associatedParticles.at(d);
+    for (MELAParticle* part:motherParticles) outEvent.addMother(part);
+    for (MELAParticle* part:associatedParticles){
       if (isALepton(part->id)) outEvent.addLepton(part);
       else if (isANeutrino(part->id)) outEvent.addNeutrino(part);
       else if (isAPhoton(part->id)) outEvent.addPhoton(part);
@@ -416,8 +387,7 @@ void Reader::readEvent(MELAEvent& outEvent, std::vector<MELAParticle*>& particle
     }
   }
   else{
-    for (unsigned int d=0; d<candFinalDaughters.size(); d++){
-      MELAParticle* part = candFinalDaughters.at(d);
+    for (MELAParticle* part:candFinalDaughters){
       if (isALepton(part->id)) outEvent.addLepton(part);
       else if (isANeutrino(part->id)) outEvent.addNeutrino(part);
       else if (isAPhoton(part->id)) outEvent.addPhoton(part);
@@ -428,8 +398,7 @@ void Reader::readEvent(MELAEvent& outEvent, std::vector<MELAParticle*>& particle
 
     if (options->recoSelectionMode()==0){ // Do not find the best combination, leave it to the input tree
       outEvent.constructVVCandidates(options->doRecoHZZdecay(), options->recoDecayProducts());
-      for (unsigned int d=0; d<associatedParticles.size(); d++){
-        MELAParticle* part = associatedParticles.at(d);
+      for (MELAParticle* part:associatedParticles){
         if (isALepton(part->id)) outEvent.addLepton(part);
         else if (isANeutrino(part->id)) outEvent.addNeutrino(part);
         else if (isAPhoton(part->id)) outEvent.addPhoton(part);
@@ -439,8 +408,7 @@ void Reader::readEvent(MELAEvent& outEvent, std::vector<MELAParticle*>& particle
       }
     }
     else{ // Find the best combination
-      for (unsigned int d=0; d<associatedParticles.size(); d++){
-        MELAParticle* part = associatedParticles.at(d);
+      for (MELAParticle* part:associatedParticles){
         if (isALepton(part->id)) outEvent.addLepton(part);
         else if (isANeutrino(part->id)) outEvent.addNeutrino(part);
         else if (isAPhoton(part->id)) outEvent.addPhoton(part);

@@ -161,6 +161,8 @@ void LHEConverter::run(){
           MC_weight = (float) weight;
           tree->fillEventVariables(MC_weight, isSelected);
 
+          tree->fillXsec(options->get_xsec(), options->get_xsecerr());
+
           if ((rCand && options->processRecoInfo()) || (genCand && options->processGenInfo())){
             tree->record();
             nProcessed++;

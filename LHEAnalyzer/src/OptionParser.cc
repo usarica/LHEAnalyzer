@@ -3,6 +3,7 @@
 #include "OptionParser.h"
 #include "HostHelpersCore.h"
 #include "HelperFunctions.h"
+#include "SampleHelpersCore.h"
 
 
 using namespace std;
@@ -13,6 +14,10 @@ OptionParser::OptionParser(int argc, char** argv) :
   mPOLE(125.), // mH
   wPOLE(4.07e-3), // GammaH
   wPOLEStandard(4.07e-3), // GHSM
+
+  sampleXsec(-1), // xsec value
+  sampleXsecErr(-1), // xsec error
+
   erg_tev(13), // C.o.M. energy in TeV
   includeGenInfo(1), // Record gen. level quantities
   includeRecoInfo(1), // Record reco. level quantities
@@ -29,6 +34,7 @@ OptionParser::OptionParser(int argc, char** argv) :
   recoDecayMode(0), // 4l with HZZ, 2l2nu with HWW, see Event::constructVVCandidates(bool isZZ, int fstype)
   recoSelBehaviour(0),
   recoSmearBehaviour(0),
+
   genHiggsCandidateSelectionScheme(HiggsComparators::BestZ1ThenZ2ScSumPt),
   recoHiggsCandidateSelectionScheme(HiggsComparators::BestZ1ThenZ2ScSumPt),
 
@@ -112,6 +118,7 @@ void OptionParser::analyze(){
 
   // Initialize the global Mela if needed
   extractMElines();
+  extractXsec();
   configureMela();
 }
 Bool_t OptionParser::isAnExcludedBranch(std::string const& branchname)const{
@@ -235,6 +242,112 @@ void OptionParser::extractMElines(std::string const& sfile, std::vector<std::str
     else cerr << "OptionParser::extractMElines: ME file " << sfile << " is not readable." << endl;
   }
 }
+void OptionParser::extractXsec(){
+  if (sampleXsec!=-1.f|| sampleXsecErr!=-1.f) return;
+
+  std::vector<std::pair<float, float>> xsec_val_err; xsec_val_err.reserve(filename.size());
+  for (auto fname:filename){
+    fname = this->inputDir() + fname;
+    cout << "Checking file " << fname  << " for xsec and xsecerr..." << endl;
+
+    if (fileLevel==-1){
+      TFile* fin = TFile::Open(fname.c_str(), "read");
+      if (fin && fin->IsZombie()){
+        if (fin->IsOpen()) fin->Close();
+        delete fin;
+      }
+      else if (fin && !fin->IsOpen()) delete fin;
+      else if (fin){ // File is open and good
+        TTree* tin = (TTree*) fin->Get("SelectedTree");
+        if (tin){
+          using namespace SampleHelpers;
+          tin->SetBranchStatus("*", 0);
+          if (!branchExists(tin, "xsec") || !branchExists(tin, "xsecerr")) continue;
+          Float_t xsecval=0, xsecerrval=0;
+          bookBranch(tin, "xsec", &xsecval);
+          bookBranch(tin, "xsecerr", &xsecerrval);
+          tin->GetEntry(0);
+          if (xsecerrval>0.f && xsecval!=0.f && std::isfinite(xsecval) && std::isfinite(xsecerrval)) xsec_val_err.emplace_back(xsecval, xsecerrval);
+        }
+        fin->Close();
+      }
+    }
+    else if (fileLevel==0){
+      ifstream fin;
+      fin.open(fname.c_str());
+      bool xsec_line_found = false;
+      size_t init_line = 0;
+      if (fin.good()){
+        while (!fin.eof()){
+          string const xsec_MCFM = "Cross-section is";
+
+          string strline;
+          getline(fin, strline);
+
+          // Replace lines
+          if (
+            strline.find(xsec_MCFM)==string::npos
+            && (strline.find("<init>")==string::npos && init_line==0)
+            ) continue;
+          else if (!xsec_line_found && (strline.find("<init>")!=string::npos || init_line>0)){
+            cout << "init block line: '" << strline << "' (" << init_line << ")" << endl;
+            if (init_line==2){
+              string strlinestrip=strline;
+              lstrip(strlinestrip);
+              rstrip(strlinestrip);
+              stringstream ss(strlinestrip);
+              float xsecval=0, xsecerrval=0;
+              ss >> xsecval >> xsecerrval;
+              if (xsecerrval>0.f && xsecval!=0.f && std::isfinite(xsecval) && std::isfinite(xsecerrval)) xsec_val_err.emplace_back(xsecval, xsecerrval);
+              break;
+            }
+            init_line++;
+          }
+          else{
+            replaceString<std::string, const std::string>(strline, xsec_MCFM, "");
+
+            string strlinestrip=strline;
+            lstrip(strlinestrip, " \":,()#");
+            rstrip(strlinestrip, " \":,()#");
+            if (!strlinestrip.empty()){
+              replaceString<std::string, const char*>(strlinestrip, " ", "");
+              replaceString<std::string, const char*>(strlinestrip, "+-", "|");
+              {
+                string xsec, xsecerr;
+                splitOption(strlinestrip, xsec, xsecerr, '|');
+                float xsecval=0, xsecerrval=0;
+                try{ xsecval = stoi(xsec.c_str()); }
+                catch (std::invalid_argument& e){
+                  cerr << "OptionParser::extractXsec: Could not interpret the cross section string '" << xsec << "'" << endl;
+                  xsecval=0;
+                }
+                try{ xsecerrval = stoi(xsecerr.c_str()); }
+                catch (std::invalid_argument& e){
+                  cerr << "OptionParser::extractXsec: Could not interpret the cross section error string '" << xsecerr << "'" << endl;
+                  xsecerrval=0;
+                }
+                if (xsecerrval>0.f && xsecval!=0.f && std::isfinite(xsecval) && std::isfinite(xsecerrval)) xsec_val_err.emplace_back(xsecval, xsecerrval);
+              }
+            }
+            xsec_line_found = true;
+            break;
+          }
+        }
+      }
+      fin.close();
+    }
+  }
+  if (!xsec_val_err.empty()){
+    sampleXsec=sampleXsecErr=0;
+    for (std::pair<float, float> const& pp:xsec_val_err){
+      float const wgt = pow(pp.second, -2);
+      sampleXsec += pp.first*wgt;
+      sampleXsecErr += wgt;
+    }
+    sampleXsec /= sampleXsecErr;
+    sampleXsecErr = 1.f/sqrt(sampleXsecErr);
+  }
+}
 Bool_t OptionParser::checkListVariable(std::vector<std::string> const& list, std::string const& var)const{ return TUtilHelpers::checkElementExists(var, list); }
 
 void OptionParser::interpretOption(std::string const& wish, std::string const& value){
@@ -280,7 +393,9 @@ void OptionParser::interpretOption(std::string const& wish, std::string const& v
 
   else if (wish=="mH" || wish=="MH" || wish=="mPOLE") mPOLE = (double)atof(value.c_str());
   else if (wish=="GH" || wish=="GaH" || wish=="GammaH" || wish=="wPOLE") wPOLE = (double)atof(value.c_str());
-  else if (wish=="GHSM" || wish=="GaHSM" || wish=="GammaHSM" || wish=="wPOLEStandard") wPOLEStandard = (double)atof(value.c_str());
+  else if (wish=="GHSM" || wish=="GaHSM" || wish=="GammaHSM" || wish=="wPOLEStandard") wPOLEStandard = (double) atof(value.c_str());
+  else if (wish=="xsec") sampleXsec = (float) atof(value.c_str());
+  else if (wish=="xsecerr") sampleXsecErr = (float) atof(value.c_str());
   else if (wish=="sqrts") erg_tev = (int)atoi(value.c_str());
   else if (wish=="JetAlgorithm" || wish=="jetAlgorithm" || wish=="jetalgorithm") jetAlgo = value;
   else if (wish=="jetDeltaR" || wish=="jetIso" || wish=="jetIsolation" || wish=="jetDeltaRIso" || wish=="jetDeltaRIsolation") jetDeltaRIso = (double)atof(value.c_str());
@@ -317,6 +432,8 @@ void OptionParser::printOptionsHelp()const{
   cout << "- mH / MH / mPOLE: Mass of the Higgs. Used in common for generator and reco. objects. Default=125 (GeV)\n\n";
   cout << "- GH / GaH / GammaH / wPOLE: Width of the generated Higgs. Used in generator objects. Default=4.07 (MeV)\n\n";
   cout << "- GHSM / GaHSM / GammaHSM / wPOLEStandard: Standard SM width. Used in scaling Mela probabilities properly. Default=4.07 (MeV).\n\n";
+  cout << "- xsec: Assign a cross section to the sample. Will override the OptionParser determination. Default=-1 (pb)\n\n";
+  cout << "- xsecerr: Assign a cross section error to the sample. Will override the OptionParser determination. Default=-1 (pb)\n\n";
   cout << "- includeGenInfo, includeRecoInfo: Flags to control the writing of gen. and reco. info., respectively. Cannot be both false (0). Default=(1, 1)\n\n";
   cout << "- isGenHZZ, isRecoHZZ: Gen. or reco. H->VV decay. -1==H undecayed (gen.-only), 0==H->WW decay, 1==H->ZZ decay, 2==H->ffb decay, 3==H->Zgamma decay, 4==H->gammagamma decay, 5==Z->ffb decay. isGenHZZ also (re)sets the default V mass in H->VV decay. Defaults=(1, 1)\n\n";
   cout << "- genDecayMode, recoDecayMode: Gen. or reco. H->VV->final states. Defaults=(0, 0)\n"
