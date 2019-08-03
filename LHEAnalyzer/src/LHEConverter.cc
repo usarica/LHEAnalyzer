@@ -81,7 +81,7 @@ void LHEConverter::run(){
             }
             if (isAHiggs(genPart->id)){
               writtenGenCands.push_back(genPart);
-              if (options->doGenHZZdecay()==-1 && (genPart->genStatus==1 || genPart->genStatus==2)) genEvent.addIntermediate(genPart);
+              if (options->doGenHZZdecay()==MELAEvent::UndecayedMode && (genPart->genStatus==1 || genPart->genStatus==2)) genEvent.addIntermediate(genPart);
             }
             if (genPart->genStatus==1){
               if (isALepton(genPart->id)) genEvent.addLepton(genPart);
@@ -132,7 +132,7 @@ void LHEConverter::run(){
           if (debugVars::debugFlag) cout << "Successfully constructed gen. VV candidates." << endl;
           if (debugVars::debugFlag) cout << "Starting to add gen. VV candidate appendages." << endl;
           genEvent.addVVCandidateAppendages();
-          MELACandidate* genCand=0;
+          MELACandidate* genCand=nullptr;
           if (debugVars::debugFlag) cout << "Number of gen. Higgs candidates directly from the LHE: " << writtenGenCands.size() << endl;
           if (!writtenGenCands.empty()){
             for (auto* writtenGenCand:writtenGenCands){
@@ -151,8 +151,8 @@ void LHEConverter::run(){
           smearedEvent.constructVVCandidates(options->doRecoHZZdecay(), options->recoDecayProducts());
           if (options->recoSelectionMode()==0) smearedEvent.applyParticleSelection();
           smearedEvent.addVVCandidateAppendages();
-          MELACandidate* rCand = HiggsComparators::candidateSelector(smearedEvent, options->getHiggsCandidateSelectionScheme(false), options->doRecoHZZdecay());
 
+          MELACandidate* rCand = HiggsComparators::candidateSelector(smearedEvent, options->getHiggsCandidateSelectionScheme(false), options->doRecoHZZdecay());
           if (rCand){
             isSelected=1;
             tree->fillCandidate(rCand, false);

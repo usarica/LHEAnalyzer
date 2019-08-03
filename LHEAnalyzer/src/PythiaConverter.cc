@@ -40,19 +40,20 @@ void PythiaConverter::run(){
 
   for (string const& cinput:filename){
     cout << "Processing " << cinput << "..." << endl;
-    TFile* fin = 0;
+    TFile* fin = nullptr;
     fin = getIntermediateFile(cinput);
-    if (fin!=0 && fin->IsZombie()){
+    if (!fin) continue;
+    if (fin->IsZombie()){
       if (fin->IsOpen()) fin->Close();
       delete fin;
-      fin=0;
+      fin=nullptr;
     }
-    else if (fin!=0 && !fin->IsOpen()){ // Separate if-statement on purpose
+    else if (!fin->IsOpen()){ // Separate if-statement on purpose
       delete fin;
-      fin=0;
+      fin=nullptr;
     }
-    else if (fin!=0){
-      TTree* tin = (TTree*)fin->Get("tmpTree");
+    else{
+      TTree* tin = (TTree*) fin->Get("TrimmedTree");
       foutput->cd();
 
       int nInputEvents = tin->GetEntries();
@@ -83,17 +84,22 @@ void PythiaConverter::run(){
         readEvent(tin, ev, genParticleList, genSuccess, smearedParticleList, smearedSuccess, weight);
 
         if (weight!=0.){
-          MC_weight = (float)weight;
+          MC_weight = (float) weight;
 
           MELAEvent genEvent;
           if (genSuccess){
             genEvent.setWeight(weight);
-            vectorInt hasGenHiggs;
-            for (unsigned int p=0; p<genParticleList.size(); p++){
-              MELAParticle* genPart = genParticleList.at(p); // Has mother info from Pythia reading
+            vector<MELAParticle*> writtenGenCands;
+            vector<MELAParticle*> writtenGenTopCands;
+
+            for (MELAParticle* genPart:genParticleList){
+              if (isATopQuark(genPart->id)){
+                writtenGenTopCands.push_back(genPart);
+                if (genPart->genStatus==1) genEvent.addIntermediate(genPart);
+              }
               if (isAHiggs(genPart->id)){
-                hasGenHiggs.push_back(p);
-                if (options->doGenHZZdecay()==-1 && (genPart->genStatus==1 || genPart->genStatus==2)) genEvent.addIntermediate(genPart);
+                writtenGenCands.push_back(genPart);
+                if (options->doGenHZZdecay()==MELAEvent::UndecayedMode && (genPart->genStatus==1 || genPart->genStatus==2)) genEvent.addIntermediate(genPart);
               }
               if (genPart->genStatus==1){
                 if (isALepton(genPart->id)) genEvent.addLepton(genPart);
@@ -107,20 +113,33 @@ void PythiaConverter::run(){
               }
             }
 
+            genEvent.constructTopCandidates();
+            // Disable tops unmatched to a gen. top
+            {
+              vector<MELATopCandidate_t*> matchedTops;
+              for (auto* writtenGenTopCand:writtenGenTopCands){
+                MELATopCandidate_t* tmpCand = TopComparators::matchATopToParticle(genEvent, writtenGenTopCand);
+                if (tmpCand) matchedTops.push_back(tmpCand);
+              }
+              for (MELATopCandidate_t* tmpCand:genEvent.getTopCandidates()){
+                if (std::find(matchedTops.begin(), matchedTops.end(), tmpCand)==matchedTops.end()) tmpCand->setSelected(false);
+              }
+            }
+
             genEvent.constructVVCandidates(options->doGenHZZdecay(), options->genDecayProducts());
             genEvent.addVVCandidateAppendages();
-            MELACandidate* genCand=0;
-            if (hasGenHiggs.size()>0){
-              for (unsigned int gk=0; gk<hasGenHiggs.size(); gk++){
-                MELACandidate* tmpCand = HiggsComparators::matchAHiggsToParticle(genEvent, genParticleList.at(hasGenHiggs.at(gk)));
-                if (tmpCand!=0){
-                  if (genCand==0) genCand=tmpCand;
+            MELACandidate* genCand=nullptr;
+            if (!writtenGenCands.empty()){
+              for (auto* writtenGenCand:writtenGenCands){
+                MELACandidate* tmpCand = HiggsComparators::matchAHiggsToParticle(genEvent, writtenGenCand);
+                if (tmpCand){
+                  if (!genCand) genCand = tmpCand;
                   else genCand = HiggsComparators::candComparator(genCand, tmpCand, options->getHiggsCandidateSelectionScheme(true), options->doGenHZZdecay());
                 }
               }
             }
-            if (genCand==0) genCand = HiggsComparators::candidateSelector(genEvent, options->getHiggsCandidateSelectionScheme(true), options->doGenHZZdecay());
-            if (genCand!=0) tree->fillCandidate(genCand, true);
+            if (!genCand) genCand = HiggsComparators::candidateSelector(genEvent, options->getHiggsCandidateSelectionScheme(true), options->doGenHZZdecay());
+            if (genCand) tree->fillCandidate(genCand, true);
             else{
               cout << cinput << " (" << ev << "): No gen. level Higgs candidate was found!" << endl;
               genSuccess=false;
@@ -130,19 +149,26 @@ void PythiaConverter::run(){
           MELAEvent smearedEvent;
           if (smearedSuccess){
             smearedEvent.setWeight(weight);
-            for (unsigned int p=0; p<smearedParticleList.size(); p++){
-              MELAParticle* smearedPart = smearedParticleList.at(p);
+            for (MELAParticle* smearedPart:smearedParticleList){
               if (isALepton(smearedPart->id)) smearedEvent.addLepton(smearedPart);
               else if (isANeutrino(smearedPart->id)) smearedEvent.addNeutrino(smearedPart);
               else if (isAPhoton(smearedPart->id)) smearedEvent.addPhoton(smearedPart);
-              else if (smearedPart->id==0) smearedEvent.addJet(smearedPart);
+              else if (isAKnownJet(smearedPart->id)){
+                smearedPart->id=0; // Wipe id from reco. quark/gluon
+                if (!isATopQuark(smearedPart->id)) smearedEvent.addJet(smearedPart);
+                else smearedEvent.addIntermediate(smearedPart);
+              }
+              else if (isAnUnknownJet(smearedPart->id)) smearedEvent.addJet(smearedPart);
               else smearedEvent.addParticle(smearedPart);
             }
+
+            smearedEvent.constructTopCandidates();
             smearedEvent.constructVVCandidates(options->doRecoHZZdecay(), options->recoDecayProducts());
             if (options->recoSelectionMode()==0) smearedEvent.applyParticleSelection();
             smearedEvent.addVVCandidateAppendages();
+
             MELACandidate* rCand = HiggsComparators::candidateSelector(smearedEvent, options->getHiggsCandidateSelectionScheme(false), options->doRecoHZZdecay());
-            if (rCand!=0){
+            if (rCand){
               isSelected=1;
               tree->fillCandidate(rCand, false);
             }
@@ -213,52 +239,66 @@ void PythiaConverter::readEvent(TTree* tin, const int& ev, std::vector<MELAParti
     weights.push_back(0);
   }
   else{
-    vectorDouble* geneventinfoweights=0;
-    TBranch* b_geneventinfoweights=0;
+    vectorDouble* geneventinfoweights=nullptr;
+    TBranch* b_geneventinfoweights=nullptr;
 
-    vectorDouble* reco_GenParticle_FV[4]={ 0 };
-    vectorInt* reco_GenParticle_id=0;
-    vectorInt* reco_GenParticle_status=0;
-    TBranch* b_reco_GenParticle_FV[4]={ 0 };
-    TBranch* b_reco_GenParticle_id=0;
-    TBranch* b_reco_GenParticle_status=0;
+    vectorFloat* GenParticles_FV[4]={ nullptr };
+    vectorInt* GenParticles_id=nullptr;
+    vectorInt* GenParticles_status=nullptr;
+    TBranch* b_GenParticles_FV[4]={ nullptr };
+    TBranch* b_GenParticles_id=nullptr;
+    TBranch* b_GenParticles_status=nullptr;
 
-    vectorDouble* reco_GenJet_FV[4]={ 0 };
-    vectorInt* reco_GenJet_id=0;
-    vectorInt* reco_GenJet_status=0;
-    TBranch* b_reco_GenJet_FV[4]={ 0 };
-    TBranch* b_reco_GenJet_id=0;
-    TBranch* b_reco_GenJet_status=0;
+    vectorFloat* FinalParticles_FV[4]={ nullptr };
+    vectorInt* FinalParticles_id=nullptr;
+    vectorInt* FinalParticles_status=nullptr;
+    TBranch* b_FinalParticles_FV[4]={ nullptr };
+    TBranch* b_FinalParticles_id=nullptr;
+    TBranch* b_FinalParticles_status=nullptr;
+
+    vectorFloat* GenJets_FV[4]={ nullptr };
+    vectorInt* GenJets_id=nullptr;
+    vectorInt* GenJets_status=nullptr;
+    TBranch* b_GenJets_FV[4]={ nullptr };
+    TBranch* b_GenJets_id=nullptr;
+    TBranch* b_GenJets_status=nullptr;
 
     tin->SetBranchAddress("genWeights", &geneventinfoweights, &b_geneventinfoweights);
 
-    tin->SetBranchAddress("reco_GenParticle_X", reco_GenParticle_FV, b_reco_GenParticle_FV);
-    tin->SetBranchAddress("reco_GenParticle_Y", reco_GenParticle_FV+1, b_reco_GenParticle_FV+1);
-    tin->SetBranchAddress("reco_GenParticle_Z", reco_GenParticle_FV+2, b_reco_GenParticle_FV+2);
-    tin->SetBranchAddress("reco_GenParticle_E", reco_GenParticle_FV+3, b_reco_GenParticle_FV+3);
-    tin->SetBranchAddress("reco_GenParticle_id", &reco_GenParticle_id, &b_reco_GenParticle_id);
-    tin->SetBranchAddress("reco_GenParticle_status", &reco_GenParticle_status, &b_reco_GenParticle_status);
+    tin->SetBranchAddress("GenParticles_X", GenParticles_FV, b_GenParticles_FV);
+    tin->SetBranchAddress("GenParticles_Y", GenParticles_FV+1, b_GenParticles_FV+1);
+    tin->SetBranchAddress("GenParticles_Z", GenParticles_FV+2, b_GenParticles_FV+2);
+    tin->SetBranchAddress("GenParticles_E", GenParticles_FV+3, b_GenParticles_FV+3);
+    tin->SetBranchAddress("GenParticles_id", &GenParticles_id, &b_GenParticles_id);
+    tin->SetBranchAddress("GenParticles_status", &GenParticles_status, &b_GenParticles_status);
 
-    tin->SetBranchAddress("reco_GenJet_X", reco_GenJet_FV, b_reco_GenJet_FV);
-    tin->SetBranchAddress("reco_GenJet_Y", reco_GenJet_FV+1, b_reco_GenJet_FV+1);
-    tin->SetBranchAddress("reco_GenJet_Z", reco_GenJet_FV+2, b_reco_GenJet_FV+2);
-    tin->SetBranchAddress("reco_GenJet_E", reco_GenJet_FV+3, b_reco_GenJet_FV+3);
-    tin->SetBranchAddress("reco_GenJet_id", &reco_GenJet_id, &b_reco_GenJet_id);
-    tin->SetBranchAddress("reco_GenJet_status", &reco_GenJet_status, &b_reco_GenJet_status);
+    tin->SetBranchAddress("FinalParticles_X", FinalParticles_FV, b_FinalParticles_FV);
+    tin->SetBranchAddress("FinalParticles_Y", FinalParticles_FV+1, b_FinalParticles_FV+1);
+    tin->SetBranchAddress("FinalParticles_Z", FinalParticles_FV+2, b_FinalParticles_FV+2);
+    tin->SetBranchAddress("FinalParticles_E", FinalParticles_FV+3, b_FinalParticles_FV+3);
+    tin->SetBranchAddress("FinalParticles_id", &FinalParticles_id, &b_FinalParticles_id);
+    tin->SetBranchAddress("FinalParticles_status", &FinalParticles_status, &b_FinalParticles_status);
+
+    tin->SetBranchAddress("GenJets_X", GenJets_FV, b_GenJets_FV);
+    tin->SetBranchAddress("GenJets_Y", GenJets_FV+1, b_GenJets_FV+1);
+    tin->SetBranchAddress("GenJets_Z", GenJets_FV+2, b_GenJets_FV+2);
+    tin->SetBranchAddress("GenJets_E", GenJets_FV+3, b_GenJets_FV+3);
+    tin->SetBranchAddress("GenJets_id", &GenJets_id, &b_GenJets_id);
+    tin->SetBranchAddress("GenJets_status", &GenJets_status, &b_GenJets_status);
 
     tin->GetEntry(ev);
 
     // Gen. particles
     int motherID[2];
     int mctr=0;
-    for (unsigned int a = 0; a < reco_GenParticle_id->size(); a++){
-      int istup = reco_GenParticle_status->at(a);
+    for (unsigned int a = 0; a < GenParticles_id->size(); a++){
+      int istup = GenParticles_status->at(a);
       if (istup==21 && mctr<2){
         motherID[mctr] = a;
         mctr++;
       }
-      int idup = reco_GenParticle_id->at(a);
-      TLorentzVector partFourVec(reco_GenParticle_FV[0]->at(a), reco_GenParticle_FV[1]->at(a), reco_GenParticle_FV[2]->at(a), reco_GenParticle_FV[3]->at(a));
+      int idup = GenParticles_id->at(a);
+      TLorentzVector partFourVec(GenParticles_FV[0]->at(a), GenParticles_FV[1]->at(a), GenParticles_FV[2]->at(a), GenParticles_FV[3]->at(a));
 
       MELAParticle* onePart = new MELAParticle(idup, partFourVec);
       onePart->setGenStatus(PDGHelpers::convertPythiaStatus(istup));
@@ -271,10 +311,10 @@ void PythiaConverter::readEvent(TTree* tin, const int& ev, std::vector<MELAParti
     }
     genSuccess=(genCollection.size()>0);
     // Reco. particles
-    for (unsigned int a = 0; a < reco_GenJet_id->size(); a++){
-      int istup = reco_GenJet_status->at(a);
-      int idup = reco_GenJet_id->at(a);
-      TLorentzVector partFourVec(reco_GenJet_FV[0]->at(a), reco_GenJet_FV[1]->at(a), reco_GenJet_FV[2]->at(a), reco_GenJet_FV[3]->at(a));
+    for (unsigned int a = 0; a < GenJets_id->size(); a++){
+      int istup = GenJets_status->at(a);
+      int idup = GenJets_id->at(a);
+      TLorentzVector partFourVec(GenJets_FV[0]->at(a), GenJets_FV[1]->at(a), GenJets_FV[2]->at(a), GenJets_FV[3]->at(a));
 
       MELAParticle* onePart = new MELAParticle(idup, partFourVec);
       if (options->recoSmearingMode()>0){ // Reverse of LHE mode

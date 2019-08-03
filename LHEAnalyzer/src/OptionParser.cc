@@ -28,8 +28,8 @@ OptionParser::OptionParser(int argc, char** argv) :
   computeTTHAngles(0), // VH production angles
   fileLevel(0), // -1: ReadMode, 0: LHE, 1: Pythia,
   pythiaStep(1), //0: GEN, 1: GEN-SIM
-  isGenHZZ(1), // H->ZZ or H->WW
-  isRecoHZZ(1), // H->ZZ or H->WW
+  isGenHZZ(MELAEvent::ZZMode), // H->ZZ or H->WW
+  isRecoHZZ(MELAEvent::ZZMode), // H->ZZ or H->WW
   genDecayMode(0), // 4l with HZZ, 2l2nu with HWW, see Event::constructVVCandidates(bool isZZ, int fstype)
   recoDecayMode(0), // 4l with HZZ, 2l2nu with HWW, see Event::constructVVCandidates(bool isZZ, int fstype)
   recoSelBehaviour(0),
@@ -248,7 +248,7 @@ void OptionParser::extractXsec(){
   std::vector<std::pair<float, float>> xsec_val_err; xsec_val_err.reserve(filename.size());
   for (auto fname:filename){
     fname = this->inputDir() + fname;
-    cout << "Checking file " << fname  << " for xsec and xsecerr..." << endl;
+    cout << "OptionParser::extractXsec: Checking file " << fname  << " for xsec and xsecerr..." << endl;
 
     if (fileLevel==-1){
       TFile* fin = TFile::Open(fname.c_str(), "read");
@@ -346,6 +346,7 @@ void OptionParser::extractXsec(){
     }
     sampleXsec /= sampleXsecErr;
     sampleXsecErr = 1.f/sqrt(sampleXsecErr);
+    cout << "OptionParser::extractXsec: Final cross section estimate is " << sampleXsec << " +- " << sampleXsecErr << " pb." << endl;
   }
 }
 Bool_t OptionParser::checkListVariable(std::vector<std::string> const& list, std::string const& var)const{ return TUtilHelpers::checkElementExists(var, list); }
@@ -361,11 +362,15 @@ void OptionParser::interpretOption(std::string const& wish, std::string const& v
   else if (wish=="fileLevel") fileLevel = (int)atoi(value.c_str());
   else if (wish=="pythiaStep" || wish=="pythialevel") pythiaStep = (int)atoi(value.c_str());
   else if (wish=="isGenHZZ"){
-    isGenHZZ = (int)atoi(value.c_str());
-    if (isGenHZZ==0) PDGHelpers::setCandidateDecayMode(TVar::CandidateDecay_WW);
-    else PDGHelpers::setCandidateDecayMode(TVar::CandidateDecay_ZZ);
+    isGenHZZ = MELAEvent::getCandidateVVModeFromString(value);
+
+    if (isGenHZZ==MELAEvent::WWMode) PDGHelpers::setCandidateDecayMode(TVar::CandidateDecay_WW);
+    else if (isGenHZZ==MELAEvent::ZZMode) PDGHelpers::setCandidateDecayMode(TVar::CandidateDecay_ZZ);
+    else if (isGenHZZ==MELAEvent::ZGammaMode) PDGHelpers::setCandidateDecayMode(TVar::CandidateDecay_ZG);
+    else if (isGenHZZ==MELAEvent::GammaGammaMode) PDGHelpers::setCandidateDecayMode(TVar::CandidateDecay_GG);
+    else PDGHelpers::setCandidateDecayMode(TVar::CandidateDecay_ff);
   }
-  else if (wish=="isRecoHZZ") isRecoHZZ = (int)atoi(value.c_str());
+  else if (wish=="isRecoHZZ") isRecoHZZ = MELAEvent::getCandidateVVModeFromString(value);
   else if (wish=="genDecayMode") genDecayMode = (int)atoi(value.c_str());
   else if (wish=="recoDecayMode") recoDecayMode = (int)atoi(value.c_str());
   else if (wish=="recoSelBehaviour" || wish=="recoSelBehavior") recoSelBehaviour = (int)atoi(value.c_str());
@@ -435,15 +440,10 @@ void OptionParser::printOptionsHelp()const{
   cout << "- xsec: Assign a cross section to the sample. Will override the OptionParser determination. Default=-1 (pb)\n\n";
   cout << "- xsecerr: Assign a cross section error to the sample. Will override the OptionParser determination. Default=-1 (pb)\n\n";
   cout << "- includeGenInfo, includeRecoInfo: Flags to control the writing of gen. and reco. info., respectively. Cannot be both false (0). Default=(1, 1)\n\n";
-  cout << "- isGenHZZ, isRecoHZZ: Gen. or reco. H->VV decay. -1==H undecayed (gen.-only), 0==H->WW decay, 1==H->ZZ decay, 2==H->ffb decay, 3==H->Zgamma decay, 4==H->gammagamma decay, 5==Z->ffb decay. isGenHZZ also (re)sets the default V mass in H->VV decay. Defaults=(1, 1)\n\n";
-  cout << "- genDecayMode, recoDecayMode: Gen. or reco. H->VV->final states. Defaults=(0, 0)\n"
-    << "\tIf H->ZZ decay (1) is specified, -1 - 5==Any, 4l, 4q, 2l2q, 2l2nu, 2q2nu, 4nu\n"
-    << "\tIf H->WW decay (0) is specified, -1 - 2==Any, 2l2nu, 4nu, lnu2q\n"
-    << "\tIf H->ffb decay (2) is specified, -1, 0, 1, 5==Any, 4l, 4q, 4nu\n"
-    << "\tIf H->Zgamma decay (3) is specified, -1, 0, 1, 5==Any, 2l+gamma, 2q+gamma, 2nu+gamma\n"
-    << "\tIf H->gammagamma decay (4) is specified, -1, 0==Stable gamma\n"
-    << "\tIf Z->ffb decay (5) is specified, -1, 0, 1, 5==Any, 2l, 2q, 2nu\n"
-    << "\n";
+  cout << "- isGenHZZ, isRecoHZZ: Gen. or reco. candidate decay hypothesis. Undecayed (Higgs, gen.-only), WW, ZZ, ff (or ffb), Zgamma (or Zgam), gammagamma (or gamgam), Z (->ffb). isGenHZZ also (re)sets the default V mass in H->VV decay. Defaults=(ZZ, ZZ)\n\n";
+  cout << "- genDecayMode, recoDecayMode: Gen. or reco. H->VV->final states. Behavior changes based on isGenHZZ and isRecoHZZ. Defaults=(0, 0)\n";
+  MELAEvent::printCandidateDecayModeDescriptions(); cout << "\n";
+
   cout << "- recoSelBehavior / recoSelBehaviour: Selection behaviour on all reco. final states. Default=0.\n\t0==Apply selection in LHE and Pythia modes, apply no re-selection in ReadMode.\n\t1==Opposite of 0. Also enables the computation of all angles in ReadMode, overriding the relevant command line options.\n\n";
   cout << "- recoSmearBehavior / recoSmearBehaviour: Smearing behaviour on all reco. final states. Does not apply to ReadMode. Default=0.\n\t0==Apply smearing in LHE mode, no smearing in Pythia mode\n\t1==Opposite of 0\n\n";
   cout << "- genCandidateSelection, recoCandidateSelection: Higgs candidate selection algorithm. Values accepted are\n\t->BestZ1ThenZ2 (=BestZ1ThenZ2ScSumPt).\n\tDefaults==(BestZ1ThenZ2, BestZ1ThenZ2)\n\n";

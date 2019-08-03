@@ -9,6 +9,7 @@
 #include <utility>
 #include <cassert>
 #include "TString.h"
+#include "MELAEvent.h"
 #include "melaHelpers.h"
 #include "ParticleComparators.h"
 #include "TopComparators.h"
@@ -47,8 +48,8 @@ protected:
   Int_t computeTTHAngles;
   Int_t fileLevel;
   Int_t pythiaStep;
-  Int_t isGenHZZ;
-  Int_t isRecoHZZ;
+  MELAEvent::CandidateVVMode isGenHZZ;
+  MELAEvent::CandidateVVMode isRecoHZZ;
   Int_t genDecayMode;
   Int_t recoDecayMode;
   Int_t recoSelBehaviour;
@@ -92,8 +93,8 @@ public:
   Int_t analysisLevel()const{ return fileLevel; }
   Int_t pythiaType()const{ return pythiaStep; }
   std::string jetAlgorithm()const{ return jetAlgo; }
-  Int_t doGenHZZdecay()const{ return isGenHZZ; }
-  Int_t doRecoHZZdecay()const{ return isRecoHZZ; }
+  MELAEvent::CandidateVVMode doGenHZZdecay()const{ return isGenHZZ; }
+  MELAEvent::CandidateVVMode doRecoHZZdecay()const{ return isRecoHZZ; }
   Int_t genDecayProducts()const{ return genDecayMode; }
   Int_t recoDecayProducts()const{ return recoDecayMode; }
   Int_t recoSelectionMode()const{ return recoSelBehaviour; }
