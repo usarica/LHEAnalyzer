@@ -57,7 +57,7 @@ TLorentzVector LHEParticleSmear::smearKnownJet(TLorentzVector l_gen){
   double etaphiSmear = std::abs(randomForSmearing.Gaus(0, dRjet));
   randomForSmearing.Circle(etaSmear, phiSmear, etaphiSmear);
 
-  constexpr double massSmearConst = 10.; // GeV
+  constexpr double massSmearConst = 6.; // GeV
   double massSmear = randomForSmearing.Exp(massSmearConst); // GeV
 
   constexpr double ptSmearConst = 0.05; // Ratio
@@ -87,7 +87,7 @@ TLorentzVector LHEParticleSmear::smearUnknownJet(TLorentzVector l_gen){
   constexpr double massSmearConst = 0.1; // Ratio
   double massSmear = randomForSmearing.Gaus(0, massSmearConst);
 
-  constexpr double ptSmearConst = 0.1; // Ratio
+  constexpr double ptSmearConst = 0.05; // Ratio
   double ptSmear = randomForSmearing.Gaus(0, ptSmearConst);
 
   l_Pt *= std::max(0., 1.+ptSmear);

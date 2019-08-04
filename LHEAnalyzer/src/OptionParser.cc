@@ -267,7 +267,11 @@ void OptionParser::extractXsec(){
           bookBranch(tin, "xsec", &xsecval);
           bookBranch(tin, "xsecerr", &xsecerrval);
           tin->GetEntry(0);
-          if (xsecerrval>0.f && xsecval!=0.f && std::isfinite(xsecval) && std::isfinite(xsecerrval)) xsec_val_err.emplace_back(xsecval, xsecerrval);
+          if (xsecerrval>0.f && xsecval!=0.f && std::isfinite(xsecval) && std::isfinite(xsecerrval)){
+            bool isUnique = true;
+            for (std::pair<float, float> const& tmp_pair:xsec_val_err){ if (tmp_pair.first == xsecval && tmp_pair.second == xsecerrval){ isUnique = false; break; } }
+            if (isUnique) xsec_val_err.emplace_back(xsecval, xsecerrval);
+          }
         }
         fin->Close();
       }
@@ -298,7 +302,11 @@ void OptionParser::extractXsec(){
               stringstream ss(strlinestrip);
               float xsecval=0, xsecerrval=0;
               ss >> xsecval >> xsecerrval;
-              if (xsecerrval>0.f && xsecval!=0.f && std::isfinite(xsecval) && std::isfinite(xsecerrval)) xsec_val_err.emplace_back(xsecval, xsecerrval);
+              if (xsecerrval>0.f && xsecval!=0.f && std::isfinite(xsecval) && std::isfinite(xsecerrval)){
+                bool isUnique = true;
+                for (std::pair<float, float> const& tmp_pair:xsec_val_err){ if (tmp_pair.first == xsecval && tmp_pair.second == xsecerrval){ isUnique = false; break; } }
+                if (isUnique) xsec_val_err.emplace_back(xsecval, xsecerrval);
+              }
               break;
             }
             init_line++;
@@ -326,7 +334,11 @@ void OptionParser::extractXsec(){
                   cerr << "OptionParser::extractXsec: Could not interpret the cross section error string '" << xsecerr << "'" << endl;
                   xsecerrval=0;
                 }
-                if (xsecerrval>0.f && xsecval!=0.f && std::isfinite(xsecval) && std::isfinite(xsecerrval)) xsec_val_err.emplace_back(xsecval, xsecerrval);
+                if (xsecerrval>0.f && xsecval!=0.f && std::isfinite(xsecval) && std::isfinite(xsecerrval)){
+                  bool isUnique = true;
+                  for (std::pair<float, float> const& tmp_pair:xsec_val_err){ if (tmp_pair.first == xsecval && tmp_pair.second == xsecerrval){ isUnique = false; break; } }
+                  if (isUnique) xsec_val_err.emplace_back(xsecval, xsecerrval);
+                }
               }
             }
             xsec_line_found = true;
