@@ -311,6 +311,21 @@ void PythiaConverter::readEvent(TTree* tin, const int& ev, std::vector<MELAParti
     }
     genSuccess=(genCollection.size()>0);
     // Reco. particles
+    for (unsigned int a = 0; a < FinalParticles_id->size(); a++){
+      int istup = FinalParticles_status->at(a);
+      int idup = FinalParticles_id->at(a);
+      TLorentzVector partFourVec(FinalParticles_FV[0]->at(a), FinalParticles_FV[1]->at(a), FinalParticles_FV[2]->at(a), FinalParticles_FV[3]->at(a));
+
+      MELAParticle* onePart = new MELAParticle(idup, partFourVec);
+      if (options->recoSmearingMode()>0){ // Reverse of LHE mode
+        MELAParticle* smearedPart = LHEParticleSmear::smearParticle(onePart);
+        delete onePart;
+        onePart = smearedPart;
+      }
+      onePart->setGenStatus(PDGHelpers::convertPythiaStatus(istup));
+      onePart->setLifetime(0);
+      recoCollection.push_back(onePart);
+    }
     for (unsigned int a = 0; a < GenJets_id->size(); a++){
       int istup = GenJets_status->at(a);
       int idup = GenJets_id->at(a);

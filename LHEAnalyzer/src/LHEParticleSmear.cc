@@ -1,20 +1,23 @@
+#include <cmath>
 #include "LHEParticleSmear.h"
+#include "ParticleComparators.h"
+#include "TRandom3.h"
+
 
 namespace LHEParticleSmear{
-  TRandom randomForSmearing;
+  TRandom3 randomForSmearing;
 }
 
-MELAParticle* LHEParticleSmear::smearParticle(MELAParticle* myParticle){
-  TLorentzVector pOriginal, pSmeared;
-  pOriginal.SetXYZT(myParticle->x(), myParticle->y(), myParticle->z(), myParticle->t());
 
-  if (PDGHelpers::isALepton(myParticle->id)){
-    pSmeared = LHEParticleSmear::smearLepton(pOriginal);
-  }
-  else if (PDGHelpers::isAQuark(myParticle->id) || PDGHelpers::isAGluon(myParticle->id)){
-    pSmeared = LHEParticleSmear::smearJet(pOriginal);
-  }
-  else pSmeared = pOriginal;
+MELAParticle* LHEParticleSmear::smearParticle(MELAParticle* myParticle){
+  if (!myParticle) return nullptr;
+
+  randomForSmearing.SetSeed(std::abs(static_cast<int>(std::sin(myParticle->phi())*100000.)));
+  TLorentzVector pOriginal(myParticle->p4), pSmeared(myParticle->p4);
+
+  if (PDGHelpers::isALepton(myParticle->id)) pSmeared = LHEParticleSmear::smearLepton(pOriginal);
+  else if (PDGHelpers::isAQuark(myParticle->id) || PDGHelpers::isAGluon(myParticle->id)) pSmeared = LHEParticleSmear::smearKnownJet(pOriginal);
+  else if (PDGHelpers::isAnUnknownJet(myParticle->id)) pSmeared = LHEParticleSmear::smearUnknownJet(pOriginal);
 
   MELAParticle* smearedParticle = new MELAParticle(myParticle->id, pSmeared);
   return smearedParticle;
@@ -23,15 +26,15 @@ MELAParticle* LHEParticleSmear::smearParticle(MELAParticle* myParticle){
 TLorentzVector LHEParticleSmear::smearLepton(TLorentzVector l_gen){
   float l_Perp, l_Theta, l_Phi;
 
-  if (LHEParticleSmear::randomForSmearing.Uniform()<.9){
-    l_Perp = l_gen.Pt()*pow(1.+0.012*1.15, LHEParticleSmear::randomForSmearing.Gaus(0., 1.));
-    l_Theta = l_gen.Theta()+(LHEParticleSmear::randomForSmearing.Gaus(0, 0.001));
-    l_Phi = l_gen.Phi()+(LHEParticleSmear::randomForSmearing.Gaus(0, 0.001));
+  if (randomForSmearing.Uniform()<.9){
+    l_Perp = l_gen.Pt()*pow(1.+0.012*1.15, randomForSmearing.Gaus(0., 1.));
+    l_Theta = l_gen.Theta()+(randomForSmearing.Gaus(0, 0.001));
+    l_Phi = l_gen.Phi()+(randomForSmearing.Gaus(0, 0.001));
   }
   else{
-    l_Perp = l_gen.Pt()*(1.-0.04)*pow(1.+0.08, LHEParticleSmear::randomForSmearing.Gaus(0., 1.));
-    l_Theta = l_gen.Theta()+(LHEParticleSmear::randomForSmearing.Gaus(0, 0.001));
-    l_Phi = l_gen.Phi()+(LHEParticleSmear::randomForSmearing.Gaus(0, 0.001));
+    l_Perp = l_gen.Pt()*(1.-0.04)*pow(1.+0.08, randomForSmearing.Gaus(0., 1.));
+    l_Theta = l_gen.Theta()+(randomForSmearing.Gaus(0, 0.001));
+    l_Phi = l_gen.Phi()+(randomForSmearing.Gaus(0, 0.001));
   }
   float l_Px = l_Perp*cos(l_Phi);
   float l_Py = l_Perp*sin(l_Phi);
@@ -42,28 +45,57 @@ TLorentzVector LHEParticleSmear::smearLepton(TLorentzVector l_gen){
   final_l.SetXYZT(l_Px, l_Py, l_Pz, l_E);
   return final_l;
 }
-TLorentzVector LHEParticleSmear::smearJet(TLorentzVector l_gen){
-  float l_Perp, l_Theta, l_Phi;
+TLorentzVector LHEParticleSmear::smearKnownJet(TLorentzVector l_gen){
+  double l_Pt, l_Eta, l_Phi, l_Mass;
+  l_Pt = l_gen.Pt();
+  l_Eta = l_gen.Eta();
+  l_Phi = l_gen.Phi();
+  l_Mass = l_gen.M();
 
-  // Assume the same smearing for pT, theta and phi
-  if (LHEParticleSmear::randomForSmearing.Uniform()<.9){
-    l_Perp = l_gen.Pt()*pow(1.+0.012*1.15, LHEParticleSmear::randomForSmearing.Gaus(0., 1.));
-    l_Theta = l_gen.Theta()+(LHEParticleSmear::randomForSmearing.Gaus(0, 0.001));
-    l_Phi = l_gen.Phi()+(LHEParticleSmear::randomForSmearing.Gaus(0, 0.001));
-  }
-  else{
-    l_Perp = l_gen.Pt()*(1.-0.04)*pow(1.+0.08, LHEParticleSmear::randomForSmearing.Gaus(0., 1.));
-    l_Theta = l_gen.Theta()+(LHEParticleSmear::randomForSmearing.Gaus(0, 0.001));
-    l_Phi = l_gen.Phi()+(LHEParticleSmear::randomForSmearing.Gaus(0, 0.001));
-  }
+  const double& dRjet = ParticleComparators::jetDeltaR;
+  double etaSmear=0, phiSmear=0;
+  double etaphiSmear = std::abs(randomForSmearing.Gaus(0, dRjet));
+  randomForSmearing.Circle(etaSmear, phiSmear, etaphiSmear);
 
-  float l_E = l_gen.T()*pow(1.15, LHEParticleSmear::randomForSmearing.Gaus(0., 1.));
-  float l_Px = l_Perp*cos(l_Phi);
-  float l_Py = l_Perp*sin(l_Phi);
-  float l_Pz = l_Perp/tan(l_Theta);
+  constexpr double massSmearConst = 10.; // GeV
+  double massSmear = randomForSmearing.Exp(massSmearConst); // GeV
 
-  TLorentzVector final_l;
-  final_l.SetXYZT(l_Px, l_Py, l_Pz, l_E);
+  constexpr double ptSmearConst = 0.05; // Ratio
+  double ptSmear = randomForSmearing.Gaus(0, ptSmearConst);
+
+  l_Pt *= std::max(0., 1.+ptSmear);
+  l_Eta += etaSmear;
+  l_Phi += phiSmear;
+  l_Mass += massSmear;
+
+  TLorentzVector final_l; final_l.SetPtEtaPhiM(l_Pt, l_Eta, l_Phi, l_Mass);
+  final_l = smearUnknownJet(final_l);
+  return final_l;
+}
+TLorentzVector LHEParticleSmear::smearUnknownJet(TLorentzVector l_gen){
+  double l_Pt, l_Eta, l_Phi, l_Mass;
+  l_Pt = l_gen.Pt();
+  l_Eta = l_gen.Eta();
+  l_Phi = l_gen.Phi();
+  l_Mass = l_gen.M();
+
+  const double& dRjet = ParticleComparators::jetDeltaR;
+  double etaSmear=0, phiSmear=0;
+  double etaphiSmear = std::abs(randomForSmearing.Gaus(0, dRjet));
+  randomForSmearing.Circle(etaSmear, phiSmear, etaphiSmear);
+
+  constexpr double massSmearConst = 0.1; // Ratio
+  double massSmear = randomForSmearing.Gaus(0, massSmearConst);
+
+  constexpr double ptSmearConst = 0.1; // Ratio
+  double ptSmear = randomForSmearing.Gaus(0, ptSmearConst);
+
+  l_Pt *= std::max(0., 1.+ptSmear);
+  l_Eta += etaSmear;
+  l_Phi += phiSmear;
+  l_Mass *= std::max(0., 1.+massSmear);
+
+  TLorentzVector final_l; final_l.SetPtEtaPhiM(l_Pt, l_Eta, l_Phi, l_Mass);
   return final_l;
 }
 
