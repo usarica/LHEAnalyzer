@@ -367,29 +367,17 @@ void HVVTree::fillAssociatedInfo(MELACandidate* pH, bool isGen){
   vectorInt AssociatedTop_WAntifermionIndex;
 
   if (pH){
-    for (int aa=0; aa<pH->getNAssociatedJets(); aa++){
-      MELAParticle* apart = pH->getAssociatedJet(aa);
-      tmpAssociatedParticle.push_back(apart);
-    }
-    for (int aa=0; aa<pH->getNAssociatedLeptons(); aa++){
-      MELAParticle* apart = pH->getAssociatedLepton(aa);
-      if(!PDGHelpers::isANeutrino(apart->id)) tmpAssociatedParticle.push_back(apart);
-    }
-    for (int aa=0; aa<pH->getNAssociatedNeutrinos(); aa++){
-      MELAParticle* apart = pH->getAssociatedNeutrino(aa);
-      tmpAssociatedParticle.push_back(apart);
-    }
-    for (int aa=0; aa<pH->getNAssociatedPhotons(); aa++){
-      MELAParticle* apart = pH->getAssociatedPhoton(aa);
-      tmpAssociatedParticle.push_back(apart);
-    }
+    for (MELAParticle* apart:pH->getAssociatedJets()){ if (apart->passSelection) tmpAssociatedParticle.push_back(apart); }
+    for (MELAParticle* apart:pH->getAssociatedLeptons()){ if (apart->passSelection) tmpAssociatedParticle.push_back(apart); }
+    for (MELAParticle* apart:pH->getAssociatedNeutrinos()){ if (apart->passSelection) tmpAssociatedParticle.push_back(apart); }
+    for (MELAParticle* apart:pH->getAssociatedPhotons()){ if (apart->passSelection) tmpAssociatedParticle.push_back(apart); }
   }
 
-  while (tmpAssociatedParticle.size()>0){ // Re-sort all associated particles by leading pT (categories are individually sorted, but mixing categories loses this sorting)
-    MELAParticle* tmpPart=0;
-    int pos=0;
-    for (unsigned int el=0; el<tmpAssociatedParticle.size(); el++){
-      if (tmpPart==0){
+  while (!tmpAssociatedParticle.empty()){ // Re-sort all associated particles by leading pT (categories are individually sorted, but mixing categories loses this sorting)
+    MELAParticle* tmpPart=nullptr;
+    size_t pos=0;
+    for (size_t el=0; el<tmpAssociatedParticle.size(); el++){
+      if (!tmpPart){
         tmpPart = tmpAssociatedParticle.at(el); pos=el;
       }
       else if (tmpPart->pt()<tmpAssociatedParticle.at(el)->pt()){
@@ -400,67 +388,92 @@ void HVVTree::fillAssociatedInfo(MELACandidate* pH, bool isGen){
     tmpAssociatedParticle.erase(tmpAssociatedParticle.begin()+pos);
   }
 
-  NAssociatedVs = (pH ? pH->getNSortedVs()-2 : 0);
-  for (int av=2; av<NAssociatedVs+2; av++){
-    MELAParticle* pAV = pH->getSortedV(av);
-    AssociatedV.push_back(pAV);
-    MELAParticle* avd1 = pAV->getDaughter(0);
-    MELAParticle* avd2 = pAV->getDaughter(1);
+  pair<MELAParticle*, MELAParticle*> leadingPtJetPair(nullptr, nullptr);
+  pair<MELAParticle*, MELAParticle*> leadingPtLeptonPair(nullptr, nullptr);
+  for (MELAParticle* part:AssociatedParticle){
+    if (PDGHelpers::isAJet(part->id)){
+      if (!leadingPtJetPair.first) leadingPtJetPair.first = part;
+      else if (!leadingPtJetPair.second) leadingPtJetPair.second = part;
+    }
+    if (PDGHelpers::isALepton(part->id)){
+      if (!leadingPtLeptonPair.first) leadingPtLeptonPair.first = part;
+      else if (!leadingPtLeptonPair.second) leadingPtLeptonPair.second = part;
+    }
+  }
 
-    for (unsigned int aa=0; aa<AssociatedParticle.size(); aa++){
-      if (avd1==AssociatedParticle.at(aa)) AssociatedV_Particle1Index.push_back(aa);
-      else if (avd2==AssociatedParticle.at(aa)) AssociatedV_Particle2Index.push_back(aa);
+
+  NAssociatedVs = (pH ? pH->getAssociatedSortedVs().size() : 0);
+  if (pH){
+    for (MELAParticle* pAV:pH->getAssociatedSortedVs()){
+      bool doSkip = false;
+      MELAParticle* avd1 = pAV->getDaughter(0);
+      MELAParticle* avd2 = pAV->getDaughter(1);
+
+      if (!pAV->passSelection || (avd1 && !avd1->passSelection) || (avd2 && !avd2->passSelection)) doSkip = true;
+      if (doSkip) continue;
+
+      AssociatedV.push_back(pAV);
+      for (unsigned int aa=0; aa<AssociatedParticle.size(); aa++){
+        if (avd1==AssociatedParticle.at(aa)) AssociatedV_Particle1Index.push_back(aa);
+        else if (avd2==AssociatedParticle.at(aa)) AssociatedV_Particle2Index.push_back(aa);
+      }
     }
   }
 
   NAssociatedTops = (pH ? pH->getNAssociatedTops() : 0);
-  for (int it=0; it<NAssociatedTops; it++){
-    MELATopCandidate_t* pTop = pH->getAssociatedTop(it);
-    AssociatedTop.push_back(pTop);
-    MELAParticle* tpp = pTop->getPartnerParticle();
-    MELAParticle* tWf = pTop->getWFermion();
-    MELAParticle* tWfb = pTop->getWAntifermion();
+  if (pH){
+    for (MELATopCandidate_t* pTop:pH->getAssociatedTops()){
+      bool doSkip = false;
+      MELAParticle* tpp = pTop->getPartnerParticle();
+      MELAParticle* tWf = pTop->getWFermion();
+      MELAParticle* tWfb = pTop->getWAntifermion();
 
-    int i_tpp=-1;
-    int i_tWf=-1;
-    int i_tWfb=-1;
-    for (unsigned int aa=0; aa<AssociatedParticle.size(); aa++){
-      if (tpp && tpp==AssociatedParticle.at(aa)) i_tpp=aa;
-      else if (tWf && tWf==AssociatedParticle.at(aa)) i_tWf=aa;
-      else if (tWfb && tWfb==AssociatedParticle.at(aa)) i_tWfb=aa;
+      if (!pTop->passSelection || (tpp && !tpp->passSelection) || (tWf && !tWf->passSelection) || (tWfb && !tWfb->passSelection)) doSkip = true;
+      if (doSkip) continue;
+
+      AssociatedTop.push_back(pTop);
+
+      int i_tpp=-1;
+      int i_tWf=-1;
+      int i_tWfb=-1;
+      for (unsigned int aa=0; aa<AssociatedParticle.size(); aa++){
+        if (tpp && tpp==AssociatedParticle.at(aa)) i_tpp=aa;
+        else if (tWf && tWf==AssociatedParticle.at(aa)) i_tWf=aa;
+        else if (tWfb && tWfb==AssociatedParticle.at(aa)) i_tWfb=aa;
+      }
+      AssociatedTop_PartnerParticleIndex.push_back(i_tpp);
+      AssociatedTop_WFermionIndex.push_back(i_tWf);
+      AssociatedTop_WAntifermionIndex.push_back(i_tWfb);
     }
-    AssociatedTop_PartnerParticleIndex.push_back(i_tpp);
-    AssociatedTop_WFermionIndex.push_back(i_tWf);
-    AssociatedTop_WAntifermionIndex.push_back(i_tWfb);
   }
 
   string varname;
   string strcore;
 
-  if (pH->getNAssociatedJets()>1){
-    DijetMass = (pH->getAssociatedJet(0)->p4+pH->getAssociatedJet(1)->p4).M();
+  if (leadingPtJetPair.first && leadingPtJetPair.second){
+    DijetMass = (leadingPtJetPair.first->p4+leadingPtJetPair.second->p4).M();
     varname = "DijetMass";
     if (isGen) varname.insert(0, "Gen");
     setVal(varname, DijetMass);
-    DijetVVMass = (pH->p4+pH->getAssociatedJet(0)->p4+pH->getAssociatedJet(1)->p4).M();
+    DijetVVMass = (pH->p4+leadingPtJetPair.first->p4+leadingPtJetPair.second->p4).M();
     varname = "DijetVVMass";
     if (isGen) varname.insert(0, "Gen");
     setVal(varname, DijetVVMass);
-    dRjet = pH->getAssociatedJet(0)->deltaR(pH->getAssociatedJet(1)->p4);
+    dRjet = leadingPtJetPair.first->deltaR(leadingPtJetPair.second->p4);
     varname = "DRjet";
     if (isGen) varname.insert(0, "Gen");
     setVal(varname, dRjet);
   }
-  if (pH->getNAssociatedLeptons()>1){
-    DileptonMass = (pH->getAssociatedLepton(0)->p4+pH->getAssociatedLepton(1)->p4).M();
+  if (leadingPtLeptonPair.first && leadingPtLeptonPair.second){
+    DileptonMass = (leadingPtLeptonPair.first->p4+leadingPtLeptonPair.second->p4).M();
     varname = "DileptonMass";
     if (isGen) varname.insert(0, "Gen");
     setVal(varname, DileptonMass);
-    DileptonVVMass = (pH->p4+pH->getAssociatedLepton(0)->p4+pH->getAssociatedLepton(1)->p4).M();
+    DileptonVVMass = (pH->p4+leadingPtLeptonPair.first->p4+leadingPtLeptonPair.second->p4).M();
     varname = "DileptonVVMass";
     if (isGen) varname.insert(0, "Gen");
     setVal(varname, DileptonVVMass);
-    dRlep = pH->getAssociatedLepton(0)->deltaR(pH->getAssociatedLepton(1)->p4);
+    dRlep = leadingPtLeptonPair.first->deltaR(leadingPtLeptonPair.second->p4);
     varname = "DRlepton";
     if (isGen) varname.insert(0, "Gen");
     setVal(varname, dRlep);

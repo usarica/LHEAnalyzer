@@ -294,7 +294,7 @@ void OptionParser::extractXsec(){
             && (strline.find("<init>")==string::npos && init_line==0)
             ) continue;
           else if (!xsec_line_found && (strline.find("<init>")!=string::npos || init_line>0)){
-            cout << "init block line: '" << strline << "' (" << init_line << ")" << endl;
+            //cout << "init block line: '" << strline << "' (" << init_line << ")" << endl;
             if (init_line==2){
               string strlinestrip=strline;
               lstrip(strlinestrip);

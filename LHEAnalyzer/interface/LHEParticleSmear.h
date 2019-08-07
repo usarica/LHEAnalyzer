@@ -6,7 +6,7 @@
 
 namespace LHEParticleSmear{
 
-  MELAParticle* smearParticle(MELAParticle* myParticle);
+  MELAParticle* smearParticle(MELAParticle const* myParticle);
   TLorentzVector smearLepton(TLorentzVector l_gen);
   TLorentzVector smearKnownJet(TLorentzVector l_gen);
   TLorentzVector smearUnknownJet(TLorentzVector l_gen);

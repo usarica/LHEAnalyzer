@@ -12,11 +12,14 @@
 #include "TRandom.h"
 #include "TLorentzVector.h"
 #include "LHEConverter.h"
+#include "MELAJetMerger.h"
+#include "MELAStreamHelpers.hh"
 
 
 using namespace std;
 using namespace PDGHelpers;
 using namespace LHEParticleSmear;
+using namespace MELAStreamHelpers;
 
 
 LHEConverter::LHEConverter(OptionParser* options_) : converter(options_){
@@ -27,6 +30,8 @@ LHEConverter::LHEConverter(OptionParser* options_) : converter(options_){
 void LHEConverter::configure(){}
 void LHEConverter::finalizeRun(){}
 void LHEConverter::run(){
+  constexpr bool useNewJetMerging = true;
+
   double weight;
   Float_t MC_weight=0;
   Int_t isSelected=0;
@@ -38,7 +43,7 @@ void LHEConverter::run(){
   tree->bookAllBranches(false);
 
   for (string const& cinput:filename){
-    cout << "Processing " << cinput << "..." << endl;
+    MELAout << "Processing " << cinput << "..." << endl;
     ifstream fin;
     fin.open(cinput.c_str());
     if (fin.good()){
@@ -70,6 +75,7 @@ void LHEConverter::run(){
           genEvent.setWeight(weight);
           vector<MELAParticle*> writtenGenCands;
           vector<MELAParticle*> writtenGenTopCands;
+          vector<MELAParticle const*> injetparts;
 
           MELAEvent smearedEvent;
           smearedEvent.setWeight(weight);
@@ -84,29 +90,28 @@ void LHEConverter::run(){
               if (options->doGenHZZdecay()==MELAEvent::UndecayedMode && (genPart->genStatus==1 || genPart->genStatus==2)) genEvent.addIntermediate(genPart);
             }
             if (genPart->genStatus==1){
-              if (isALepton(genPart->id)) genEvent.addLepton(genPart);
+              bool addJetConstituent = false;
+              bool skipSmearingGen = false;
+              if (isALepton(genPart->id)){ genEvent.addLepton(genPart); addJetConstituent=useNewJetMerging; }
               else if (isANeutrino(genPart->id)) genEvent.addNeutrino(genPart);
-              else if (isAPhoton(genPart->id)) genEvent.addPhoton(genPart);
-              else if (isAKnownJet(genPart->id) && !isATopQuark(genPart->id)) genEvent.addJet(genPart);
+              else if (isAPhoton(genPart->id)){ genEvent.addPhoton(genPart); addJetConstituent=useNewJetMerging; }
+              else if (isAKnownJet(genPart->id) && !isATopQuark(genPart->id)){ genEvent.addJet(genPart); addJetConstituent=useNewJetMerging; skipSmearingGen=useNewJetMerging; }
 
               MELAParticle* smearedPart=nullptr; // Has no mother info
-              if (options->recoSmearingMode()==0) smearedPart = smearParticle(genPart);
-              else{
-                int recoid = genPart->id;
-                TLorentzVector recofv;
-                recofv.SetXYZT(genPart->x(), genPart->y(), genPart->z(), genPart->t());
-                smearedPart = new MELAParticle(recoid, recofv);
-              }
+              if (!skipSmearingGen && options->recoSmearingMode()==0) smearedPart = smearParticle(genPart);
+              else smearedPart = new MELAParticle(*genPart);
               smearedParticleList.push_back(smearedPart);
               if (isALepton(smearedPart->id)) smearedEvent.addLepton(smearedPart);
               else if (isANeutrino(smearedPart->id)) smearedEvent.addNeutrino(smearedPart);
               else if (isAPhoton(smearedPart->id)) smearedEvent.addPhoton(smearedPart);
-              else if (isAKnownJet(smearedPart->id)){
-                smearedPart->id=0; // Wipe id from reco. quark/gluon
+              else if (isAKnownJet(smearedPart->id) && !addJetConstituent){
                 if (!isATopQuark(smearedPart->id)) smearedEvent.addJet(smearedPart);
                 else smearedEvent.addIntermediate(smearedPart);
+                smearedPart->id=0; // Wipe id from reco. quark/gluon
               }
               else smearedEvent.addParticle(smearedPart);
+
+              if (addJetConstituent) injetparts.push_back(smearedPart);
             }
             else if (genPart->genStatus==-1){
               genEvent.addMother(genPart);
@@ -127,13 +132,13 @@ void LHEConverter::run(){
             }
           }
 
-          if (debugVars::debugFlag) cout << "Starting to construct gen. VV candidates." << endl;
+          if (debugVars::debugFlag) MELAout << "Starting to construct gen. VV candidates." << endl;
           genEvent.constructVVCandidates(options->doGenHZZdecay(), options->genDecayProducts());
-          if (debugVars::debugFlag) cout << "Successfully constructed gen. VV candidates." << endl;
-          if (debugVars::debugFlag) cout << "Starting to add gen. VV candidate appendages." << endl;
+          if (debugVars::debugFlag) MELAout << "Successfully constructed gen. VV candidates." << endl;
+          if (debugVars::debugFlag) MELAout << "Starting to add gen. VV candidate appendages." << endl;
           genEvent.addVVCandidateAppendages();
           MELACandidate* genCand=nullptr;
-          if (debugVars::debugFlag) cout << "Number of gen. Higgs candidates directly from the LHE: " << writtenGenCands.size() << endl;
+          if (debugVars::debugFlag) MELAout << "Number of gen. Higgs candidates directly from the LHE: " << writtenGenCands.size() << endl;
           if (!writtenGenCands.empty()){
             for (auto* writtenGenCand:writtenGenCands){
               MELACandidate* tmpCand = HiggsComparators::matchAHiggsToParticle(genEvent, writtenGenCand);
@@ -145,8 +150,21 @@ void LHEConverter::run(){
           }
           if (!genCand) genCand = HiggsComparators::candidateSelector(genEvent, options->getHiggsCandidateSelectionScheme(true), options->doGenHZZdecay());
           if (genCand) tree->fillCandidate(genCand, true);
-          else cout << cinput << " (" << ev << "): No gen. level Higgs candidate was found!" << endl;
+          else MELAout << cinput << " (" << ev << "): No gen. level Higgs candidate was found!" << endl;
 
+          // Get merged jets and add htem to the list of particles
+          if (useNewJetMerging){ // Not really necessary to put the if-statement, but better to allow compiler optimization
+            vector<MELAParticle> outjets;
+            MELAJetMerger::mergeParticlesToJets(options->jetAlgorithm(), injetparts, outjets);
+            for (MELAParticle const& part:outjets){
+              MELAParticle* smearedPart=nullptr;
+              if (options->recoSmearingMode()==0 && isAJet(part.id)) smearedPart = smearParticle(&part);
+              else smearedPart = new MELAParticle(part);
+              smearedPart->id=0;
+              smearedEvent.addJet(smearedPart);
+              smearedParticleList.push_back(smearedPart);
+            }
+          }
           smearedEvent.constructTopCandidates();
           smearedEvent.constructVVCandidates(options->doRecoHZZdecay(), options->recoDecayProducts());
           if (options->recoSelectionMode()==0) smearedEvent.applyParticleSelection();
@@ -168,7 +186,7 @@ void LHEConverter::run(){
             nProcessed++;
           }
         }
-        else cerr << "Weight=0 at event " << ev << endl;
+        else MELAerr << "Weight=0 at event " << ev << endl;
         ev++;
 
         for (auto*& tmpPart:smearedCandList) delete tmpPart;
@@ -177,10 +195,10 @@ void LHEConverter::run(){
         for (auto*& tmpPart:particleList) delete tmpPart;
 
         globalNEvents++;
-        if (globalNEvents % 100000 == 0) cout << "Event " << globalNEvents << "..." << endl;
+        if (globalNEvents % 100000 == 0) MELAout << "Event " << globalNEvents << "..." << endl;
       }
       fin.close();
-      cout << "Processed number of events from the input file (recorded events / sample size observed / cumulative traversed): " << nProcessed << " / " << ev << " / " << globalNEvents << endl;
+      MELAout << "Processed number of events from the input file (recorded events / sample size observed / cumulative traversed): " << nProcessed << " / " << ev << " / " << globalNEvents << endl;
     }
   }
   finalizeRun();
@@ -240,7 +258,7 @@ std::vector<MELAParticle*> LHEConverter::readEvent(std::ifstream& input_lhe, int
   while (str_in==""){ getline(input_lhe, str_in); } // Do not count empty lines or e.o.l. in the middle of events
   while (str_in.find("#")!=string::npos){ getline(input_lhe, str_in); fline++; }
   if (str_in.find(event_end)==string::npos){
-    cerr << "End of event not reached! string is " << str_in << " on line " << fline << endl;
+    MELAerr << "End of event not reached! string is " << str_in << " on line " << fline << endl;
     weight=0;
     for (unsigned int a = 0; a < collection.size(); a++){
       MELAParticle* tmpPart = collection.at(a);

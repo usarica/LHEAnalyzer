@@ -9,7 +9,7 @@ namespace LHEParticleSmear{
 }
 
 
-MELAParticle* LHEParticleSmear::smearParticle(MELAParticle* myParticle){
+MELAParticle* LHEParticleSmear::smearParticle(MELAParticle const* myParticle){
   if (!myParticle) return nullptr;
 
   randomForSmearing.SetSeed(std::abs(static_cast<int>(std::sin(myParticle->phi())*100000.)));
@@ -54,7 +54,7 @@ TLorentzVector LHEParticleSmear::smearKnownJet(TLorentzVector l_gen){
 
   const double& dRjet = ParticleComparators::jetDeltaR;
   double etaSmear=0, phiSmear=0;
-  double etaphiSmear = std::abs(randomForSmearing.Gaus(0, dRjet));
+  double etaphiSmear = std::abs(randomForSmearing.Gaus(0, dRjet/2.));
   randomForSmearing.Circle(etaSmear, phiSmear, etaphiSmear);
 
   constexpr double massSmearConst = 6.; // GeV
@@ -87,7 +87,7 @@ TLorentzVector LHEParticleSmear::smearUnknownJet(TLorentzVector l_gen){
   constexpr double massSmearConst = 0.1; // Ratio
   double massSmear = randomForSmearing.Gaus(0, massSmearConst);
 
-  constexpr double ptSmearConst = 0.05; // Ratio
+  constexpr double ptSmearConst = 0.1; // Ratio
   double ptSmear = randomForSmearing.Gaus(0, ptSmearConst);
 
   l_Pt *= std::max(0., 1.+ptSmear);
