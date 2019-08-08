@@ -209,9 +209,20 @@ void PythiaConverter::run(){
 TFile* PythiaConverter::getIntermediateFile(const std::string& cinput){
   string coutput = options->getTempDir();
   constexpr bool usePython = false;
+  constexpr bool useExe = true;
   stringstream streamCmd;
   if (!usePython){
-    streamCmd
+    if (useExe) streamCmd
+      << "trimPythia"
+      << " "
+      << cinput
+      << " "
+      << coutput
+      << " "
+      << options->pythiaType()
+      << " "
+      << options->jetAlgorithm();
+    else streamCmd
       << "root -b -l -q 'trimPythia.cc+(\""
       << cinput
       << "\", \""

@@ -1,5 +1,6 @@
 BASEINCLUDE          = $(CMSSW_BASE)/src
 MELADIR              = $(BASEINCLUDE)/ZZMatrixElement/MELA
+CMSDATATOOLSDIR      = $(BASEINCLUDE)/CMSDataTools/AnalysisTree
 CANDLORECASTERDIR    = $(BASEINCLUDE)/MelaAnalytics/CandidateLOCaster
 EVENTCONTAINERDIR    = $(BASEINCLUDE)/MelaAnalytics/EventContainer
 GENERICMECOMPUTERDIR = $(BASEINCLUDE)/MelaAnalytics/GenericMEComputer
@@ -28,12 +29,12 @@ DllSuf        = dylib
 UNDEFOPT      = suppress
 endif
 
-CXXFLAGS      += $(ROOTCFLAGS) -I$(ROOFITSYS)/include/ -I$(BASEINCLUDE) -I$(INCLUDEDIR) -I$(MELADIR)/interface/ -I$(CANDLORECASTERDIR)/interface/ -I$(EVENTCONTAINERDIR)/interface/ -I$(GENERICMECOMPUTERDIR)/interface/
+CXXFLAGS      += $(ROOTCFLAGS) -I$(ROOFITSYS)/include/ -I$(BASEINCLUDE) -I$(INCLUDEDIR) -I$(MELADIR)/interface/ -I$(CMSDATATOOLSDIR)/interface/ -I$(CANDLORECASTERDIR)/interface/ -I$(EVENTCONTAINERDIR)/interface/ -I$(GENERICMECOMPUTERDIR)/interface/
 
 NGLIBS         = $(ROOTGLIBS)
 # Hack here, because RooFit is removed from ROOT:
 NGLIBS        += -L $(ROOFITSYS)/lib/ -lMinuit -lRooFitCore -lRooFit #-lboost_regex
-NGLIBS  += -L $(CMSSW_BASE)/lib/$(SCRAM_ARCH)/ -lZZMatrixElementMELA -lMelaAnalyticsCandidateLOCaster -lMelaAnalyticsEventContainer -lMelaAnalyticsGenericMEComputer
+NGLIBS  += -L $(CMSSW_BASE)/lib/$(SCRAM_ARCH)/ -lZZMatrixElementMELA -lCMSDataToolsAnalysisTree -lMelaAnalyticsCandidateLOCaster -lMelaAnalyticsEventContainer -lMelaAnalyticsGenericMEComputer
 GLIBS          = $(filter-out -lNew, $(NGLIBS))
 
 
@@ -55,13 +56,6 @@ all: LHEAnalyzer dolinks
 	$(QUIET) echo "Compiling $<"; \
 	$(CXX) $(CXXFLAGS) $< -c -o $@ $(GLIBS)
 
-
-
-dolinks:
-	cp $(COMPILEPATH)macros/loadLib.py $(RUNDIR)loadLib.py
-	cp $(COMPILEPATH)macros/trimPythia.py $(RUNDIR)trimPythia.py
-	ln -sf $(COMPILEPATH)macros/loadLib.cc $(RUNDIR)loadLib.cc
-	ln -sf $(COMPILEPATH)macros/trimPythia.cc $(RUNDIR)trimPythia.cc
 
 LHEAnalyzer: $(OBJECTS)
 	$(CXX) $(CXXFLAGS) -o $(RUNDIR)LHEAnalyzer $(OBJECTS) $(GLIBS)

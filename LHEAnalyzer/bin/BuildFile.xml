@@ -11,5 +11,5 @@
 <use name="MelaAnalytics/CandidateLOCaster"/>
 <use name="LHEAnalyzer/LHEAnalyzer"/>
 
-<bin file="LHEAnalyzer.cc" name="LHEAnalyzer">
-</bin>
+<bin file="LHEAnalyzer.cc" name="LHEAnalyzer"> </bin>
+<bin file="trimPythia.cc" name="trimPythia"> </bin>
