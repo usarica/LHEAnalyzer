@@ -79,10 +79,12 @@ TLorentzVector LHEParticleSmear::smearUnknownJet(TLorentzVector l_gen){
   l_Phi = l_gen.Phi();
   l_Mass = l_gen.M();
 
+  /*
   const double& dRjet = ParticleComparators::jetDeltaR;
   double etaSmear=0, phiSmear=0;
   double etaphiSmear = std::abs(randomForSmearing.Gaus(0, dRjet));
   randomForSmearing.Circle(etaSmear, phiSmear, etaphiSmear);
+  */
 
   constexpr double massSmearConst = 0.1; // Ratio
   double massSmear = randomForSmearing.Gaus(0, massSmearConst);
@@ -91,8 +93,8 @@ TLorentzVector LHEParticleSmear::smearUnknownJet(TLorentzVector l_gen){
   double ptSmear = randomForSmearing.Gaus(0, ptSmearConst);
 
   l_Pt *= std::max(0., 1.+ptSmear);
-  l_Eta += etaSmear;
-  l_Phi += phiSmear;
+  //l_Eta += etaSmear;
+  //l_Phi += phiSmear;
   l_Mass *= std::max(0., 1.+massSmear);
 
   TLorentzVector final_l; final_l.SetPtEtaPhiM(l_Pt, l_Eta, l_Phi, l_Mass);

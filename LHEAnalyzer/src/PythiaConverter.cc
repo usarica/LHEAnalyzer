@@ -39,6 +39,8 @@ void PythiaConverter::run(){
   tree->bookAllBranches(false);
 
   for (string const& cinput:filename){
+    if (globalNEvents>=maxProcEvents && maxProcEvents>=0) break;
+
     cout << "Processing " << cinput << "..." << endl;
     TFile* fin = nullptr;
     fin = getIntermediateFile(cinput);
@@ -210,7 +212,7 @@ TFile* PythiaConverter::getIntermediateFile(const std::string& cinput){
   stringstream streamCmd;
   if (!usePython){
     streamCmd
-      << "root -b -l -q loadLib.cc 'trimPythia.cc+(\""
+      << "root -b -l -q 'trimPythia.cc+(\""
       << cinput
       << "\", \""
       << coutput
@@ -289,31 +291,32 @@ void PythiaConverter::readEvent(TTree* tin, const int& ev, std::vector<MELAParti
     tin->GetEntry(ev);
 
     // Gen. particles
-    int motherID[2];
-    int mctr=0;
+    vector<MELAParticle*> mothers; mothers.reserve(2);
+    unsigned char mctr=0;
     for (unsigned int a = 0; a < GenParticles_id->size(); a++){
-      int istup = GenParticles_status->at(a);
-      if (istup==21 && mctr<2){
-        motherID[mctr] = a;
-        mctr++;
-      }
-      int idup = GenParticles_id->at(a);
+      int const& istup = GenParticles_status->at(a);
+      int const& idup = GenParticles_id->at(a);
       TLorentzVector partFourVec(GenParticles_FV[0]->at(a), GenParticles_FV[1]->at(a), GenParticles_FV[2]->at(a), GenParticles_FV[3]->at(a));
 
       MELAParticle* onePart = new MELAParticle(idup, partFourVec);
       onePart->setGenStatus(PDGHelpers::convertPythiaStatus(istup));
       onePart->setLifetime(0);
       genCollection.push_back(onePart);
+      if (istup==21 && mctr<2){
+        mothers.push_back(onePart);
+        mctr++;
+      }
     }
     // Assign the mothers
-    for (unsigned int a = 0; a < genCollection.size(); a++){
-      for (int m=0;m<2;m++) genCollection.at(a)->addMother(genCollection.at(motherID[m]));
+    for (MELAParticle* part:genCollection){
+      if (part->genStatus==-1) continue;
+      for (MELAParticle* mot:mothers) part->addMother(mot);
     }
     genSuccess=(genCollection.size()>0);
     // Reco. particles
     for (unsigned int a = 0; a < FinalParticles_id->size(); a++){
-      int istup = FinalParticles_status->at(a);
-      int idup = FinalParticles_id->at(a);
+      int const& istup = FinalParticles_status->at(a);
+      int const& idup = FinalParticles_id->at(a);
       TLorentzVector partFourVec(FinalParticles_FV[0]->at(a), FinalParticles_FV[1]->at(a), FinalParticles_FV[2]->at(a), FinalParticles_FV[3]->at(a));
 
       MELAParticle* onePart = new MELAParticle(idup, partFourVec);
@@ -327,8 +330,8 @@ void PythiaConverter::readEvent(TTree* tin, const int& ev, std::vector<MELAParti
       recoCollection.push_back(onePart);
     }
     for (unsigned int a = 0; a < GenJets_id->size(); a++){
-      int istup = GenJets_status->at(a);
-      int idup = GenJets_id->at(a);
+      int const& istup = GenJets_status->at(a);
+      int const& idup = GenJets_id->at(a);
       TLorentzVector partFourVec(GenJets_FV[0]->at(a), GenJets_FV[1]->at(a), GenJets_FV[2]->at(a), GenJets_FV[3]->at(a));
 
       MELAParticle* onePart = new MELAParticle(idup, partFourVec);
@@ -341,16 +344,17 @@ void PythiaConverter::readEvent(TTree* tin, const int& ev, std::vector<MELAParti
       onePart->setLifetime(0);
       recoCollection.push_back(onePart);
     }
-    smearedSuccess=(recoCollection.size()>0);
+    smearedSuccess=(!recoCollection.empty());
 
     tin->ResetBranchAddresses();
 
-    if (geneventinfoweights!=0 && geneventinfoweights->size()>0){
-      for (unsigned int w=0; w<geneventinfoweights->size(); w++) weights.push_back(geneventinfoweights->at(w));
+    if (geneventinfoweights && !geneventinfoweights->empty()){
+      weights.reserve(geneventinfoweights->size());
+      for (auto const& w:(*geneventinfoweights)) weights.push_back(w);
     }
     else if (!smearedSuccess && !genSuccess) weights.push_back(0);
     else weights.push_back(1.);
   }
-  eventWeight = weights.at(0);
+  eventWeight = weights.front();
 }
 

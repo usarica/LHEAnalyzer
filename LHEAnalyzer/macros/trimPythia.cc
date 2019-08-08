@@ -62,7 +62,7 @@ void trimPythia(TString cinput, TString outdir, int pythiaStep, TString jetAlgor
   TFile ftemp(coutput, "recreate");
   TTree* tmpTree = new TTree("TrimmedTree", "");
 
-  vector<float> geneventinfoweights;
+  vector<double> geneventinfoweights;
   tmpTree->Branch("genWeights", &geneventinfoweights);
 
   vector<float> GenParticles_FV[4];
@@ -95,9 +95,9 @@ void trimPythia(TString cinput, TString outdir, int pythiaStep, TString jetAlgor
   tmpTree->Branch("GenJets_id", &GenJets_id);
   tmpTree->Branch("GenJets_status", &GenJets_status);
 
-  TFile f(cinput, "read");
-  if (f.IsOpen() && !f.IsZombie()){
-    TTree* events = (TTree*) f.Get("Events");
+  TFile* f=nullptr; f = TFile::Open(cinput, "read");
+  if (f && f->IsOpen() && !f->IsZombie()){
+    TTree* events = (TTree*) f->Get("Events");
 
     CMSEDMWrapper< vector<reco::GenJet> >* jetWrapper = nullptr;
     CMSEDMWrapper< vector<reco::GenParticle> >* genparticleWrapper = nullptr;
@@ -106,20 +106,41 @@ void trimPythia(TString cinput, TString outdir, int pythiaStep, TString jetAlgor
     TString suffix;
     if (pythiaStep == 1) suffix = "SIM";
     else if (pythiaStep == 0) suffix = "GEN";
+    else if (pythiaStep == 2) suffix = "PAT";
     else{ cout << "trimPythia should not be called with pythiaStep=" << pythiaStep << endl; assert(0); }
 
     events->SetBranchStatus("*", 0);
-    events->SetBranchStatus("recoGenJets_"+jetAlgorithm+"GenJets__"+suffix+"*", 1);
-    events->SetBranchStatus("recoGenParticles_genParticles__"+suffix+"*", 1);
-    events->SetBranchStatus("GenEventInfoProduct_generator__"+suffix+"*", 1);
+    if (pythiaStep<2){
+      events->SetBranchStatus("recoGenJets_"+jetAlgorithm+"GenJets__"+suffix+"*", 1);
+      events->SetBranchAddress("recoGenJets_"+jetAlgorithm+"GenJets__"+suffix+".", &jetWrapper);
 
-    events->SetBranchAddress("recoGenJets_"+jetAlgorithm+"GenJets__"+suffix+".", &jetWrapper);
-    events->SetBranchAddress("recoGenParticles_genParticles__"+suffix+".", &genparticleWrapper);
-    events->SetBranchAddress("GenEventInfoProduct_generator__"+suffix+".", &geneventinfoWrapper);
+      events->SetBranchStatus("recoGenParticles_genParticles__"+suffix+"*", 1);
+      events->SetBranchAddress("recoGenParticles_genParticles__"+suffix+".", &genparticleWrapper);
+
+      events->SetBranchStatus("GenEventInfoProduct_generator__"+suffix+"*", 1);
+      events->SetBranchAddress("GenEventInfoProduct_generator__"+suffix+".", &geneventinfoWrapper);
+    }
+    else if (pythiaStep==2){
+      if (jetAlgorithm.Contains("ak4")){
+        events->SetBranchStatus("recoGenJets_slimmedGenJets__"+suffix+"*", 1);
+        events->SetBranchAddress("recoGenJets_slimmedGenJets__"+suffix+".", &jetWrapper);
+      }
+      else if (jetAlgorithm.Contains("ak8")){
+        events->SetBranchStatus("recoGenJets_slimmedGenJetsAK8__"+suffix+"*", 1);
+        events->SetBranchAddress("recoGenJets_slimmedGenJetsAK8__"+suffix+".", &jetWrapper);
+      }
+
+      events->SetBranchStatus("recoGenParticles_prunedGenParticles__"+suffix+"*", 1);
+      events->SetBranchAddress("recoGenParticles_prunedGenParticles__"+suffix+".", &genparticleWrapper);
+
+      events->SetBranchStatus("GenEventInfoProduct_generator__SIM*", 1);
+      events->SetBranchAddress("GenEventInfoProduct_generator__SIM.", &geneventinfoWrapper);
+    }
 
     for (int ev=0; ev<events->GetEntries(); ev++){
       events->GetEntry(ev);
       if (ev%10000 == 0) cout << "Event " << ev << '/' << events->GetEntries() << "..." << endl;
+      //if (ev>0) break;
 
       geneventinfoweights.clear();
 
@@ -158,10 +179,14 @@ void trimPythia(TString cinput, TString outdir, int pythiaStep, TString jetAlgor
             &&
             ((abs_id>=11 && abs_id<=16) || (i_id==22 && isPromptFinal))
             );
-          if (isHardProcess) hardlist.emplace_back(
-            i_id, i_st,
-            TLorentzVector(part.px(), part.py(), part.pz(), part.energy())
-          );
+          if (isHardProcess){
+            if (i_st==2) i_st=1;
+
+            hardlist.emplace_back(
+              i_id, i_st,
+              TLorentzVector(part.px(), part.py(), part.pz(), part.energy())
+            );
+          }
           if (isFinal) finallist.emplace_back(
             i_id, i_st,
             TLorentzVector(part.px(), part.py(), part.pz(), part.energy())
@@ -200,9 +225,9 @@ void trimPythia(TString cinput, TString outdir, int pythiaStep, TString jetAlgor
 
       tmpTree->Fill();
     }
-    f.Close();
+    f->Close();
   }
-  else if (f.IsOpen()) f.Close();
+  else if (f && f->IsOpen()) f->Close();
 
   ftemp.WriteTObject(tmpTree); delete tmpTree;
   ftemp.Close();

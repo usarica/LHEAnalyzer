@@ -432,7 +432,7 @@ void OptionParser::printOptionsHelp()const{
   cout << "- No option specifier: Input files with extension .lhe or .root. Multiple input files can be passed as different arguments.\n\n";
   cout << "- indir: Location of input files. Default=\"./\"\n\n";
   cout << "- fileLevel: -1==ReadMode, 0==LHE, 1==Pythia8. \".lhe\" extension only allowed for 0, and \".root\" is the only format for the others. Default=0\n\n";
-  cout << "- pythiaStep: for fileLevel==1, which level of reconstruction to use.  0==GEN, 1==GEN-SIM.  Default=1\n\n";
+  cout << "- pythiaStep: for fileLevel==1, which level of reconstruction to use.  0==GEN, 1==GEN-SIM, 2==MINIAODSIM.  Default=1\n\n";
   cout << "- outfile: Output file name. Default=\"tmp.root\"\n\n";
   cout << "- outdir: Location of the output file. Default=\"./\"\n\n";
   cout << "- tmpDir: Location of temporary files. Default=\"./tmpStore/\"\n\n";
