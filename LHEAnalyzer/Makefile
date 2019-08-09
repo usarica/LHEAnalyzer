@@ -1,3 +1,7 @@
+CMSSWINCLUDEPATHS    = $(CMSSW_SEARCH_PATH)
+CMSSWINCLUDES        = $(subst :, -I,$(CMSSWINCLUDEPATHS))
+CMSSWFWLITEPATHS     = $(CMSSW_FWLITE_INCLUDE_PATH)
+CMSSWFWLITEINCLUDES  = $(subst :, -I,$(CMSSWFWLITEPATHS))
 BASEINCLUDE          = $(CMSSW_BASE)/src
 MELADIR              = $(BASEINCLUDE)/ZZMatrixElement/MELA
 CMSDATATOOLSDIR      = $(BASEINCLUDE)/CMSDataTools/AnalysisTree
@@ -29,21 +33,22 @@ DllSuf        = dylib
 UNDEFOPT      = suppress
 endif
 
-CXXFLAGS      += $(ROOTCFLAGS) -I$(ROOFITSYS)/include/ -I$(BASEINCLUDE) -I$(INCLUDEDIR) -I$(MELADIR)/interface/ -I$(CMSDATATOOLSDIR)/interface/ -I$(CANDLORECASTERDIR)/interface/ -I$(EVENTCONTAINERDIR)/interface/ -I$(GENERICMECOMPUTERDIR)/interface/
+CXXFLAGS      += $(ROOTCFLAGS) -I$(ROOFITSYS)/include/ -I$(CMSSWINCLUDES) -I$(CMSSWFWLITEINCLUDES) -I$(INCLUDEDIR) -I$(MELADIR)/interface/ -I$(CMSDATATOOLSDIR)/interface/ -I$(CANDLORECASTERDIR)/interface/ -I$(EVENTCONTAINERDIR)/interface/ -I$(GENERICMECOMPUTERDIR)/interface/
 
 NGLIBS         = $(ROOTGLIBS)
 # Hack here, because RooFit is removed from ROOT:
 NGLIBS        += -L $(ROOFITSYS)/lib/ -lMinuit -lRooFitCore -lRooFit #-lboost_regex
-NGLIBS  += -L $(CMSSW_BASE)/lib/$(SCRAM_ARCH)/ -lZZMatrixElementMELA -lCMSDataToolsAnalysisTree -lMelaAnalyticsCandidateLOCaster -lMelaAnalyticsEventContainer -lMelaAnalyticsGenericMEComputer
+NGLIBS        += -L $(CMSSW_BASE)/lib/$(SCRAM_ARCH)/ -lZZMatrixElementMELA -lCMSDataToolsAnalysisTree -lMelaAnalyticsCandidateLOCaster -lMelaAnalyticsEventContainer -lMelaAnalyticsGenericMEComputer
+NGLIBS        += -L $(CMSSW_RELEASE_BASE)/lib/$(SCRAM_ARCH)/ -lDataFormatsCommon
 GLIBS          = $(filter-out -lNew, $(NGLIBS))
 
 
-SOURCES = $(wildcard $(SRCDIR)*.cc $(BINDIR)*.cc)
+SOURCES = $(wildcard $(SRCDIR)*.cc)
 OBJECTS = $(SOURCES:.cc=.o)
 
 .PHONY: all help compile clean
 
-all: LHEAnalyzer dolinks
+all: LHEAnalyzer trimPythia
 
 
 # General rule for making object files
@@ -57,8 +62,11 @@ all: LHEAnalyzer dolinks
 	$(CXX) $(CXXFLAGS) $< -c -o $@ $(GLIBS)
 
 
-LHEAnalyzer: $(OBJECTS)
-	$(CXX) $(CXXFLAGS) -o $(RUNDIR)LHEAnalyzer $(OBJECTS) $(GLIBS)
+LHEAnalyzer: $(OBJECTS) $(BINDIR)LHEAnalyzer.cc
+	$(CXX) $(CXXFLAGS) -o $(RUNDIR)LHEAnalyzer $(OBJECTS) $(BINDIR)LHEAnalyzer.cc $(GLIBS)
+
+trimPythia: $(OBJECTS) $(BINDIR)trimPythia.cc
+	$(CXX) $(CXXFLAGS) -o $(RUNDIR)trimPythia $(OBJECTS) $(BINDIR)trimPythia.cc $(GLIBS)
 
 
 clean:
@@ -77,10 +85,10 @@ clean:
 	rm -f $(RUNDIR)*.cc
 	rm -f $(RUNDIR)analyze*
 	rm -f $(RUNDIR)LHEAnalyze*
+	rm -f $(RUNDIR)trimPythia*
 	rm -f $(RUNDIR)*.o
 	rm -f $(RUNDIR)*.so
 	rm -f $(RUNDIR)*.d
 	rm -f $(RUNDIR)*.pcm
 	rm -f $(RUNDIR)*.py
 	rm -f $(RUNDIR)*.pyc
-	
