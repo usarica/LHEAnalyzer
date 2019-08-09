@@ -38,8 +38,12 @@ CXXFLAGS      += $(ROOTCFLAGS) -I$(ROOFITSYS)/include/ -I$(CMSSWINCLUDES) -I$(CM
 NGLIBS         = $(ROOTGLIBS)
 # Hack here, because RooFit is removed from ROOT:
 NGLIBS        += -L $(ROOFITSYS)/lib/ -lMinuit -lRooFitCore -lRooFit #-lboost_regex
+# Libraries for common user packages
 NGLIBS        += -L $(CMSSW_BASE)/lib/$(SCRAM_ARCH)/ -lZZMatrixElementMELA -lCMSDataToolsAnalysisTree -lMelaAnalyticsCandidateLOCaster -lMelaAnalyticsEventContainer -lMelaAnalyticsGenericMEComputer
-NGLIBS        += -L $(CMSSW_RELEASE_BASE)/lib/$(SCRAM_ARCH)/ -lDataFormatsCommon
+# Libraries needed for CMSSW dependencies (mainly due to CMSDataTools)
+NGLIBS        += -L $(CMSSW_RELEASE_BASE)/lib/$(SCRAM_ARCH)/ -lDataFormatsCommon -lDataFormatsMath
+# Filter out libNew because it leads to floating-point exceptions in versions of ROOT prior to 6.08.02
+# See the thread https://root-forum.cern.ch/t/linking-new-library-leads-to-a-floating-point-exception-at-startup/22404
 GLIBS          = $(filter-out -lNew, $(NGLIBS))
 
 
