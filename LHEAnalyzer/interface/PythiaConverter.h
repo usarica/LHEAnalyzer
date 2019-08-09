@@ -34,36 +34,7 @@ public:
   void run();
 
 protected:
-  struct PythiaIOHandle{
-    TTree* tin;
-
-    vectorDouble* geneventinfoweights;
-    TBranch* b_geneventinfoweights;
-
-    vectorFloat* GenParticles_FV[4];
-    vectorInt* GenParticles_id;
-    vectorInt* GenParticles_status;
-    TBranch* b_GenParticles_FV[4];
-    TBranch* b_GenParticles_id;
-    TBranch* b_GenParticles_status;
-
-    vectorFloat* FinalParticles_FV[4];
-    vectorInt* FinalParticles_id;
-    vectorInt* FinalParticles_status;
-    TBranch* b_FinalParticles_FV[4];
-    TBranch* b_FinalParticles_id;
-    TBranch* b_FinalParticles_status;
-
-    vectorFloat* GenJets_FV[4];
-    vectorInt* GenJets_id;
-    vectorInt* GenJets_status;
-    TBranch* b_GenJets_FV[4];
-    TBranch* b_GenJets_id;
-    TBranch* b_GenJets_status;
-
-    PythiaIOHandle(TTree* tin_);
-    ~PythiaIOHandle(){}
-  };
+  struct PythiaIOHandle;
 
   void configure(); // Set output file, tree
   void finalizeRun();
