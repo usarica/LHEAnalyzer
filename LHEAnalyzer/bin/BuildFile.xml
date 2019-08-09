@@ -12,4 +12,9 @@
 <use name="LHEAnalyzer/LHEAnalyzer"/>
 
 <bin file="LHEAnalyzer.cc" name="LHEAnalyzer"> </bin>
-<bin file="trimPythia.cc" name="trimPythia"> </bin>
+
+<bin file="trimPythia.cc" name="trimPythia">
+  <use name="DataFormats/HepMCCandidate"/>
+  <use name="DataFormats/JetReco"/>
+  <use name="SimDataFormats/GeneratorProducts"/>
+</bin>

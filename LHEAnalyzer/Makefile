@@ -70,8 +70,7 @@ LHEAnalyzer: $(OBJECTS) $(BINDIR)LHEAnalyzer.cc
 	$(CXX) $(CXXFLAGS) -o $(RUNDIR)LHEAnalyzer $(OBJECTS) $(BINDIR)LHEAnalyzer.cc $(GLIBS)
 
 trimPythia: $(OBJECTS) $(BINDIR)trimPythia.cc
-	$(CXX) $(CXXFLAGS) -o $(RUNDIR)trimPythia $(OBJECTS) $(BINDIR)trimPythia.cc $(GLIBS)
-
+	$(CXX) $(CXXFLAGS) -o $(RUNDIR)trimPythia $(OBJECTS) $(BINDIR)trimPythia.cc $(GLIBS) -lSimDataFormatsGeneratorProducts -lDataFormatsHepMCCandidate -lDataFormatsJetReco
 
 clean:
 	rm -rf $(OUTLIB)
