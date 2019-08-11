@@ -4,9 +4,7 @@
 **/*.d
 **/*_ACLiC_dict_rdict.pcm
 **/*.lhe
+**/*.root
 **/*.log
 **/*.err
-**/log*.txt
-**/analyzer
-**/LHEAnalyzer
-LHEAnalyzer/*.sh
+**/log*
