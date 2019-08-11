@@ -18,3 +18,5 @@
   <use name="DataFormats/JetReco"/>
   <use name="SimDataFormats/GeneratorProducts"/>
 </bin>
+
+<bin file="CheckLHEAnalyzerSubmissionLogFile.cc" name="CheckLHEAnalyzerSubmissionLogFile"> </bin>
