@@ -1,5 +1,5 @@
 /loadLib.*
-/trimPythia.*
+/trimPythia*
 /*.py
 /*.DAT
 /*.dat

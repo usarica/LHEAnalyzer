@@ -301,12 +301,11 @@ void PythiaConverter::run(){
 
 
 TFile* PythiaConverter::getIntermediateFile(const std::string& cinput){
-  string coutput = options->getTempDir();
-  constexpr bool usePython = false;
-  constexpr bool useExe = true;
-  stringstream streamCmd;
-  if (!usePython){
-    if (useExe) streamCmd
+  TFile* res = nullptr;
+  if (options->pythiaType()>-1){
+    string coutput = options->getTempDir();
+    stringstream streamCmd;
+    streamCmd
       << "trimPythia"
       << " "
       << cinput
@@ -316,24 +315,15 @@ TFile* PythiaConverter::getIntermediateFile(const std::string& cinput){
       << options->pythiaType()
       << " "
       << options->jetAlgorithm();
-    else streamCmd
-      << "root -b -l -q 'trimPythia.cc+(\""
-      << cinput
-      << "\", \""
-      << coutput
-      << "\", "
-      << options->pythiaType()
-      << ", \""
-      << options->jetAlgorithm()
-      << "\")'";
+    TString strCmd = streamCmd.str();
+    gSystem->Exec(strCmd);
+    string strtmp = coutput;
+    strtmp.append("pythiaTemp.root");
+    res = TFile::Open(strtmp.c_str(), "read");
   }
-  else streamCmd << "python trimPythia.py " << cinput << " " << coutput << " " << options->pythiaType() << " " << options->jetAlgorithm();
-  TString strCmd = streamCmd.str();
-  gSystem->Exec(strCmd);
-  string strtmp=coutput;
-  strtmp.append("pythiaTemp.root");
-  TFile* ftmp = new TFile(strtmp.c_str(), "read");
-  return ftmp;
+  else if (options->pythiaType()==-1) res = TFile::Open(cinput.c_str(), "read");
+
+  return res;
 }
 
 
