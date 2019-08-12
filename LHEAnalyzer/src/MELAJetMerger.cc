@@ -1,4 +1,5 @@
 #include <cassert>
+#include <exception>
 #include <utility>
 #include "MELAJetMerger.h"
 #include "ParticleComparators.h"
@@ -16,7 +17,7 @@ void MELAJetMerger::mergeParticlesToJets(std::string const& algo, std::vector<ME
   else if (algo.find("ca")!=std::string::npos) ipow=0;
   else{
     MELAerr << "MELAJetMerger::mergeParticlesToJets: Jet algorithm (currently " << algo << ") can only be ak, kt or ca." << endl;
-    assert(0);
+    throw std::exception();
   }
   mergeParticlesToJets(ipow, inparts, outparts);
 }

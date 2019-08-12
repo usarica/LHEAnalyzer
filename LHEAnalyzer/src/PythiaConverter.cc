@@ -97,7 +97,7 @@ PythiaConverter::PythiaIOHandle::PythiaIOHandle(TTree* tin_) : tin(tin_){
   }
   else{
     cerr << "PythiaConverter::PythiaIOHandle::PythiaIOHandle: Input tree is null!" << endl;
-    assert(0);
+    throw std::exception();
   }
 }
 

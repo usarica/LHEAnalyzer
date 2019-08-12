@@ -17,6 +17,9 @@
 
 
 class OptionParser{
+public:
+  static Bool_t globalHelpFlag;
+
 protected:
   void extractSkippedEvents(std::string const& rawoption);
   void extractGlobalRecordSet(std::string const& rawoption);

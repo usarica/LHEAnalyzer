@@ -107,7 +107,7 @@ void trimPythia(TString cinput, TString outdir, int pythiaStep, TString jetAlgor
     if (pythiaStep == 1) suffix = "SIM";
     else if (pythiaStep == 0) suffix = "GEN";
     else if (pythiaStep == 2) suffix = "PAT";
-    else{ cout << "trimPythia should not be called with pythiaStep=" << pythiaStep << endl; assert(0); }
+    else{ cout << "trimPythia should not be called with pythiaStep=" << pythiaStep << endl; throw std::exception(); }
 
     events->SetBranchStatus("*", 0);
     if (pythiaStep<2){
@@ -241,7 +241,7 @@ int main(int argc, char** argv){
 
   if (argc!=5){
     cerr << "trimPythia: The argument count is " << argc << " != 5." << endl;
-    assert(0);
+    return 1;
   }
   for (int a=0; a<argc; a++){
     switch (a){
@@ -261,10 +261,15 @@ int main(int argc, char** argv){
       break;
     default:
       cerr << "trimPythia: Arguments " << a << " is not recognized." << endl;
-      assert(0);
-      break;
+      return 1;
     }
   }
 
-  trimPythia(cinput, outdir, pythiaStep, jetAlgorithm);
+  try{
+    trimPythia(cinput, outdir, pythiaStep, jetAlgorithm);
+    return 0;
+  }
+  catch (const std::exception&){
+    return 1;
+  }
 }

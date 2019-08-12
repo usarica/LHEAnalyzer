@@ -965,7 +965,7 @@ void HVVTree::buildMELABranches(bool doSetAddress){
 void HVVTree::bookMELABranches(MELAOptionParser* me_opt, MELAComputation* computer, bool doCopy){
   if (!me_opt){
     cerr << "HVVTree::bookMELABranches: Did not receive a valid me_opt. Something went wrong." << endl;
-    assert(0);
+    throw std::exception();
   }
 
   std::vector<MELABranch*>* me_branches = (me_opt->isGen() ? &(this->lheme_branches) : &(this->recome_branches));

@@ -1,3 +1,4 @@
+#include <exception>
 #include <cstdlib>
 #include <fstream>
 #include "TUtilHelpers.hh"
@@ -10,6 +11,8 @@
 using namespace std;
 using namespace HelperFunctions;
 
+
+Bool_t OptionParser::globalHelpFlag = false;
 
 OptionParser::OptionParser(int argc, char** argv) :
   mPOLE(125.), // mH
@@ -69,6 +72,8 @@ void OptionParser::analyze(){
     if (wish=="computeDecayAngles") hasDecayAngles=true;
     if (wish=="JetAlgorithm" || wish=="jetAlgorithm" || wish=="jetalgorithm") hasJetAlgo=true;
   }
+
+  if (OptionParser::globalHelpFlag){ printOptionsHelp(false); return; }
 
   if (filename.empty()){ cerr << "You have to specify the input files." << endl; if (!hasInvalidOption) hasInvalidOption=true; }
   else{
@@ -240,7 +245,10 @@ void OptionParser::extractMElines(std::string const& sfile, std::vector<std::str
       }
       fin.close();
     }
-    else cerr << "OptionParser::extractMElines: ME file " << sfile << " is not readable." << endl;
+    else{
+      cerr << "OptionParser::extractMElines: ME file " << sfile << " is not readable." << endl;
+      throw std::exception();
+    }
   }
 }
 void OptionParser::extractXsec(){
@@ -367,7 +375,7 @@ Bool_t OptionParser::checkListVariable(std::vector<std::string> const& list, std
 void OptionParser::interpretOption(std::string const& wish, std::string const& value){
   if (wish.empty()){
     if (value.find(".lhe")!=string::npos || value.find(".root")!=string::npos) filename.push_back(value);
-    else if (value.find("help")!= string::npos) printOptionsHelp(false);
+    else if (value.find("help")!= string::npos) OptionParser::globalHelpFlag = true;
     else cerr << "Unknown unspecified argument: " << value << endl;
   }
   else if (wish=="includeGenInfo") includeGenInfo = (int)atoi(value.c_str());
@@ -472,6 +480,5 @@ void OptionParser::printOptionsHelp(bool command_fail)const{
   cout << "- globalRecord: Global values to set (e.g. cross section). Creates SelectedTree_Globals with a single event. Default=none.\n\tBranches are assigned in the form [name:type_value], and multiple forms can be specified with comma separation. Use C++ type names (e.g. [xsec:float_0.001].\n\n";
 
   cout << endl;
-  if (!command_fail) exit(0);
-  else exit(1);
+  if (command_fail) throw std::exception();
 }
