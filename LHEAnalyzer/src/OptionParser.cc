@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <fstream>
 #include "TUtilHelpers.hh"
 #include "OptionParser.h"
@@ -103,7 +104,7 @@ void OptionParser::analyze(){
   if (fileLevel<0 && recoSelBehaviour!=0) { cout << "Enabling the (re-)calculation of all angles in ReadMode since the re-selection option is specified." << endl; computeVBFAngles=1; computeVHAngles=1; computeTTHAngles=1; computeDecayAngles=1; }
 
   // Print help if needed and abort at this point, nowhere later
-  if (hasInvalidOption) printOptionsHelp();
+  if (hasInvalidOption) printOptionsHelp(hasInvalidOption);
 
   // Append extra "/" if they do not exist.
   unsigned int tlen=(unsigned int) indir.length();
@@ -366,7 +367,7 @@ Bool_t OptionParser::checkListVariable(std::vector<std::string> const& list, std
 void OptionParser::interpretOption(std::string const& wish, std::string const& value){
   if (wish.empty()){
     if (value.find(".lhe")!=string::npos || value.find(".root")!=string::npos) filename.push_back(value);
-    else if (value.find("help")!= string::npos) printOptionsHelp();
+    else if (value.find("help")!= string::npos) printOptionsHelp(false);
     else cerr << "Unknown unspecified argument: " << value << endl;
   }
   else if (wish=="includeGenInfo") includeGenInfo = (int)atoi(value.c_str());
@@ -425,7 +426,7 @@ void OptionParser::interpretOption(std::string const& wish, std::string const& v
   else cerr << "Unknown specified argument: " << value << " with specifier " << wish << endl;
 }
 
-void OptionParser::printOptionsHelp()const{
+void OptionParser::printOptionsHelp(bool command_fail)const{
   cout << endl;
   cout << "The options implemented for the LHEAnalyzer (format: specifier=value):\n\n";
 
@@ -439,18 +440,18 @@ void OptionParser::printOptionsHelp()const{
   cout << "- maxevents / maxEvents: Maximum number of events to process. Default=-1 (all events)\n\n";
   cout << "- skipevents / skipEvents: Events to skip at the beginning. Default=none.\n\tAssignment is made in the form [ev1.ev2],[ev3.ev4] to allow multiple ranges. Use [ or ] for inclusive, ( or ) for exclusive ranges. Counting the events begins from 0.\n\n";
 
-  cout << "- sqrts: pp collision c.o.m. energy. Default=13 (TeV)\n\n";
+  cout << "- sqrts: pp collision c.o.m. energy in units of TeV. Default=13 TeV\n\n";
   cout << "- removeDaughterMasses: Switch to control the removal of lepton masses in the angle computation. Default=1\n\n";
   cout << "- computeDecayAngles: Switch to control the decay angles computation. Default=1 in LHE or Pythia modes, 0 in ReadMode.\n\n";
   cout << "- computeVBFProdAngles: Switch to control the VBF production angles computation. Default=0\n\n";
   cout << "- computeVHProdAngles: Switch to control the VH production angles computation. Default=0.\n\tPossible values are 0 (==disable), 1 (==compute from jets only), 2 (==compute from leptons only), 3 (==compute from jets and leptons, with separate variable suffixes \"*_VHhadronic\" and \"*_VHleptonic\".).\n\n";
   cout << "- computeTTHProdAngles: Switch to control the ttH production angles computation. Default=0.\n\tPossible values are 0 (==disable), 1 (==compute from jets and leptons, with same variable suffixes\".).\n\n";
 
-  cout << "- mH / MH / mPOLE: Mass of the Higgs. Used in common for generator and reco. objects. Default=125 (GeV)\n\n";
-  cout << "- GH / GaH / GammaH / wPOLE: Width of the generated Higgs. Used in generator objects. Default=4.07 (MeV)\n\n";
-  cout << "- GHSM / GaHSM / GammaHSM / wPOLEStandard: Standard SM width. Used in scaling Mela probabilities properly. Default=4.07 (MeV).\n\n";
-  cout << "- xsec: Assign a cross section to the sample. Will override the OptionParser determination. Default=-1 (pb)\n\n";
-  cout << "- xsecerr: Assign a cross section error to the sample. Will override the OptionParser determination. Default=-1 (pb)\n\n";
+  cout << "- mH / MH / mPOLE: Mass of the Higgs in units of GeV. Used in common for generator and reco. objects. Default=125 GeV\n\n";
+  cout << "- GH / GaH / GammaH / wPOLE: Width of the generated Higgs in units of GeV. Used in generator objects. Default=4.07 MeV\n\n";
+  cout << "- GHSM / GaHSM / GammaHSM / wPOLEStandard: Standard SM width in units of GeV. Used in scaling Mela probabilities properly. Default=4.07 MeV.\n\n";
+  cout << "- xsec: Assign a cross section to the sample in units of pb. Will override the OptionParser determination. Default=-1 pb\n\n";
+  cout << "- xsecerr: Assign a cross section error to the sample in units of pb. Will override the OptionParser determination. Default=-1 pb\n\n";
   cout << "- includeGenInfo, includeRecoInfo: Flags to control the writing of gen. and reco. info., respectively. Cannot be both false (0). Default=(1, 1)\n\n";
   cout << "- isGenHZZ, isRecoHZZ: Gen. or reco. candidate decay hypothesis. Undecayed (Higgs, gen.-only), WW, ZZ, ff (or ffb), Zgamma (or Zgam), gammagamma (or gamgam), Z (->ffb). isGenHZZ also (re)sets the default V mass in H->VV decay. Defaults=(ZZ, ZZ)\n\n";
   cout << "- genDecayMode, recoDecayMode: Gen. or reco. H->VV->final states. Behavior changes based on isGenHZZ and isRecoHZZ. Defaults=(0, 0)\n";
@@ -471,10 +472,6 @@ void OptionParser::printOptionsHelp()const{
   cout << "- globalRecord: Global values to set (e.g. cross section). Creates SelectedTree_Globals with a single event. Default=none.\n\tBranches are assigned in the form [name:type_value], and multiple forms can be specified with comma separation. Use C++ type names (e.g. [xsec:float_0.001].\n\n";
 
   cout << endl;
-  assert(0);
+  if (!command_fail) exit(0);
+  else exit(1);
 }
-
-void OptionParser::printOptionSummary()const{
-
-}
-

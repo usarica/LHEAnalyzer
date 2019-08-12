@@ -39,8 +39,8 @@ ${EXTRAS} \
 --exclude=src/LHEAnalyzer/LHEAnalyzer/*.sh \
 --exclude=src/LHEAnalyzer/LHEAnalyzer/*.root \
 --exclude=src/LHEAnalyzer/LHEAnalyzer/*.lhe \
---exclude=src/LHEAnalyzer/LHEAnalyzer/*.txt \
 --exclude=src/LHEAnalyzer/LHEAnalyzer/*.lst \
+--exclude=src/LHEAnalyzer/LHEAnalyzer/*.txt \
 --exclude=src/LHEAnalyzer/LHEAnalyzer/*.log \
 --exclude=src/ZZMatrixElement/MELA/test/reference \
 --exclude={.git,.gitignore,*.pyc,*.pcm,*.d,*.tar,libmcfm*,libcollier*,*.so,*.o,*.f~,*mod,mstw*.dat,*.err,*.sub,log*,Logs,DONE}

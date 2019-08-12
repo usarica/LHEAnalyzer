@@ -84,8 +84,7 @@ public:
 
   void analyze();
   void interpretOption(std::string const& wish, std::string const& value);
-  void printOptionsHelp()const;
-  void printOptionSummary()const;
+  void printOptionsHelp(bool command_fail)const;
 
   Bool_t processGenInfo()const{ return (includeGenInfo!=0); }
   Bool_t processRecoInfo()const{ return (includeRecoInfo!=0); }

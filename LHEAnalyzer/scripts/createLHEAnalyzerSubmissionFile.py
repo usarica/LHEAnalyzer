@@ -72,6 +72,7 @@ class BatchManager:
       finput = open(self.opt.input,'r')
       foutput = open(self.opt.output, 'w')
 
+      iline=0
       for fline in finput:
          fline = fline.lstrip()
          if fline.startswith('#'):
@@ -118,7 +119,6 @@ class BatchManager:
             else:
                wlinelist_allinputs.append(wline)
 
-         iline=0
          for wline in wlinelist_allinputs:
             if "<LINENUMBER>" in wline:
                wline = wline.replace("<LINENUMBER>",str(iline))
