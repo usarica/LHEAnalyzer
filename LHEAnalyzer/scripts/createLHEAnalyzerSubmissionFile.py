@@ -23,7 +23,8 @@ class BatchManager:
       self.parser.add_argument("--input", type=str, help="File containing input commands")
       self.parser.add_argument("--output", type=str, help="Output file with the list of commands")
       self.parser.add_argument("--add_range", type=str, action="append", help="Wildcards to replace")
-
+      self.parser.add_argument("--add_string_list", type=str, action="append", help="Wildcards to replace (string type)")
+      self.parser.add_argument("--reset_linenumber", action="store_true", default=False, help="Reset line number indicator <LINENUMBER> for each line in the input file")
 
       self.opt = self.parser.parse_args()
 
@@ -39,6 +40,7 @@ class BatchManager:
          sys.exit("List {} does not exist. Exiting...".format(self.opt.input))
 
       self.rangelist = {}
+      self.strlist = {}
       if self.opt.add_range is None:
          self.opt.add_range = []
       for rng in self.opt.add_range:
@@ -63,6 +65,20 @@ class BatchManager:
             raise RuntimeError("{} could not be split properly.".format(rnglist[1]))
          self.rangelist[rnglist[0]]=rnglist[1]
 
+      if self.opt.add_string_list is None:
+         self.opt.add_string_list = []
+      for rng in self.opt.add_string_list:
+         rnglist = rng.split(':')
+         if "<ALLINPUTS>" == rnglist[0]:
+            raise RuntimeError("Forbidden to specify <ALLINPUTS> as a wildcard range key.")
+         elif "<LINENUMBER>" == rnglist[0]:
+            raise RuntimeError("Forbidden to specify <LINENUMBER> as a wildcard range key.")
+
+         rnglist[0] = rnglist[0].replace('<','')
+         rnglist[0] = rnglist[0].replace('>','')
+         rnglist[1] = rnglist[1].split(',')
+         self.strlist[rnglist[0]]=rnglist[1]
+
 
       self.run()
 
@@ -74,17 +90,34 @@ class BatchManager:
 
       iline=0
       for fline in finput:
+         if self.opt.reset_linenumber: # Reset the line number if the option dictates so
+            iline=0
          fline = fline.lstrip()
          if fline.startswith('#'):
             continue
+
+         #print "Analyzing line '{}'".format(fline)
+
          fline = " ".join(fline.split()); fline += '\n'
          wlinelist = [ fline ] # Start with a single line
-         for key,val in self.rangelist.iteritems():
+         for key,val in self.strlist.iteritems():
+            skey = '<'+key+'>'
             wlinelisttmp = []
             for tmpline in wlinelist:
-               if key in tmpline:
+               if skey in tmpline:
+                  for sval in val:
+                     addline=tmpline.replace(skey,sval)
+                     wlinelisttmp.append(addline)
+               else:
+                  wlinelisttmp.append(tmpline)
+            wlinelist = wlinelisttmp
+         for key,val in self.rangelist.iteritems():
+            skey = '<'+key+'>'
+            wlinelisttmp = []
+            for tmpline in wlinelist:
+               if skey in tmpline:
                   if len(val)==1:
-                     addline=tmpline.replace('<'+key+'>',val[0])
+                     addline=tmpline.replace(skey,val[0])
                      wlinelisttmp.append(addline)
                   else: # Length==2
                      for ival in range(val[0],val[1]):
@@ -95,6 +128,7 @@ class BatchManager:
          # After replacing all keys, look for the special key <ALLINPUTS> in each line in order to create a line for each input file
          wlinelist_allinputs = []
          for wline in wlinelist:
+            #print "Checking line {}".format(wline)
             if "<ALLINPUTS>" in wline:
                lineargs = wline.split()
                indir="./"
@@ -114,6 +148,8 @@ class BatchManager:
                   flist = [ ff.replace("root://cms-xrd-global.cern.ch//","") for ff in subprocess.check_output(['createDatasetFileList.py', '--dataset={}'.format(indir), '--method=dbs', '--options=prepend_cms_xrd']).split('\n') if ff ]
                   wline = wline.replace("indir={}".format(indir),"indir={}".format("root://cms-xrd-global.cern.ch//"))
 
+               if len(flist) == 0:
+                  print "Warning: No files were found for input '{}'!".format(indir)
                for ff in flist:
                   wlinelist_allinputs.append(wline.replace("<ALLINPUTS>", ff))
             else:
@@ -124,7 +160,6 @@ class BatchManager:
                wline = wline.replace("<LINENUMBER>",str(iline))
             foutput.write(wline)
             iline = iline+1
-
 
       foutput.close()
       finput.close()
