@@ -1410,41 +1410,46 @@ void HVVTree::updateMELAClusters_BestLOAssociatedZ(const string clustertype, boo
     ajetIds.push_back(melaCand->getAssociatedJet(ijet)->id);
     if (PDGHelpers::isAGluon(melaCand->getAssociatedJet(ijet)->id)) melaCand->getAssociatedJet(ijet)->id = 0;
   }
+
+  std::vector<MELAParticle*> associatedVs; // Vector of Zs to loop over
+  for (MELAParticle* Vtmp:melaCand->getAssociatedSortedVs()){
+    if (Vtmp && PDGHelpers::isAZBoson(Vtmp->id) && Vtmp->getNDaughters()>=1){
+      bool passSelection=true;
+      for (MELAParticle* dauVtmp:Vtmp->getDaughters()) passSelection &= dauVtmp->passSelection;
+      if (!passSelection) continue;
+
+      associatedVs.push_back(Vtmp);
+    }
+  }
+
   // Give precedence to leptonic V decays
   bool hasALepV=false;
-  for (int iv=2; iv<melaCand->getNSortedVs(); iv++){
-    MELAParticle* Vtmp = melaCand->getSortedV(iv);
-    if (Vtmp!=0 && PDGHelpers::isAZBoson(Vtmp->id) && Vtmp->getNDaughters()>=1){
-      if (
-        PDGHelpers::isALepton(Vtmp->getDaughter(0)->id)
-        ||
-        PDGHelpers::isANeutrino(Vtmp->getDaughter(0)->id)
-        ){
-        hasALepV=true;
-      }
+  for (MELAParticle* Vtmp:associatedVs){
+    const int& Vtmp_dauid = Vtmp->getDaughter(0)->id;
+    if (
+      PDGHelpers::isALepton(Vtmp_dauid)
+      ||
+      PDGHelpers::isANeutrino(Vtmp_dauid)
+      ){
+      hasALepV=true;
+      break;
     }
   }
-  int bestVbyMass=-1;
-  float bestVMassDiff=1e5;
-  for (int iv=2; iv<melaCand->getNSortedVs(); iv++){
-    MELAParticle* Vtmp = melaCand->getSortedV(iv);
-    if (Vtmp!=0 && PDGHelpers::isAZBoson(Vtmp->id) && Vtmp->getNDaughters()>=1){
-      if (
-        PDGHelpers::isAJet(Vtmp->getDaughter(0)->id)
-        && hasALepV
-        ){
-        for (int idau=0; idau<Vtmp->getNDaughters(); idau++) Vtmp->getDaughter(idau)->setSelected(false);
-      }
-      else if (fabs(Vtmp->m()-PDGHelpers::Zmass)<bestVMassDiff){
-        bestVMassDiff=fabs(Vtmp->m()-PDGHelpers::Zmass);
-        bestVbyMass = iv;
-      }
+
+  std::vector<MELAParticle*> modifiedVs;
+  MELAParticle* bestVbyMass=nullptr;
+  float bestVMassDiff=-1;
+  for (MELAParticle* Vtmp:associatedVs){
+    if (
+      hasALepV &&
+      PDGHelpers::isAJet(Vtmp->getDaughter(0)->id)
+      ){
+      for (MELAParticle* dauVtmp:Vtmp->getDaughters()) dauVtmp->setSelected(false);
+      modifiedVs.push_back(Vtmp);
     }
-  }
-  for (int iv=2; iv<melaCand->getNSortedVs(); iv++){
-    MELAParticle* Vtmp = melaCand->getSortedV(iv);
-    if (Vtmp!=0 && PDGHelpers::isAZBoson(Vtmp->id) && Vtmp->getNDaughters()>=1){
-      for (int idau=0; idau<Vtmp->getNDaughters(); idau++) Vtmp->getDaughter(idau)->setSelected((iv==bestVbyMass));
+    else if (!bestVbyMass || fabs(Vtmp->m()-PDGHelpers::Zmass)<bestVMassDiff){
+      bestVMassDiff=fabs(Vtmp->m()-PDGHelpers::Zmass);
+      bestVbyMass = Vtmp;
     }
   }
 
@@ -1461,12 +1466,7 @@ void HVVTree::updateMELAClusters_BestLOAssociatedZ(const string clustertype, boo
   // Restore the candidate properties
   for (int imot=0; imot<melaCand->getNMothers(); imot++) melaCand->getMother(imot)->id = motherIds.at(imot); // Restore all mother ids
   for (int ijet=0; ijet<melaCand->getNAssociatedJets(); ijet++) melaCand->getAssociatedJet(ijet)->id = ajetIds.at(ijet); // Restore all jets
-  for (int iv=2; iv<melaCand->getNSortedVs(); iv++){
-    MELAParticle* Vtmp = melaCand->getSortedV(iv);
-    if (Vtmp!=0 && PDGHelpers::isAZBoson(Vtmp->id) && Vtmp->getNDaughters()>=1){
-      for (int idau=0; idau<Vtmp->getNDaughters(); idau++) Vtmp->getDaughter(idau)->setSelected(true);
-    }
-  }
+  for (MELAParticle* Vtmp:modifiedVs){ for (MELAParticle* dauVtmp:Vtmp->getDaughters()) dauVtmp->setSelected(true); }
 }
 void HVVTree::updateMELAClusters_BestLOAssociatedW(const string clustertype, bool isGen){
   MELACandidate* melaCand = melaHelpers::melaHandle->getCurrentCandidate();
@@ -1484,41 +1484,45 @@ void HVVTree::updateMELAClusters_BestLOAssociatedW(const string clustertype, boo
     ajetIds.push_back(melaCand->getAssociatedJet(ijet)->id);
     if (PDGHelpers::isAGluon(melaCand->getAssociatedJet(ijet)->id)) melaCand->getAssociatedJet(ijet)->id = 0;
   }
+
+  std::vector<MELAParticle*> associatedVs; // Vector of Ws to loop over
+  for (MELAParticle* Vtmp:melaCand->getAssociatedSortedVs()){
+    if (Vtmp && PDGHelpers::isAWBoson(Vtmp->id) && Vtmp->getNDaughters()>=1){
+      bool passSelection=true;
+      for (MELAParticle* dauVtmp:Vtmp->getDaughters()) passSelection &= dauVtmp->passSelection;
+      if (!passSelection) continue;
+
+      associatedVs.push_back(Vtmp);
+    }
+  }
   // Give precedence to leptonic V decays
   bool hasALepV=false;
-  for (int iv=2; iv<melaCand->getNSortedVs(); iv++){
-    MELAParticle* Vtmp = melaCand->getSortedV(iv);
-    if (Vtmp!=0 && PDGHelpers::isAWBoson(Vtmp->id) && Vtmp->getNDaughters()>=1){
-      if (
-        PDGHelpers::isALepton(Vtmp->getDaughter(0)->id)
-        ||
-        PDGHelpers::isANeutrino(Vtmp->getDaughter(0)->id)
-        ){
-        hasALepV=true;
-      }
+  for (MELAParticle* Vtmp:associatedVs){
+    const int& Vtmp_dauid = Vtmp->getDaughter(0)->id;
+    if (
+      PDGHelpers::isALepton(Vtmp_dauid)
+      ||
+      PDGHelpers::isANeutrino(Vtmp_dauid)
+      ){
+      hasALepV=true;
+      break;
     }
   }
-  int bestVbyMass=-1;
-  float bestVMassDiff=1e5;
-  for (int iv=2; iv<melaCand->getNSortedVs(); iv++){
-    MELAParticle* Vtmp = melaCand->getSortedV(iv);
-    if (Vtmp!=0 && PDGHelpers::isAWBoson(Vtmp->id) && Vtmp->getNDaughters()>=1){
-      if (
-        PDGHelpers::isAJet(Vtmp->getDaughter(0)->id)
-        && hasALepV
-        ){
-        for (int idau=0; idau<Vtmp->getNDaughters(); idau++) Vtmp->getDaughter(idau)->setSelected(false);
-      }
-      else if (fabs(Vtmp->m()-PDGHelpers::Wmass)<bestVMassDiff){
-        bestVMassDiff=fabs(Vtmp->m()-PDGHelpers::Wmass);
-        bestVbyMass = iv;
-      }
+
+  std::vector<MELAParticle*> modifiedVs;
+  MELAParticle* bestVbyMass=nullptr;
+  float bestVMassDiff=-1;
+  for (MELAParticle* Vtmp:associatedVs){
+    if (
+      hasALepV &&
+      PDGHelpers::isAJet(Vtmp->getDaughter(0)->id)
+      ){
+      for (MELAParticle* dauVtmp:Vtmp->getDaughters()) dauVtmp->setSelected(false);
+      modifiedVs.push_back(Vtmp);
     }
-  }
-  for (int iv=2; iv<melaCand->getNSortedVs(); iv++){
-    MELAParticle* Vtmp = melaCand->getSortedV(iv);
-    if (Vtmp!=0 && PDGHelpers::isAWBoson(Vtmp->id) && Vtmp->getNDaughters()>=1){
-      for (int idau=0; idau<Vtmp->getNDaughters(); idau++) Vtmp->getDaughter(idau)->setSelected((iv==bestVbyMass));
+    else if (!bestVbyMass || fabs(Vtmp->m()-PDGHelpers::Wmass)<bestVMassDiff){
+      bestVMassDiff = fabs(Vtmp->m()-PDGHelpers::Wmass);
+      bestVbyMass = Vtmp;
     }
   }
 
@@ -1535,12 +1539,7 @@ void HVVTree::updateMELAClusters_BestLOAssociatedW(const string clustertype, boo
   // Restore the candidate properties
   for (int imot=0; imot<melaCand->getNMothers(); imot++) melaCand->getMother(imot)->id = motherIds.at(imot); // Restore all mother ids
   for (int ijet=0; ijet<melaCand->getNAssociatedJets(); ijet++) melaCand->getAssociatedJet(ijet)->id = ajetIds.at(ijet); // Restore all jets
-  for (int iv=2; iv<melaCand->getNSortedVs(); iv++){
-    MELAParticle* Vtmp = melaCand->getSortedV(iv);
-    if (Vtmp!=0 && PDGHelpers::isAWBoson(Vtmp->id) && Vtmp->getNDaughters()>=1){
-      for (int idau=0; idau<Vtmp->getNDaughters(); idau++) Vtmp->getDaughter(idau)->setSelected(true);
-    }
-  }
+  for (MELAParticle* Vtmp:modifiedVs){ for (MELAParticle* dauVtmp:Vtmp->getDaughters()) dauVtmp->setSelected(true); }
 }
 void HVVTree::updateMELAClusters_BestLOAssociatedVBF(const string clustertype, bool isGen){
   // Same as updateMELAClusters_NoInitialGNoAssociatedG, but keep a separate function for future studies
