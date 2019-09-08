@@ -38,6 +38,7 @@ OptionParser::OptionParser(int argc, char** argv) :
   recoDecayMode(0), // 4l with HZZ, 2l2nu with HWW, see Event::constructVVCandidates(bool isZZ, int fstype)
   recoSelBehaviour(0),
   recoSmearBehaviour(0),
+  includeDisplacementInfo(0),
 
   genHiggsCandidateSelectionScheme(HiggsComparators::BestZ1ThenZ2ScSumPt),
   recoHiggsCandidateSelectionScheme(HiggsComparators::BestZ1ThenZ2ScSumPt),
@@ -403,6 +404,8 @@ void OptionParser::interpretOption(std::string const& wish, std::string const& v
     if (value=="BestZ1ThenZ2" || value=="BestZ1ThenZ2ScSumPt") recoHiggsCandidateSelectionScheme = HiggsComparators::BestZ1ThenZ2ScSumPt;
   }
 
+  else if (wish=="includeDisplacementInfo") includeDisplacementInfo = (int) atoi(value.c_str());
+
   else if (wish=="indir") indir = value;
   else if (wish=="outdir") outdir = value;
   else if (wish=="tmpDir" || wish=="tempDir") tmpDir = value;
@@ -457,10 +460,11 @@ void OptionParser::printOptionsHelp(bool command_fail)const{
 
   cout << "- mH / MH / mPOLE: Mass of the Higgs in units of GeV. Used in common for generator and reco. objects. Default=125 GeV\n\n";
   cout << "- GH / GaH / GammaH / wPOLE: Width of the generated Higgs in units of GeV. Used in generator objects. Default=4.07 MeV\n\n";
-  cout << "- GHSM / GaHSM / GammaHSM / wPOLEStandard: Standard SM width in units of GeV. Used in scaling Mela probabilities properly. Default=4.07 MeV.\n\n";
+  cout << "- GHSM / GaHSM / GammaHSM / wPOLEStandard: Standard SM width in units of GeV. Used in scaling Mela probabilities properly. Default=4.07 MeV\n\n";
   cout << "- xsec: Assign a cross section to the sample in units of pb. Will override the OptionParser determination. Default=-1 pb\n\n";
   cout << "- xsecerr: Assign a cross section error to the sample in units of pb. Will override the OptionParser determination. Default=-1 pb\n\n";
   cout << "- includeGenInfo, includeRecoInfo: Flags to control the writing of gen. and reco. info., respectively. Cannot be both false (0). Default=(1, 1)\n\n";
+  cout << "- includeDisplacementInfo: Flag to control the writing of displacement info. Currently supports only gen. info. Default=0\n\n";
   cout << "- isGenHZZ, isRecoHZZ: Gen. or reco. candidate decay hypothesis. Undecayed (Higgs, gen.-only), WW, ZZ, ff (or ffb), Zgamma (or Zgam), gammagamma (or gamgam), Z (->ffb). isGenHZZ also (re)sets the default V mass in H->VV decay. Defaults=(ZZ, ZZ)\n\n";
   cout << "- genDecayMode, recoDecayMode: Gen. or reco. H->VV->final states. Behavior changes based on isGenHZZ and isRecoHZZ. Defaults=(0, 0)\n";
   MELAEvent::printCandidateDecayModeDescriptions(); cout << "\n";

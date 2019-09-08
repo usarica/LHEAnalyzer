@@ -152,7 +152,7 @@ void LHEConverter::run(){
           if (genCand) tree->fillCandidate(genCand, true);
           else MELAout << cinput << " (" << ev << "): No gen. level Higgs candidate was found!" << endl;
 
-          // Get merged jets and add htem to the list of particles
+          // Get merged jets and add them to the list of particles
           if (useNewJetMerging){ // Not really necessary to put the if-statement, but better to allow compiler optimization
             vector<MELAParticle> outjets;
             MELAJetMerger::mergeParticlesToJets(options->jetAlgorithm(), injetparts, outjets);
@@ -227,26 +227,24 @@ std::vector<MELAParticle*> LHEConverter::readEvent(std::ifstream& input_lhe, int
     }
   }
 
-  int nparticle, para;
+  unsigned int nparticles;
+  int para;
   double m_V, alpha_qed, alpha_s;
 
   fline++;
-  input_lhe >> nparticle >> para >> weight >> m_V >> alpha_qed >> alpha_s;
-  for (int a = 0; a < nparticle; a++){
+  input_lhe >> nparticles >> para >> weight >> m_V >> alpha_qed >> alpha_s;
+  for (unsigned int a=0; a<nparticles; a++){
     int idup, istup, mothup[2], icolup[2];
     double pup[5], vtimup, spinup;
-    TLorentzVector partFourVec;
 
     input_lhe >> idup >> istup >> mothup[0] >> mothup[1] >> icolup[0] >> icolup[1];
-    for (int i = 0; i < 5; i++){
-      input_lhe >> pup[i];
-    }
+    for (unsigned char i=0; i<5; i++) input_lhe >> pup[i];
     input_lhe >> vtimup >> spinup;
 
     motherIDs_first.push_back(mothup[0]);
     motherIDs_second.push_back(mothup[1]);
 
-    partFourVec.SetXYZT(pup[0], pup[1], pup[2], pup[3]);
+    TLorentzVector partFourVec(pup[0], pup[1], pup[2], pup[3]);
     MELAParticle* onePart = new MELAParticle(idup, partFourVec);
     onePart->setGenStatus(istup);
     onePart->setLifetime(spinup);
@@ -260,10 +258,7 @@ std::vector<MELAParticle*> LHEConverter::readEvent(std::ifstream& input_lhe, int
   if (str_in.find(event_end)==string::npos){
     MELAerr << "End of event not reached! string is " << str_in << " on line " << fline << endl;
     weight=0;
-    for (unsigned int a = 0; a < collection.size(); a++){
-      MELAParticle* tmpPart = collection.at(a);
-      delete tmpPart;
-    }
+    for (MELAParticle*& tmpPart:collection) delete tmpPart;
     collection.clear();
     motherIDs_first.clear();
     motherIDs_second.clear();
@@ -272,7 +267,7 @@ std::vector<MELAParticle*> LHEConverter::readEvent(std::ifstream& input_lhe, int
   }
 
   // Assign the mothers
-  for (int a = 0; a < nparticle; a++){
+  for (unsigned int a=0; a<nparticles; a++){
     if (motherIDs_first.at(a)>0) collection.at(a)->addMother(collection.at(motherIDs_first.at(a)-1));
     if (motherIDs_second.at(a)>0 && motherIDs_first.at(a) != motherIDs_second.at(a)) collection.at(a)->addMother(collection.at(motherIDs_second.at(a)-1));
   }

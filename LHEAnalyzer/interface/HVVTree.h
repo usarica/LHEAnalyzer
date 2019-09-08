@@ -66,6 +66,9 @@ protected:
   void bookMotherParticleBranches(const BaseTree::BranchTypes& btype, const bool& doSetAddress);
   void getPtEtaPhiMIdBranches(std::vector<std::string>& blist, const std::string& owner, const bool& addId, const bool& usePz, bool isGen);
 
+  void bookDisplacementBranches(const std::string& owner, const BaseTree::BranchTypes& btype, const bool& doSetAddress, bool isGen);
+  void getDisplacementBranches(std::vector<std::string>& blist, const std::string& owner, bool isGen);
+
   void bookAngularBranches(const bool& doSetAddress);
   void getAngularBranches(std::vector<std::string>& blist, const Int_t& prodFlag /* 0: Decay, 1: VBF, 2: VH */, bool isGen);
 

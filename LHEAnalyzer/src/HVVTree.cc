@@ -64,6 +64,11 @@ void HVVTree::bookAllBranches(const bool& doSetAddress){
     reserveBranch("GenAssociatedTop_WAntifermionIndex", BaseTree::bVectorInt, doSetAddress);
 
     bookPtEtaPhiMassIdBranches("CandDau", BaseTree::bVectorFloat, doSetAddress, true, false, true);
+
+    if (options->processDisplacementInfo()){ // Only for gen. info at the moment!
+      bookDisplacementBranches("AssociatedParticle", BaseTree::bVectorFloat, doSetAddress, true);
+      bookDisplacementBranches("CandDau", BaseTree::bVectorFloat, doSetAddress, true);
+    }
   }
   if (options->processRecoInfo()){
     reserveBranch("isSelected", BaseTree::bInt, doSetAddress);
@@ -106,13 +111,12 @@ void HVVTree::bookPtEtaPhiMassIdBranches(const string& owner, const BaseTree::Br
   bool const btype_is_vector = (btype==BaseTree::bVectorFloat || btype==BaseTree::bVectorDouble);
   vector<string> tmpBranchList;
   getPtEtaPhiMIdBranches(tmpBranchList, owner, addId, usePz, isGen);
-  for (unsigned int b=0; b<tmpBranchList.size(); b++){
-    string branchname = tmpBranchList.at(b);
-    if(!addId || branchname.find("Id")==string::npos) reserveBranch(tmpBranchList.at(b), btype, doSetAddress);
+  for (string const& branchname:tmpBranchList){
+    if(!addId || branchname.find("Id")==string::npos) reserveBranch(branchname, btype, doSetAddress);
     else{
       BaseTree::BranchTypes bInttype = BaseTree::bInt;
       if (btype_is_vector) bInttype = BaseTree::bVectorInt;
-      reserveBranch(tmpBranchList.at(b), bInttype, doSetAddress);
+      reserveBranch(branchname, bInttype, doSetAddress);
     }
   }
 }
@@ -125,7 +129,7 @@ void HVVTree::bookMotherParticleBranches(const BaseTree::BranchTypes& btype, con
   reserveBranch((strGen+strOwner+"Id"), (btype_is_vector ? BaseTree::bVectorInt : BaseTree::bInt), doSetAddress);
 }
 void HVVTree::getPtEtaPhiMIdBranches(vector<string>& blist, const string& owner, const bool& addId, const bool& usePz, bool isGen){
-  string strGen = "Gen";
+  string const strGen = "Gen";
   vector<string> strtmp;
 
   strtmp.push_back("Pt");
@@ -141,6 +145,27 @@ void HVVTree::getPtEtaPhiMIdBranches(vector<string>& blist, const string& owner,
     blist.push_back(varname);
   }
 }
+
+void HVVTree::bookDisplacementBranches(const std::string& owner, const BaseTree::BranchTypes& btype, const bool& doSetAddress, bool isGen){
+  vector<string> tmpBranchList;
+  getDisplacementBranches(tmpBranchList, owner, isGen);
+  for (string const& branchname:tmpBranchList) reserveBranch(branchname, btype, doSetAddress);
+}
+void HVVTree::getDisplacementBranches(std::vector<std::string>& blist, const std::string& owner, bool isGen){
+  string const strGen = "Gen";
+  vector<string> strtmp;
+
+  strtmp.push_back("Rt");
+  strtmp.push_back("Rz");
+  strtmp.push_back("RPhi");
+
+  for (string& varname:strtmp){
+    varname.insert(0, owner);
+    if (isGen) varname.insert(0, strGen);
+    blist.push_back(varname);
+  }
+}
+
 void HVVTree::bookAngularBranches(const bool& doSetAddress){
   vector<string> tmpBranchList;
   if (options->processGenInfo()){
@@ -340,6 +365,13 @@ void HVVTree::fillDaughterProducts(MELACandidate* pH, bool isGen){
         varname = strcore + "Eta"; setVal(varname, (lepton->pt()>0. ? lepton->eta() : 0));
         varname = strcore + "Phi"; setVal(varname, (lepton->pt()>0. ? lepton->phi() : 0));
         varname = strcore + "Id"; setVal(varname, lepton->id);
+
+        if (isGen && options->processDisplacementInfo()){ // Only for gen. info at the moment!
+          TVector3 const displacement = lepton->calculateTotalDisplacement();
+          varname = strcore + "Rt"; setVal(varname, displacement.Perp());
+          varname = strcore + "Rz"; setVal(varname, displacement.Z());
+          varname = strcore + "RPhi"; setVal(varname, displacement.Phi());
+        }
       }
       if (isNew){ delete lepton; lepton=nullptr; }
     }
@@ -491,6 +523,13 @@ void HVVTree::fillAssociatedInfo(MELACandidate* pH, bool isGen){
     varname = strcore + "Eta"; setVal(varname, AssociatedParticle.at(aa)->eta());
     varname = strcore + "Phi"; setVal(varname, AssociatedParticle.at(aa)->phi());
     varname = strcore + "Id"; setVal(varname, AssociatedParticle.at(aa)->id);
+
+    if (isGen && options->processDisplacementInfo()){ // Only for gen. info at the moment!
+      TVector3 const displacement = AssociatedParticle.at(aa)->calculateTotalDisplacement();
+      varname = strcore + "Rt"; setVal(varname, displacement.Perp());
+      varname = strcore + "Rz"; setVal(varname, displacement.Z());
+      varname = strcore + "RPhi"; setVal(varname, displacement.Phi());
+    }
   }
 
   strcore = "AssociatedV";
@@ -1221,11 +1260,10 @@ void HVVTree::updateMELAClusters_LepWH(const string clustertype, bool isGen){
 
   std::vector<MELACluster*>& me_clusters = (isGen ? lheme_clusters : recome_clusters);
 
-  int nNeutrinos = melaCand->getNAssociatedNeutrinos();
-  for (int inu=0; inu<nNeutrinos; inu++){
+  for (MELAParticle* nu:melaCand->getAssociatedNeutrinos()){
     // Notice: Looping over Ws does not make much sense unless you have more than one lepton since the fake neutrino is already calculated from the available lepton with W mass constraint.
     // Such a loop over Ws only makes sense if there are more than one lepton in the event, but in that case, it still does not make sense to cross-match neutrinos and leptons.
-    for (int disableNu=0; disableNu<nNeutrinos; disableNu++) melaCand->getAssociatedNeutrino(disableNu)->setSelected(disableNu==inu); // Disable all neutrinos other than index==inu
+    for (MELAParticle* dnu:melaCand->getAssociatedNeutrinos()) dnu->setSelected((dnu==nu)); // Disable all neutrinos other than index==inu
     for (MELACluster* theCluster:me_clusters){
       if (theCluster->getName()==clustertype){
         // Re-compute all related hypotheses first...
@@ -1236,7 +1274,7 @@ void HVVTree::updateMELAClusters_LepWH(const string clustertype, bool isGen){
     } // End loop over clusters
   } // End loop over possible neutrinos
   // Re-enable all neutrinos
-  for (int disableNu=0; disableNu<nNeutrinos; disableNu++) melaCand->getAssociatedNeutrino(disableNu)->setSelected(true);
+  for (MELAParticle* dnu:melaCand->getAssociatedNeutrinos()) dnu->setSelected(true);
 }
 // Common ME computations for leptonic ZH: Picks best Z3
 void HVVTree::updateMELAClusters_LepZH(const string clustertype, bool isGen){
@@ -1250,25 +1288,25 @@ void HVVTree::updateMELAClusters_LepZH(const string clustertype, bool isGen){
 
   std::vector<MELACluster*>& me_clusters = (isGen ? lheme_clusters : recome_clusters);
 
-  std::vector<MELAParticle*> associatedVs = melaCand->getAssociatedSortedVs();
-  const unsigned int nSortedVs = associatedVs.size();
-  constexpr unsigned int iSortedVstart=0;
-  double dZmass=-1;
-  int chosenZ=-1;
-  // Choose the Z by mass closest to mZ (~equivalent to ordering by best SM ME but would be equally valid for BSM MEs as well)
-  for (unsigned int iV=iSortedVstart; iV<nSortedVs; iV++){
-    MELAParticle const* associatedV = associatedVs.at(iV);
+  std::vector<MELAParticle*> associatedVs;
+  for (MELAParticle* associatedV:melaCand->getAssociatedSortedVs()){
     if (!PDGHelpers::isAZBoson(associatedV->id)) continue;
     if (!PDGHelpers::isALepton(associatedV->getDaughter(0)->id)) continue;
-    if (chosenZ<0 || fabs(associatedV->m()-PDGHelpers::Zmass)<dZmass){ dZmass=fabs(associatedV->m()-PDGHelpers::Zmass); chosenZ=(int) iV; }
+    bool passSelection=true;
+    for (MELAParticle* dauV:associatedV->getDaughters()) passSelection &= dauV->passSelection;
+    if (!passSelection) continue;
+    associatedVs.push_back(associatedV);
   }
-  if (chosenZ>=0){
+
+  double dZmass=-1;
+  MELAParticle* chosenZ=nullptr;
+  // Choose the Z by mass closest to mZ (~equivalent to ordering by best SM ME but would be equally valid for BSM MEs as well)
+  for (MELAParticle* associatedV:associatedVs){
+    if (!chosenZ || fabs(associatedV->m()-PDGHelpers::Zmass)<dZmass){ dZmass=fabs(associatedV->m()-PDGHelpers::Zmass); chosenZ=associatedV; }
+  }
+  if (chosenZ){
     // Disable every associated Z boson (and not its daughters!) unless it is the chosen one
-    for (unsigned int disableV=iSortedVstart; disableV<nSortedVs; disableV++){
-      bool flag=(((int) disableV)==chosenZ);
-      MELAParticle* einV = associatedVs.at(disableV);
-      if (PDGHelpers::isAZBoson(einV->id)) einV->setSelected(flag);
-    }
+    for (MELAParticle* associatedV:associatedVs) associatedV->setSelected((associatedV==chosenZ));
 
     for (MELACluster* theCluster:me_clusters){
       if (theCluster->getName()==clustertype){
@@ -1281,7 +1319,7 @@ void HVVTree::updateMELAClusters_LepZH(const string clustertype, bool isGen){
 
   } // End if chosenZ>=0
   // Re-enable every associated Z boson and its daughters unless it is the chosen one
-  for (MELAParticle* einV:associatedVs){ if (PDGHelpers::isAZBoson(einV->id)) einV->setSelected(true); }
+  for (MELAParticle* associatedV:associatedVs) associatedV->setSelected(true);
 }
 // ME computations that require no quark initial state
 void HVVTree::updateMELAClusters_NoInitialQ(const string clustertype, bool isGen){

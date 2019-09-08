@@ -57,6 +57,7 @@ protected:
   Int_t recoDecayMode;
   Int_t recoSelBehaviour;
   Int_t recoSmearBehaviour;
+  Int_t includeDisplacementInfo;
 
   HiggsComparators::CandidateSelection genHiggsCandidateSelectionScheme;
   HiggsComparators::CandidateSelection recoHiggsCandidateSelectionScheme;
@@ -109,6 +110,8 @@ public:
   std::vector<std::string> const& inputfiles()const{ return filename; }
   std::vector<std::string> const& getLHEMEList()const{ return lheMElist; }
   std::vector<std::string> const& getRecoMEList()const{ return recoMElist; }
+
+  Bool_t processDisplacementInfo()const{ return (includeDisplacementInfo!=0); }
 
   Int_t maxEventsToProcess()const{ return maxEvents; };
   std::vector<std::pair<Int_t, Int_t>> getSkippedEvents()const{ return eventSkipRanges; };
