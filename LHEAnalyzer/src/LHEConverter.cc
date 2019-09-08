@@ -247,7 +247,7 @@ std::vector<MELAParticle*> LHEConverter::readEvent(std::ifstream& input_lhe, int
     TLorentzVector partFourVec(pup[0], pup[1], pup[2], pup[3]);
     MELAParticle* onePart = new MELAParticle(idup, partFourVec);
     onePart->setGenStatus(istup);
-    onePart->setLifetime(spinup);
+    onePart->setLifetime(vtimup);
     collection.push_back(onePart);
   }
 
