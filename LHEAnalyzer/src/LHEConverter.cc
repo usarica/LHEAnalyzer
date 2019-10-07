@@ -253,17 +253,26 @@ std::vector<MELAParticle*> LHEConverter::readEvent(std::ifstream& input_lhe, int
 
   // Test whether the end of event is reached indeed
   str_in = "";
-  while (str_in==""){ getline(input_lhe, str_in); } // Do not count empty lines or e.o.l. in the middle of events
-  while (str_in.find("#")!=string::npos){ getline(input_lhe, str_in); fline++; }
-  if (str_in.find(event_end)==string::npos){
-    MELAerr << "End of event not reached! string is " << str_in << " on line " << fline << endl;
-    weight=0;
-    for (MELAParticle*& tmpPart:collection) delete tmpPart;
-    collection.clear();
-    motherIDs_first.clear();
-    motherIDs_second.clear();
-    weight=0;
-    return collection;
+  while (str_in.find(event_end)==string::npos){
+    if (str_in==""){ getline(input_lhe, str_in); continue; }
+    else if (
+      str_in.find("#")!=string::npos
+      ||
+      str_in.find("rwgt>")!=string::npos || str_in.find("wgt>")!=string::npos
+      ){
+      getline(input_lhe, str_in); fline++;
+      continue;
+    }
+    else if (str_in.find(event_end)==string::npos){
+      MELAerr << "End of event not reached! string is " << str_in << " on line " << fline << endl;
+      weight=0;
+      for (MELAParticle*& tmpPart:collection) delete tmpPart;
+      collection.clear();
+      motherIDs_first.clear();
+      motherIDs_second.clear();
+      weight=0;
+      return collection;
+    }
   }
 
   // Assign the mothers
