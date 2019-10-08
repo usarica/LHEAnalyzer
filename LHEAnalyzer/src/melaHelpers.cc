@@ -16,7 +16,11 @@ TVar::Production melaHelpers::getFirstAssociatedLeptonicVProduction(MELACandidat
   TVar::Production res=TVar::nProductions;
   if (!cand) return res;
   for (const MELAParticle* tmpV:cand->getAssociatedSortedVs()){
-    if (tmpV->getDaughter(0) && PDGHelpers::isALepton(tmpV->getDaughter(0)->id)){
+    if (
+      tmpV->getDaughter(0) && tmpV->getDaughter(1)
+      && tmpV->getDaughter(0)->passSelection && tmpV->getDaughter(1)->passSelection
+      && (PDGHelpers::isALepton(tmpV->getDaughter(0)->id) || PDGHelpers::isANeutrino(tmpV->getDaughter(0)->id))
+      ){
       if (PDGHelpers::isAWBoson(tmpV->id)) res=TVar::Lep_WH;
       else if (PDGHelpers::isAZBoson(tmpV->id)) res=TVar::Lep_ZH;
     }
@@ -29,9 +33,14 @@ TVar::Production melaHelpers::getFirstAssociatedHadronicVProduction(MELACandidat
   TVar::Production res=TVar::nProductions;
   if (!cand) return res;
   for (const MELAParticle* tmpV:cand->getAssociatedSortedVs()){
-    if (tmpV->getDaughter(0) && (PDGHelpers::isAJet(tmpV->getDaughter(0)->id) && !PDGHelpers::isAGluon(tmpV->getDaughter(0)->id))){
+    if (
+      tmpV->getDaughter(0) && tmpV->getDaughter(1)
+      && tmpV->getDaughter(0)->passSelection && tmpV->getDaughter(1)->passSelection
+      && (PDGHelpers::isAJet(tmpV->getDaughter(0)->id) && !PDGHelpers::isAGluon(tmpV->getDaughter(0)->id))
+      ){
       if (PDGHelpers::isAWBoson(tmpV->id)) res=TVar::Had_WH;
       else if (PDGHelpers::isAZBoson(tmpV->id)) res=TVar::Had_ZH;
+      else if (PDGHelpers::isAnUnknownJet(tmpV->id)) res=TVar::Had_ZH;
     }
     if (res!=TVar::nProductions) break;
   }

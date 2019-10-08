@@ -423,11 +423,11 @@ void HVVTree::fillAssociatedInfo(MELACandidate* pH, bool isGen){
   pair<MELAParticle*, MELAParticle*> leadingPtJetPair(nullptr, nullptr);
   pair<MELAParticle*, MELAParticle*> leadingPtLeptonPair(nullptr, nullptr);
   for (MELAParticle* part:AssociatedParticle){
-    if (PDGHelpers::isAJet(part->id)){
+    if (part->passSelection && PDGHelpers::isAJet(part->id)){
       if (!leadingPtJetPair.first) leadingPtJetPair.first = part;
       else if (!leadingPtJetPair.second) leadingPtJetPair.second = part;
     }
-    if (PDGHelpers::isALepton(part->id)){
+    if (part->passSelection && (PDGHelpers::isALepton(part->id) || PDGHelpers::isANeutrino(part->id))){
       if (!leadingPtLeptonPair.first) leadingPtLeptonPair.first = part;
       else if (!leadingPtLeptonPair.second) leadingPtLeptonPair.second = part;
     }
