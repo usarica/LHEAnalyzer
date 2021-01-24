@@ -3,7 +3,7 @@ CMSSWINCLUDES        = $(subst :, -I,$(CMSSWINCLUDEPATHS))
 CMSSWFWLITEPATHS     = $(CMSSW_FWLITE_INCLUDE_PATH)
 CMSSWFWLITEINCLUDES  = $(subst :, -I,$(CMSSWFWLITEPATHS))
 BASEINCLUDE          = $(CMSSW_BASE)/src
-MELADIR              = $(BASEINCLUDE)/ZZMatrixElement/MELA
+MELADIR              = $(BASEINCLUDE)/JHUGenMELA/MELA
 CMSDATATOOLSDIR      = $(BASEINCLUDE)/CMSDataTools/AnalysisTree
 CANDLORECASTERDIR    = $(BASEINCLUDE)/MelaAnalytics/CandidateLOCaster
 EVENTCONTAINERDIR    = $(BASEINCLUDE)/MelaAnalytics/EventContainer
@@ -39,7 +39,7 @@ NGLIBS         = $(ROOTGLIBS)
 # Hack here, because RooFit is removed from ROOT:
 NGLIBS        += -L $(ROOFITSYS)/lib/ -lMinuit -lRooFitCore -lRooFit #-lboost_regex
 # Libraries for common user packages
-NGLIBS        += -L $(CMSSW_BASE)/lib/$(SCRAM_ARCH)/ -lZZMatrixElementMELA -lCMSDataToolsAnalysisTree -lMelaAnalyticsCandidateLOCaster -lMelaAnalyticsEventContainer -lMelaAnalyticsGenericMEComputer
+NGLIBS        += -L $(CMSSW_BASE)/lib/$(SCRAM_ARCH)/ -lJHUGenMELAMELA -lCMSDataToolsAnalysisTree -lMelaAnalyticsCandidateLOCaster -lMelaAnalyticsEventContainer -lMelaAnalyticsGenericMEComputer
 # Libraries needed for CMSSW dependencies (mainly due to CMSDataTools)
 NGLIBS        += -L $(CMSSW_RELEASE_BASE)/lib/$(SCRAM_ARCH)/ -lDataFormatsCommon -lDataFormatsMath
 # Filter out libNew because it leads to floating-point exceptions in versions of ROOT prior to 6.08.02
