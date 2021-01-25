@@ -434,14 +434,13 @@ void HVVTree::fillAssociatedInfo(MELACandidate* pH, bool isGen){
   }
 
 
-  NAssociatedVs = (pH ? pH->getAssociatedSortedVs().size() : 0);
   if (pH){
     for (MELAParticle* pAV:pH->getAssociatedSortedVs()){
       bool doSkip = false;
       MELAParticle* avd1 = pAV->getDaughter(0);
       MELAParticle* avd2 = pAV->getDaughter(1);
 
-      if (!pAV->passSelection || (avd1 && !avd1->passSelection) || (avd2 && !avd2->passSelection)) doSkip = true;
+      if (!pAV->passSelection || (avd1 && !avd1->passSelection) || (avd2 && !avd2->passSelection) || !avd1 || !avd2) doSkip = true;
       if (doSkip) continue;
 
       AssociatedV.push_back(pAV);
@@ -451,6 +450,7 @@ void HVVTree::fillAssociatedInfo(MELACandidate* pH, bool isGen){
       }
     }
   }
+  NAssociatedVs = AssociatedV.size();
 
   NAssociatedTops = (pH ? pH->getNAssociatedTops() : 0);
   if (pH){

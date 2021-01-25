@@ -390,6 +390,7 @@ void OptionParser::interpretOption(std::string const& wish, std::string const& v
     else if (isGenHZZ==MELAEvent::ZZMode) PDGHelpers::setCandidateDecayMode(TVar::CandidateDecay_ZZ);
     else if (isGenHZZ==MELAEvent::ZGammaMode) PDGHelpers::setCandidateDecayMode(TVar::CandidateDecay_ZG);
     else if (isGenHZZ==MELAEvent::GammaGammaMode) PDGHelpers::setCandidateDecayMode(TVar::CandidateDecay_GG);
+    else if (isGenHZZ==MELAEvent::UndecayedMode) PDGHelpers::setCandidateDecayMode(TVar::CandidateDecay_Stable);
     else PDGHelpers::setCandidateDecayMode(TVar::CandidateDecay_ff);
   }
   else if (wish=="isRecoHZZ") isRecoHZZ = MELAEvent::getCandidateVVModeFromString(value);
