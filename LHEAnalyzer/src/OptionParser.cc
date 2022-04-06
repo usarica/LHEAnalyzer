@@ -328,22 +328,25 @@ void OptionParser::extractXsec(){
             lstrip(strlinestrip, " \":,()#");
             rstrip(strlinestrip, " \":,()#");
             if (!strlinestrip.empty()){
-              replaceString<std::string, const char*>(strlinestrip, " ", "");
-              replaceString<std::string, const char*>(strlinestrip, "+-", "|");
+              while (strlinestrip.find(" ")!=string::npos) replaceString<std::string, const char*>(strlinestrip, " ", "");
+              while (strlinestrip.find("/")!=string::npos) replaceString<std::string, const char*>(strlinestrip, "/", "");
+              while (strlinestrip.find("+-")!=string::npos) replaceString<std::string, const char*>(strlinestrip, "+-", "|");
+              //cout << strlinestrip << endl;
               {
                 string xsec, xsecerr;
                 splitOption(strlinestrip, xsec, xsecerr, '|');
                 float xsecval=0, xsecerrval=0;
-                try{ xsecval = stoi(xsec.c_str()); }
+                try{ xsecval = stod(xsec.c_str()); }
                 catch (std::invalid_argument& e){
                   cerr << "OptionParser::extractXsec: Could not interpret the cross section string '" << xsec << "'" << endl;
                   xsecval=0;
                 }
-                try{ xsecerrval = stoi(xsecerr.c_str()); }
+                try{ xsecerrval = stod(xsecerr.c_str()); }
                 catch (std::invalid_argument& e){
                   cerr << "OptionParser::extractXsec: Could not interpret the cross section error string '" << xsecerr << "'" << endl;
                   xsecerrval=0;
                 }
+                //cout << xsecval << ", " << xsecerrval << endl;
                 if (xsecerrval>0.f && xsecval!=0.f && std::isfinite(xsecval) && std::isfinite(xsecerrval)){
                   bool isUnique = true;
                   for (std::pair<float, float> const& tmp_pair:xsec_val_err){ if (tmp_pair.first == xsecval && tmp_pair.second == xsecerrval){ isUnique = false; break; } }
