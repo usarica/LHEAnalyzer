@@ -259,6 +259,8 @@ std::vector<MELAParticle*> LHEConverter::readEvent(std::ifstream& input_lhe, int
       str_in.find("#")!=string::npos
       ||
       str_in.find("rwgt>")!=string::npos || str_in.find("wgt>")!=string::npos
+      ||
+      str_in.find("rscale>")!=string::npos || str_in.find("rwt>")!=string::npos || str_in.find("totfact>")!=string::npos
       ){
       getline(input_lhe, str_in); fline++;
       continue;
