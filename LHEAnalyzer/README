@@ -2,7 +2,7 @@ LHEAnalyzer
 
 You need the following packages:
 - cms-analysis/HiggsAnalysis-CombinedLimit
-- usarica/MelaAnalytics
+- MELALAbs/MelaAnalytics
 - usarica/CMSDataTools
 
 Then, do
