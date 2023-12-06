@@ -6,13 +6,13 @@ You need the following packages:
 - [IvyFramework/IvyDataTools](https://github.com/IvyFramework/IvyDataTools) (inside the directory IvyFramework/IvyDataTools/ relative to the base directory)
 - [IvyFramework/IvyAutoMELA](https://github.com/IvyFramework/IvyAutoMELA) (inside the directory IvyFramework/IvyAutoMELA/ relative to the base directory)
 
-Then, please checkout this package in the base directory as
+Then, please check out this package in the base directory as
 ```
 git clone git@github.com:usarica/LHEAnalyzer.git
 ```
 (or with an equivalent non-SSH command).
 
-Then, please run
+After checkout, please run
 ```
 ./setup.sh -j
 eval $(./setup.sh env)
