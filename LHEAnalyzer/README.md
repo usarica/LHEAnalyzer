@@ -1,10 +1,10 @@
 LHEAnalyzer
 
 You need the following packages:
-- JHUGen/JHUGenMELA
-- MELALabs/MelaAnalytics
-- IvyFramework/IvyDataTools
-- IvyFramework/IvyAutoMELA
+- [JHUGen/JHUGenMELA](https://github.com/JHUGen/JHUGenMELA)
+- [MELALabs/MelaAnalytics](https://github.com/MELALabs/MelaAnalytics)
+- [IvyFramework/IvyDataTools](https://github.com/IvyFramework/IvyDataTools)
+- [IvyFramework/IvyAutoMELA](https://github.com/IvyFramework/IvyAutoMELA)
 
 Then, do
 ```
@@ -13,7 +13,7 @@ eval $(./setup.sh env)
 ```
 to compile.
 
-At each session, please also run the second line above, i.e.,
+At the start of each session, please also run the second line above, i.e.,
 ```
 eval $(./setup.sh env)
 ```
