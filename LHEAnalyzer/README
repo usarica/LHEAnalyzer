@@ -1,14 +1,15 @@
 LHEAnalyzer
 
 You need the following packages:
-- cms-analysis/HiggsAnalysis-CombinedLimit
+- JHUGen/JHUGenMELA
 - MELALabs/MelaAnalytics
-- usarica/CMSDataTools
+- IvyFramework/IvyDataTools
+- IvyFramework/IvyAutoMELA
 
 Then, do
 make -j
 to compile.
 
 You can do
-./analyzer help
+./LHEAnalyzer help
 to read the list of available options.
