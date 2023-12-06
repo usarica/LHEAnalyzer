@@ -1,12 +1,18 @@
-LHEAnalyzer
+## LHEAnalyzer
 
 You need the following packages:
-- [JHUGen/JHUGenMELA](https://github.com/JHUGen/JHUGenMELA)
-- [MELALabs/MelaAnalytics](https://github.com/MELALabs/MelaAnalytics)
-- [IvyFramework/IvyDataTools](https://github.com/IvyFramework/IvyDataTools)
-- [IvyFramework/IvyAutoMELA](https://github.com/IvyFramework/IvyAutoMELA)
+- [JHUGen/JHUGenMELA](https://github.com/JHUGen/JHUGenMELA) (inside the directory JHUGenMELA/ relative to the base directory)
+- [MELALabs/MelaAnalytics](https://github.com/MELALabs/MelaAnalytics) (inside the directory MelaAnalytics/ relative to the base directory)
+- [IvyFramework/IvyDataTools](https://github.com/IvyFramework/IvyDataTools) (inside the directory IvyFramework/IvyDataTools/ relative to the base directory)
+- [IvyFramework/IvyAutoMELA](https://github.com/IvyFramework/IvyAutoMELA) (inside the directory IvyFramework/IvyAutoMELA/ relative to the base directory)
 
-Then, do
+Then, please checkout this package in the base directory as
+```
+git clone git@github.com:usarica/LHEAnalyzer.git
+```
+(or with an equivalent non-SSH command).
+
+Then, please run
 ```
 ./setup.sh -j
 eval $(./setup.sh env)
@@ -17,7 +23,7 @@ At the start of each session, please also run the second line above, i.e.,
 ```
 eval $(./setup.sh env)
 ```
-to set up environment variables.
+to set up the environment variables.
 
 You can do
 ```
