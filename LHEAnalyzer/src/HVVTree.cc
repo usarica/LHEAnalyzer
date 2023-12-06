@@ -38,11 +38,11 @@ void HVVTree::bookAllBranches(const bool& doSetAddress){
   reserveBranch("xsecerr", BaseTree::bFloat, doSetAddress);
   if (options->processGenInfo()){
     bookMotherParticleBranches(BaseTree::bVectorFloat, doSetAddress);
-    bookPtEtaPhiMassIdBranches("H", BaseTree::bFloat, doSetAddress, false, true, true);
-    bookPtEtaPhiMassIdBranches("Z1", BaseTree::bFloat, doSetAddress, false, false, true);
-    bookPtEtaPhiMassIdBranches("Z2", BaseTree::bFloat, doSetAddress, false, false, true);
-    bookPtEtaPhiMassIdBranches("Za", BaseTree::bFloat, doSetAddress, false, false, true);
-    bookPtEtaPhiMassIdBranches("Zb", BaseTree::bFloat, doSetAddress, false, false, true);
+    bookPtEtaPhiMassIdBranches("Cand", BaseTree::bFloat, doSetAddress, false, true, true);
+    bookPtEtaPhiMassIdBranches("V1", BaseTree::bFloat, doSetAddress, false, false, true);
+    bookPtEtaPhiMassIdBranches("V2", BaseTree::bFloat, doSetAddress, false, false, true);
+    bookPtEtaPhiMassIdBranches("Va", BaseTree::bFloat, doSetAddress, false, false, true);
+    bookPtEtaPhiMassIdBranches("Vb", BaseTree::bFloat, doSetAddress, false, false, true);
 
     bookPtEtaPhiMassIdBranches("AssociatedParticle", BaseTree::bVectorFloat, doSetAddress, true, false, true);
     reserveBranch("GenDijetMass", BaseTree::bFloat, doSetAddress);
@@ -73,11 +73,11 @@ void HVVTree::bookAllBranches(const bool& doSetAddress){
   if (options->processRecoInfo()){
     reserveBranch("isSelected", BaseTree::bInt, doSetAddress);
 
-    bookPtEtaPhiMassIdBranches("ZZ", BaseTree::bFloat, doSetAddress, false, true, false);
-    bookPtEtaPhiMassIdBranches("Z1", BaseTree::bFloat, doSetAddress, false, false, false);
-    bookPtEtaPhiMassIdBranches("Z2", BaseTree::bFloat, doSetAddress, false, false, false);
-    bookPtEtaPhiMassIdBranches("Za", BaseTree::bFloat, doSetAddress, false, false, false);
-    bookPtEtaPhiMassIdBranches("Zb", BaseTree::bFloat, doSetAddress, false, false, false);
+    bookPtEtaPhiMassIdBranches("Cand", BaseTree::bFloat, doSetAddress, false, true, false);
+    bookPtEtaPhiMassIdBranches("V1", BaseTree::bFloat, doSetAddress, false, false, false);
+    bookPtEtaPhiMassIdBranches("V2", BaseTree::bFloat, doSetAddress, false, false, false);
+    bookPtEtaPhiMassIdBranches("Va", BaseTree::bFloat, doSetAddress, false, false, false);
+    bookPtEtaPhiMassIdBranches("Vb", BaseTree::bFloat, doSetAddress, false, false, false);
 
     bookPtEtaPhiMassIdBranches("AssociatedParticle", BaseTree::bVectorFloat, doSetAddress, true, false, false);
     reserveBranch("DijetMass", BaseTree::bFloat, doSetAddress);
@@ -264,8 +264,8 @@ void HVVTree::fillCandidate(MELACandidate* pH, bool isGen){
   if (!pH) return;
 
   string varname;
-  string strcore = "ZZ";
-  if (isGen) strcore = "GenH";
+  string strcore = "Cand";
+  if (isGen) strcore = "GenCand";
   varname = strcore + "Mass"; setVal(varname, (pH ? pH->m() : 0.));
   varname = strcore + "Pt"; setVal(varname, (pH ? pH->pt() : 0));
   varname = strcore + "Pz"; setVal(varname, (pH ? pH->z() : 0));
@@ -298,13 +298,13 @@ void HVVTree::fillCandidateDaughters(MELACandidate* pH, bool isGen){
     if (pV2 && pV2->getMother(0)!=pH) pV2=0;
   }
 
-  strcore = "Z1";
+  strcore = "V1";
   if (isGen) strcore.insert(0, "Gen");
   varname = strcore + "Mass"; setVal(varname, (pV1 ? pV1->m() : 0));
   varname = strcore + "Pt"; setVal(varname, (pV1 ? pV1->pt() : 0));
   varname = strcore + "Eta"; setVal(varname, (pV1 ? (pV1->t()>0 ? pV1->eta() : 0) : 0));
   varname = strcore + "Phi"; setVal(varname, (pV1 ? (pV1->pt()>0 ? pV1->phi() : 0) : 0));
-  strcore = "Z2";
+  strcore = "V2";
   if (isGen) strcore.insert(0, "Gen");
   varname = strcore + "Mass"; setVal(varname, (pV2 ? pV2->m() : 0));
   varname = strcore + "Pt"; setVal(varname, (pV2 ? pV2->pt() : 0));
@@ -315,13 +315,13 @@ void HVVTree::fillCandidateDaughters(MELACandidate* pH, bool isGen){
   TLorentzVector pZ1alt = (pH ? pH->getAlternativeVMomentum(0) : nullVector);
   TLorentzVector pZ2alt = (pH ? pH->getAlternativeVMomentum(1) : nullVector);
 
-  strcore = "Za";
+  strcore = "Va";
   if (isGen) strcore.insert(0, "Gen");
   varname = strcore + "Mass"; setVal(varname, (pH ? pZ1alt.M() : 0));
   varname = strcore + "Pt"; setVal(varname, (pH ? pZ1alt.Pt() : 0));
   varname = strcore + "Eta"; setVal(varname, (pH ? (pZ1alt.T()>0 ? pZ1alt.Eta() : 0) : 0));
   varname = strcore + "Phi"; setVal(varname, (pH ? (pZ1alt.Pt()>0 ? pZ1alt.Phi() : 0) : 0));
-  strcore = "Zb";
+  strcore = "Vb";
   if (isGen) strcore.insert(0, "Gen");
   varname = strcore + "Mass"; setVal(varname, (pH ? pZ2alt.M() : 0));
   varname = strcore + "Pt"; setVal(varname, (pH ? pZ2alt.Pt() : 0));
